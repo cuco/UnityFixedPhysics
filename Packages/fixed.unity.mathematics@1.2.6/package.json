@@ -1,0 +1,10 @@
+{
+  "name": "com.fixed.mathematics",
+  "displayName": "Fixed Mathematics",
+  "version": "1.2.6",
+  "unity": "2018.3",
+  "description": "Unity's C# SIMD math library providing vector types and math functions with a shader like syntax.",
+  "keywords": [
+    "fixed"
+  ]
+}

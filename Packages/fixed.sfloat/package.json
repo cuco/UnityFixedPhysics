@@ -1,0 +1,11 @@
+{
+  "displayName": "Fixed Sfloat",
+  "category": "",
+  "description": "fixed float, https://github.com/Kimbatt/soft-float-starter-pack",
+  "keywords": [
+    "fixed"
+  ],
+  "name": "com.kimbatt.sfloat",
+  "version": "0.0.1",
+  "type": "library"
+}

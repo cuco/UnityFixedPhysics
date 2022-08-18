@@ -1,0 +1,12 @@
+{
+    "name": "Fixed.Mathematics.Editor",
+    "references": [
+        "Fixed.Mathematics"
+    ],
+    "optionalUnityReferences": [],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true
+}

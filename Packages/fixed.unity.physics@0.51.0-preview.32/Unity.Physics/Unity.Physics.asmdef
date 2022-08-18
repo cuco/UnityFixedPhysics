@@ -1,0 +1,23 @@
+{
+    "name": "Fixed.Physics",
+    "rootNamespace": "",
+    "references": [
+        "Unity.Burst",
+        "Unity.Collections",
+        "Unity.Entities",
+        "Fixed.Mathematics",
+        "Unity.Properties",
+        "Fixed.Transforms",
+        "Unity.Jobs",
+        "Unity.DataFlowGraph"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
