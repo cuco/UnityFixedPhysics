@@ -22,9 +22,9 @@ namespace Fixed.Mathematics
     public partial struct float2 : System.IEquatable<float2>, IFormattable
     {
         /// <summary>x component of the vector.</summary>
-        public float x;
+        public sfloat x;
         /// <summary>y component of the vector.</summary>
-        public float y;
+        public sfloat y;
 
         /// <summary>float2 zero value.</summary>
         public static readonly float2 zero;

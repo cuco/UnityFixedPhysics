@@ -8,7 +8,8 @@
         "Unity.Entities.Hybrid",
         "Fixed.Mathematics",
         "Fixed.Physics",
-        "Fixed.Transforms"
+        "Fixed.Transforms",
+        "Unity.Mathematics"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
