@@ -1,0 +1,13 @@
+{
+    "name": "Fixed.Mathematics.Tests",
+    "optionalUnityReferences": [
+        "TestAssemblies"
+    ],
+    "references": [
+        "Fixed.Mathematics"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "allowUnsafeCode": true
+}

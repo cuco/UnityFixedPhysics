@@ -1,0 +1,22 @@
+{
+    "name": "Fixed.Physics.Hybrid",
+    "rootNamespace": "",
+    "references": [
+        "Unity.Burst",
+        "Unity.Collections",
+        "Unity.Entities",
+        "Unity.Entities.Hybrid",
+        "Fixed.Mathematics",
+        "Fixed.Physics",
+        "Fixed.Transforms"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
