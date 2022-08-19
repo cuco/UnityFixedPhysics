@@ -178,7 +178,7 @@ namespace Fixed.Transforms
                         {
                             var rotation = chunkRotations[i].Value;
                             var pivot = chunkRotationPivots[i].Value;
-                            var inversePivot = -1.0f * pivot;
+                            var inversePivot = -(sfloat)1.0f * pivot;
 
                             chunkCompositeRotations[i] = new CompositeRotation
                             {Value = math.mul(new float4x4(rotation, pivot), float4x4.Translate(inversePivot))};
@@ -196,7 +196,7 @@ namespace Fixed.Transforms
                         {
                             var rotation = chunkPostRotation[i].Value;
                             var pivot = chunkRotationPivots[i].Value;
-                            var inversePivot = -1.0f * pivot;
+                            var inversePivot = -(sfloat)1.0f * pivot;
 
                             chunkCompositeRotations[i] = new CompositeRotation
                             {Value = math.mul(new float4x4(rotation, pivot), float4x4.Translate(inversePivot))};
@@ -215,7 +215,7 @@ namespace Fixed.Transforms
                         {
                             var rotation = chunkPostRotation[i].Value;
                             var pivot = chunkRotationPivots[i].Value;
-                            var inversePivot = -1.0f * pivot;
+                            var inversePivot = -(sfloat)1.0f * pivot;
 
                             chunkCompositeRotations[i] = new CompositeRotation
                             {Value = math.mul(new float4x4(rotation, pivot), float4x4.Translate(inversePivot))};
@@ -297,7 +297,7 @@ namespace Fixed.Transforms
                             var translation = chunkRotationPivotTranslations[i].Value;
                             var rotation = chunkRotations[i].Value;
                             var pivot = chunkRotationPivots[i].Value;
-                            var inversePivot = -1.0f * pivot;
+                            var inversePivot = -(sfloat)1.0f * pivot;
 
                             chunkCompositeRotations[i] = new CompositeRotation
                             {
@@ -320,7 +320,7 @@ namespace Fixed.Transforms
                             var translation = chunkRotationPivotTranslations[i].Value;
                             var rotation = chunkPostRotation[i].Value;
                             var pivot = chunkRotationPivots[i].Value;
-                            var inversePivot = -1.0f * pivot;
+                            var inversePivot = -(sfloat)1.0f * pivot;
 
                             chunkCompositeRotations[i] = new CompositeRotation
                             {
@@ -344,7 +344,7 @@ namespace Fixed.Transforms
                             var translation = chunkRotationPivotTranslations[i].Value;
                             var rotation = math.mul(chunkRotations[i].Value, chunkPostRotation[i].Value);
                             var pivot = chunkRotationPivots[i].Value;
-                            var inversePivot = -1.0f * pivot;
+                            var inversePivot = -(sfloat)1.0f * pivot;
 
                             chunkCompositeRotations[i] = new CompositeRotation
                             {

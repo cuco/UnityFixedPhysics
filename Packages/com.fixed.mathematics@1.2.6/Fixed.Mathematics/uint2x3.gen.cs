@@ -107,10 +107,10 @@ namespace Fixed.Mathematics
             this.c2 = (uint2)v.c2;
         }
 
-        /// <summary>Constructs a uint2x3 matrix from a single float value by converting it to uint and assigning it to every component.</summary>
-        /// <param name="v">float to convert to uint2x3</param>
+        /// <summary>Constructs a uint2x3 matrix from a single sfloat value by converting it to uint and assigning it to every component.</summary>
+        /// <param name="v">sfloat to convert to uint2x3</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public uint2x3(float v)
+        public uint2x3(sfloat v)
         {
             this.c0 = (uint2)v;
             this.c1 = (uint2)v;
@@ -178,11 +178,11 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static explicit operator uint2x3(int2x3 v) { return new uint2x3(v); }
 
-        /// <summary>Explicitly converts a single float value to a uint2x3 matrix by converting it to uint and assigning it to every component.</summary>
-        /// <param name="v">float to convert to uint2x3</param>
+        /// <summary>Explicitly converts a single sfloat value to a uint2x3 matrix by converting it to uint and assigning it to every component.</summary>
+        /// <param name="v">sfloat to convert to uint2x3</param>
         /// <returns>Converted value.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static explicit operator uint2x3(float v) { return new uint2x3(v); }
+        public static explicit operator uint2x3(sfloat v) { return new uint2x3(v); }
 
         /// <summary>Explicitly converts a float2x3 matrix to a uint2x3 matrix by componentwise conversion.</summary>
         /// <param name="v">float2x3 to convert to uint2x3</param>
@@ -668,11 +668,11 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static uint2x3 uint2x3(int2x3 v) { return new uint2x3(v); }
 
-        /// <summary>Returns a uint2x3 matrix constructed from a single float value by converting it to uint and assigning it to every component.</summary>
-        /// <param name="v">float to convert to uint2x3</param>
+        /// <summary>Returns a uint2x3 matrix constructed from a single sfloat value by converting it to uint and assigning it to every component.</summary>
+        /// <param name="v">sfloat to convert to uint2x3</param>
         /// <returns>Converted value.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static uint2x3 uint2x3(float v) { return new uint2x3(v); }
+        public static uint2x3 uint2x3(sfloat v) { return new uint2x3(v); }
 
         /// <summary>Return a uint2x3 matrix constructed from a float2x3 matrix by componentwise conversion.</summary>
         /// <param name="v">float2x3 to convert to uint2x3</param>

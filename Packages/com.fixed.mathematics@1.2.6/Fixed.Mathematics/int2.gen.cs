@@ -93,10 +93,10 @@ namespace Fixed.Mathematics
             this.y = (int)v.y;
         }
 
-        /// <summary>Constructs a int2 vector from a single float value by converting it to int and assigning it to every component.</summary>
-        /// <param name="v">float to convert to int2</param>
+        /// <summary>Constructs a int2 vector from a single sfloat value by converting it to int and assigning it to every component.</summary>
+        /// <param name="v">sfloat to convert to int2</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public int2(float v)
+        public int2(sfloat v)
         {
             this.x = (int)v;
             this.y = (int)v;
@@ -160,11 +160,11 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static explicit operator int2(uint2 v) { return new int2(v); }
 
-        /// <summary>Explicitly converts a single float value to a int2 vector by converting it to int and assigning it to every component.</summary>
-        /// <param name="v">float to convert to int2</param>
+        /// <summary>Explicitly converts a single sfloat value to a int2 vector by converting it to int and assigning it to every component.</summary>
+        /// <param name="v">sfloat to convert to int2</param>
         /// <returns>Converted value.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static explicit operator int2(float v) { return new int2(v); }
+        public static explicit operator int2(sfloat v) { return new int2(v); }
 
         /// <summary>Explicitly converts a float2 vector to a int2 vector by componentwise conversion.</summary>
         /// <param name="v">float2 to convert to int2</param>
@@ -916,11 +916,11 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int2 int2(uint2 v) { return new int2(v); }
 
-        /// <summary>Returns a int2 vector constructed from a single float value by converting it to int and assigning it to every component.</summary>
-        /// <param name="v">float to convert to int2</param>
+        /// <summary>Returns a int2 vector constructed from a single sfloat value by converting it to int and assigning it to every component.</summary>
+        /// <param name="v">sfloat to convert to int2</param>
         /// <returns>Converted value.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int2 int2(float v) { return new int2(v); }
+        public static int2 int2(sfloat v) { return new int2(v); }
 
         /// <summary>Return a int2 vector constructed from a float2 vector by componentwise conversion.</summary>
         /// <param name="v">float2 to convert to int2</param>

@@ -12,14 +12,14 @@ namespace Fixed.Mathematics
         /// </summary>
         /// <param name="v">float2 to convert.</param>
         /// <returns>The converted Vector2.</returns>
-        public static implicit operator Vector2(float2 v)     { return new Vector2(v.x, v.y); }
+        public static implicit operator Vector2(float2 v)     { return new Vector2((float)v.x, (float)v.y); }
 
         /// <summary>
         /// Converts a Vector2 to float2.
         /// </summary>
         /// <param name="v">Vector2 to convert.</param>
         /// <returns>The converted float2.</returns>
-        public static implicit operator float2(Vector2 v)     { return new float2(v.x, v.y); }
+        public static implicit operator float2(Vector2 v)     { return new float2((sfloat)v.x, (sfloat)v.y); }
     }
 
     public partial struct float3
@@ -29,14 +29,14 @@ namespace Fixed.Mathematics
         /// </summary>
         /// <param name="v">float3 to convert.</param>
         /// <returns>The converted Vector3.</returns>
-        public static implicit operator Vector3(float3 v)     { return new Vector3(v.x, v.y, v.z); }
+        public static implicit operator Vector3(float3 v)     { return new Vector3((float)v.x, (float)v.y, (float)v.z); }
 
         /// <summary>
         /// Converts a Vector3 to float3.
         /// </summary>
         /// <param name="v">Vector3 to convert.</param>
         /// <returns>The converted float3.</returns>
-        public static implicit operator float3(Vector3 v)     { return new float3(v.x, v.y, v.z); }
+        public static implicit operator float3(Vector3 v)     { return new float3((sfloat)v.x, (sfloat)v.y, (sfloat)v.z); }
     }
 
     public partial struct float4
@@ -46,14 +46,14 @@ namespace Fixed.Mathematics
         /// </summary>
         /// <param name="v">Vector4 to convert.</param>
         /// <returns>The converted float4.</returns>
-        public static implicit operator float4(Vector4 v)     { return new float4(v.x, v.y, v.z, v.w); }
+        public static implicit operator float4(Vector4 v)     { return new float4((sfloat)v.x, (sfloat)v.y, (sfloat)v.z, (sfloat)v.w); }
 
         /// <summary>
         /// Converts a float4 to Vector4.
         /// </summary>
         /// <param name="v">float4 to convert.</param>
         /// <returns>The converted Vector4.</returns>
-        public static implicit operator Vector4(float4 v)     { return new Vector4(v.x, v.y, v.z, v.w); }
+        public static implicit operator Vector4(float4 v)     { return new Vector4((float)v.x, (float)v.y, (float)v.z, (float)v.w); }
     }
 
     public partial struct quaternion
@@ -63,14 +63,14 @@ namespace Fixed.Mathematics
         /// </summary>
         /// <param name="q">quaternion to convert.</param>
         /// <returns>The converted Quaternion.</returns>
-        public static implicit operator Quaternion(quaternion q)  { return new Quaternion(q.value.x, q.value.y, q.value.z, q.value.w); }
+        public static implicit operator Quaternion(quaternion q)  { return new Quaternion((float)q.value.x, (float)q.value.y, (float)q.value.z, (float)q.value.w); }
 
         /// <summary>
         /// Converts a Quaternion to quaternion.
         /// </summary>
         /// <param name="q">Quaternion to convert.</param>
         /// <returns>The converted quaternion.</returns>
-        public static implicit operator quaternion(Quaternion q)  { return new quaternion(q.x, q.y, q.z, q.w); }
+        public static implicit operator quaternion(Quaternion q)  { return new quaternion((sfloat)q.x, (sfloat)q.y, (sfloat)q.z, (sfloat)q.w); }
     }
 
     public partial struct float4x4

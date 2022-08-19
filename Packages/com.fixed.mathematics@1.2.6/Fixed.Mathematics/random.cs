@@ -406,12 +406,12 @@ namespace Fixed.Mathematics
                          (uint)(NextState() * (ulong)range.w >> 32)) + min;
         }
 
-        /// <summary>Returns a uniformly random float value in the interval [0, 1).</summary>
-        /// <returns>A uniformly random float value in the range [0, 1).</returns>
+        /// <summary>Returns a uniformly random sfloat value in the interval [0, 1).</summary>
+        /// <returns>A uniformly random sfloat value in the range [0, 1).</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public float NextFloat()
+        public sfloat NextFloat()
         {
-            return asfloat(0x3f800000 | (NextState() >> 9)) - 1.0f;
+            return asfloat(0x3f800000 | (NextState() >> 9)) - sfloat.One;
         }
 
         /// <summary>Returns a uniformly random float2 value with all components in the interval [0, 1).</summary>
@@ -419,7 +419,7 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public float2 NextFloat2()
         {
-            return asfloat(0x3f800000 | (uint2(NextState(), NextState()) >> 9)) - 1.0f;
+            return asfloat(0x3f800000 | (uint2(NextState(), NextState()) >> 9)) - sfloat.One;
         }
 
         /// <summary>Returns a uniformly random float3 value with all components in the interval [0, 1).</summary>
@@ -427,7 +427,7 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public float3 NextFloat3()
         {
-            return asfloat(0x3f800000 | (uint3(NextState(), NextState(), NextState()) >> 9)) - 1.0f;
+            return asfloat(0x3f800000 | (uint3(NextState(), NextState(), NextState()) >> 9)) - sfloat.One;
         }
 
         /// <summary>Returns a uniformly random float4 value with all components in the interval [0, 1).</summary>
@@ -435,15 +435,15 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public float4 NextFloat4()
         {
-            return asfloat(0x3f800000 | (uint4(NextState(), NextState(), NextState(), NextState()) >> 9)) - 1.0f;
+            return asfloat(0x3f800000 | (uint4(NextState(), NextState(), NextState(), NextState()) >> 9)) - sfloat.One;
         }
 
 
-        /// <summary>Returns a uniformly random float value in the interval [0, max).</summary>
+        /// <summary>Returns a uniformly random sfloat value in the interval [0, max).</summary>
         /// <param name="max">The maximum value to generate, exclusive.</param>
-        /// <returns>A uniformly random float value in the range [0, max).</returns>
+        /// <returns>A uniformly random sfloat value in the range [0, max).</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public float NextFloat(float max) { return NextFloat() * max; }
+        public sfloat NextFloat(sfloat max) { return NextFloat() * max; }
 
         /// <summary>Returns a uniformly random float2 value with all components in the interval [0, max).</summary>
         /// <param name="max">The componentwise maximum value to generate, exclusive.</param>
@@ -464,12 +464,12 @@ namespace Fixed.Mathematics
         public float4 NextFloat4(float4 max) { return NextFloat4() * max; }
 
 
-        /// <summary>Returns a uniformly random float value in the interval [min, max).</summary>
+        /// <summary>Returns a uniformly random sfloat value in the interval [min, max).</summary>
         /// <param name="min">The minimum value to generate, inclusive.</param>
         /// <param name="max">The maximum value to generate, exclusive.</param>
-        /// <returns>A uniformly random float value in the range [min, max).</returns>
+        /// <returns>A uniformly random sfloat value in the range [min, max).</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public float NextFloat(float min, float max) { return NextFloat() * (max - min) + min; }
+        public sfloat NextFloat(sfloat min, sfloat max) { return NextFloat() * (max - min) + min; }
 
         /// <summary>Returns a uniformly random float2 value with all components in the interval [min, max).</summary>
         /// <param name="min">The componentwise minimum value to generate, inclusive.</param>
@@ -601,8 +601,8 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public float2 NextFloat2Direction()
         {
-            float angle = NextFloat() * PI * 2.0f;
-            float s, c;
+            sfloat angle = NextFloat() * PI * (sfloat)2.0f;
+            sfloat s, c;
             sincos(angle, out s, out c);
             return float2(c, s);
         }
@@ -624,10 +624,10 @@ namespace Fixed.Mathematics
         public float3 NextFloat3Direction()
         {
             float2 rnd = NextFloat2();
-            float z = rnd.x * 2.0f - 1.0f;
-            float r = sqrt(max(1.0f - z * z, 0.0f));
-            float angle = rnd.y * PI * 2.0f;
-            float s, c;
+            sfloat z = rnd.x * (sfloat)2.0f - sfloat.One;
+            sfloat r = sqrt(max(sfloat.One - z * z, sfloat.Zero));
+            sfloat angle = rnd.y * PI * (sfloat)2.0f;
+            sfloat s, c;
             sincos(angle, out s, out c);
             return float3(c*r, s*r, z);
         }
@@ -651,19 +651,19 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public quaternion NextQuaternionRotation()
         {
-            float3 rnd = NextFloat3(float3(2.0f * PI, 2.0f * PI, 1.0f));
-            float u1 = rnd.z;
+            float3 rnd = NextFloat3(float3((sfloat)2.0f * PI, (sfloat)2.0f * PI, sfloat.One));
+            sfloat u1 = rnd.z;
             float2 theta_rho = rnd.xy;
 
-            float i = sqrt(1.0f - u1);
-            float j = sqrt(u1);
+            sfloat i = sqrt(sfloat.One - u1);
+            sfloat j = sqrt(u1);
 
             float2 sin_theta_rho;
             float2 cos_theta_rho;
             sincos(theta_rho, out sin_theta_rho, out cos_theta_rho);
 
             quaternion q = quaternion(i * sin_theta_rho.x, i * cos_theta_rho.x, j * sin_theta_rho.y, j * cos_theta_rho.y);
-            return quaternion(select(q.value, -q.value, q.value.w < 0.0f));
+            return quaternion(select(q.value, -q.value, q.value.w < sfloat.Zero));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -125,10 +125,10 @@ namespace Fixed.Mathematics
             this.z = (int)v.z;
         }
 
-        /// <summary>Constructs a int3 vector from a single float value by converting it to int and assigning it to every component.</summary>
-        /// <param name="v">float to convert to int3</param>
+        /// <summary>Constructs a int3 vector from a single sfloat value by converting it to int and assigning it to every component.</summary>
+        /// <param name="v">sfloat to convert to int3</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public int3(float v)
+        public int3(sfloat v)
         {
             this.x = (int)v;
             this.y = (int)v;
@@ -196,11 +196,11 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static explicit operator int3(uint3 v) { return new int3(v); }
 
-        /// <summary>Explicitly converts a single float value to a int3 vector by converting it to int and assigning it to every component.</summary>
-        /// <param name="v">float to convert to int3</param>
+        /// <summary>Explicitly converts a single sfloat value to a int3 vector by converting it to int and assigning it to every component.</summary>
+        /// <param name="v">sfloat to convert to int3</param>
         /// <returns>Converted value.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static explicit operator int3(float v) { return new int3(v); }
+        public static explicit operator int3(sfloat v) { return new int3(v); }
 
         /// <summary>Explicitly converts a float3 vector to a int3 vector by componentwise conversion.</summary>
         /// <param name="v">float3 to convert to int3</param>
@@ -1790,11 +1790,11 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int3 int3(uint3 v) { return new int3(v); }
 
-        /// <summary>Returns a int3 vector constructed from a single float value by converting it to int and assigning it to every component.</summary>
-        /// <param name="v">float to convert to int3</param>
+        /// <summary>Returns a int3 vector constructed from a single sfloat value by converting it to int and assigning it to every component.</summary>
+        /// <param name="v">sfloat to convert to int3</param>
         /// <returns>Converted value.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int3 int3(float v) { return new int3(v); }
+        public static int3 int3(sfloat v) { return new int3(v); }
 
         /// <summary>Return a int3 vector constructed from a float3 vector by componentwise conversion.</summary>
         /// <param name="v">float3 to convert to int3</param>

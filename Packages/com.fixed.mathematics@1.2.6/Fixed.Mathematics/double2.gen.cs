@@ -111,41 +111,41 @@ namespace Fixed.Mathematics
             this.y = v.y;
         }
 
-        /// <summary>Constructs a double2 vector from a single half value by converting it to double and assigning it to every component.</summary>
-        /// <param name="v">half to convert to double2</param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public double2(half v)
-        {
-            this.x = v;
-            this.y = v;
-        }
-
-        /// <summary>Constructs a double2 vector from a half2 vector by componentwise conversion.</summary>
-        /// <param name="v">half2 to convert to double2</param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public double2(half2 v)
-        {
-            this.x = v.x;
-            this.y = v.y;
-        }
-
-        /// <summary>Constructs a double2 vector from a single float value by converting it to double and assigning it to every component.</summary>
-        /// <param name="v">float to convert to double2</param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public double2(float v)
-        {
-            this.x = v;
-            this.y = v;
-        }
-
-        /// <summary>Constructs a double2 vector from a float2 vector by componentwise conversion.</summary>
-        /// <param name="v">float2 to convert to double2</param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public double2(float2 v)
-        {
-            this.x = v.x;
-            this.y = v.y;
-        }
+        // /// <summary>Constructs a double2 vector from a single half value by converting it to double and assigning it to every component.</summary>
+        // /// <param name="v">half to convert to double2</param>
+        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // public double2(half v)
+        // {
+        //     this.x = v;
+        //     this.y = v;
+        // }
+        //
+        // /// <summary>Constructs a double2 vector from a half2 vector by componentwise conversion.</summary>
+        // /// <param name="v">half2 to convert to double2</param>
+        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // public double2(half2 v)
+        // {
+        //     this.x = v.x;
+        //     this.y = v.y;
+        // }
+        //
+        // /// <summary>Constructs a double2 vector from a single sfloat value by converting it to double and assigning it to every component.</summary>
+        // /// <param name="v">sfloat to convert to double2</param>
+        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // public double2(sfloat v)
+        // {
+        //     this.x = v;
+        //     this.y = v;
+        // }
+        //
+        // /// <summary>Constructs a double2 vector from a float2 vector by componentwise conversion.</summary>
+        // /// <param name="v">float2 to convert to double2</param>
+        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // public double2(float2 v)
+        // {
+        //     this.x = v.x;
+        //     this.y = v.y;
+        // }
 
 
         /// <summary>Implicitly converts a single double value to a double2 vector by assigning it to every component.</summary>
@@ -202,11 +202,11 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static implicit operator double2(half2 v) { return new double2(v); }
 
-        /// <summary>Implicitly converts a single float value to a double2 vector by converting it to double and assigning it to every component.</summary>
-        /// <param name="v">float to convert to double2</param>
+        /// <summary>Implicitly converts a single sfloat value to a double2 vector by converting it to double and assigning it to every component.</summary>
+        /// <param name="v">sfloat to convert to double2</param>
         /// <returns>Converted value.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static implicit operator double2(float v) { return new double2(v); }
+        public static implicit operator double2(sfloat v) { return new double2(v); }
 
         /// <summary>Implicitly converts a float2 vector to a double2 vector by componentwise conversion.</summary>
         /// <param name="v">float2 to convert to double2</param>
@@ -883,11 +883,11 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static double2 double2(half2 v) { return new double2(v); }
 
-        /// <summary>Returns a double2 vector constructed from a single float value by converting it to double and assigning it to every component.</summary>
-        /// <param name="v">float to convert to double2</param>
+        /// <summary>Returns a double2 vector constructed from a single sfloat value by converting it to double and assigning it to every component.</summary>
+        /// <param name="v">sfloat to convert to double2</param>
         /// <returns>Converted value.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static double2 double2(float v) { return new double2(v); }
+        public static double2 double2(sfloat v) { return new double2(v); }
 
         /// <summary>Return a double2 vector constructed from a float2 vector by componentwise conversion.</summary>
         /// <param name="v">float2 to convert to double2</param>

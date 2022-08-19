@@ -93,10 +93,10 @@ namespace Fixed.Mathematics
             this.y = (uint)v.y;
         }
 
-        /// <summary>Constructs a uint2 vector from a single float value by converting it to uint and assigning it to every component.</summary>
-        /// <param name="v">float to convert to uint2</param>
+        /// <summary>Constructs a uint2 vector from a single sfloat value by converting it to uint and assigning it to every component.</summary>
+        /// <param name="v">sfloat to convert to uint2</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public uint2(float v)
+        public uint2(sfloat v)
         {
             this.x = (uint)v;
             this.y = (uint)v;
@@ -160,11 +160,11 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static explicit operator uint2(int2 v) { return new uint2(v); }
 
-        /// <summary>Explicitly converts a single float value to a uint2 vector by converting it to uint and assigning it to every component.</summary>
-        /// <param name="v">float to convert to uint2</param>
+        /// <summary>Explicitly converts a single sfloat value to a uint2 vector by converting it to uint and assigning it to every component.</summary>
+        /// <param name="v">sfloat to convert to uint2</param>
         /// <returns>Converted value.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static explicit operator uint2(float v) { return new uint2(v); }
+        public static explicit operator uint2(sfloat v) { return new uint2(v); }
 
         /// <summary>Explicitly converts a float2 vector to a uint2 vector by componentwise conversion.</summary>
         /// <param name="v">float2 to convert to uint2</param>
@@ -916,11 +916,11 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static uint2 uint2(int2 v) { return new uint2(v); }
 
-        /// <summary>Returns a uint2 vector constructed from a single float value by converting it to uint and assigning it to every component.</summary>
-        /// <param name="v">float to convert to uint2</param>
+        /// <summary>Returns a uint2 vector constructed from a single sfloat value by converting it to uint and assigning it to every component.</summary>
+        /// <param name="v">sfloat to convert to uint2</param>
         /// <returns>Converted value.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static uint2 uint2(float v) { return new uint2(v); }
+        public static uint2 uint2(sfloat v) { return new uint2(v); }
 
         /// <summary>Return a uint2 vector constructed from a float2 vector by componentwise conversion.</summary>
         /// <param name="v">float2 to convert to uint2</param>

@@ -146,10 +146,10 @@ namespace Fixed.Mathematics
             this.c3 = v.c3;
         }
 
-        /// <summary>Constructs a double3x4 matrix from a single float value by converting it to double and assigning it to every component.</summary>
-        /// <param name="v">float to convert to double3x4</param>
+        /// <summary>Constructs a double3x4 matrix from a single sfloat value by converting it to double and assigning it to every component.</summary>
+        /// <param name="v">sfloat to convert to double3x4</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public double3x4(float v)
+        public double3x4(sfloat v)
         {
             this.c0 = v;
             this.c1 = v;
@@ -211,11 +211,11 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static implicit operator double3x4(uint3x4 v) { return new double3x4(v); }
 
-        /// <summary>Implicitly converts a single float value to a double3x4 matrix by converting it to double and assigning it to every component.</summary>
-        /// <param name="v">float to convert to double3x4</param>
+        /// <summary>Implicitly converts a single sfloat value to a double3x4 matrix by converting it to double and assigning it to every component.</summary>
+        /// <param name="v">sfloat to convert to double3x4</param>
         /// <returns>Converted value.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static implicit operator double3x4(float v) { return new double3x4(v); }
+        public static implicit operator double3x4(sfloat v) { return new double3x4(v); }
 
         /// <summary>Implicitly converts a float3x4 matrix to a double3x4 matrix by componentwise conversion.</summary>
         /// <param name="v">float3x4 to convert to double3x4</param>
@@ -623,11 +623,11 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static double3x4 double3x4(uint3x4 v) { return new double3x4(v); }
 
-        /// <summary>Returns a double3x4 matrix constructed from a single float value by converting it to double and assigning it to every component.</summary>
-        /// <param name="v">float to convert to double3x4</param>
+        /// <summary>Returns a double3x4 matrix constructed from a single sfloat value by converting it to double and assigning it to every component.</summary>
+        /// <param name="v">sfloat to convert to double3x4</param>
         /// <returns>Converted value.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static double3x4 double3x4(float v) { return new double3x4(v); }
+        public static double3x4 double3x4(sfloat v) { return new double3x4(v); }
 
         /// <summary>Return a double3x4 matrix constructed from a float3x4 matrix by componentwise conversion.</summary>
         /// <param name="v">float3x4 to convert to double3x4</param>

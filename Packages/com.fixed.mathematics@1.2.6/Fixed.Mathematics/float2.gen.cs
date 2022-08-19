@@ -29,11 +29,11 @@ namespace Fixed.Mathematics
         /// <summary>float2 zero value.</summary>
         public static readonly float2 zero;
 
-        /// <summary>Constructs a float2 vector from two float values.</summary>
+        /// <summary>Constructs a float2 vector from two sfloat values.</summary>
         /// <param name="x">The constructed vector's x component will be set to this value.</param>
         /// <param name="y">The constructed vector's y component will be set to this value.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public float2(float x, float y)
+        public float2(sfloat x, sfloat y)
         {
             this.x = x;
             this.y = y;
@@ -48,22 +48,22 @@ namespace Fixed.Mathematics
             this.y = xy.y;
         }
 
-        /// <summary>Constructs a float2 vector from a single float value by assigning it to every component.</summary>
-        /// <param name="v">float to convert to float2</param>
+        /// <summary>Constructs a float2 vector from a single sfloat value by assigning it to every component.</summary>
+        /// <param name="v">sfloat to convert to float2</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public float2(float v)
+        public float2(sfloat v)
         {
             this.x = v;
             this.y = v;
         }
 
-        /// <summary>Constructs a float2 vector from a single bool value by converting it to float and assigning it to every component.</summary>
+        /// <summary>Constructs a float2 vector from a single bool value by converting it to sfloat and assigning it to every component.</summary>
         /// <param name="v">bool to convert to float2</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public float2(bool v)
         {
-            this.x = v ? 1.0f : 0.0f;
-            this.y = v ? 1.0f : 0.0f;
+            this.x = v ? sfloat.One : sfloat.Zero;
+            this.y = v ? sfloat.One : sfloat.Zero;
         }
 
         /// <summary>Constructs a float2 vector from a bool2 vector by componentwise conversion.</summary>
@@ -71,17 +71,17 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public float2(bool2 v)
         {
-            this.x = v.x ? 1.0f : 0.0f;
-            this.y = v.y ? 1.0f : 0.0f;
+            this.x = v.x ? sfloat.One : sfloat.Zero;
+            this.y = v.y ? sfloat.One : sfloat.Zero;
         }
 
-        /// <summary>Constructs a float2 vector from a single int value by converting it to float and assigning it to every component.</summary>
+        /// <summary>Constructs a float2 vector from a single int value by converting it to sfloat and assigning it to every component.</summary>
         /// <param name="v">int to convert to float2</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public float2(int v)
         {
-            this.x = v;
-            this.y = v;
+            this.x = (sfloat)v;
+            this.y = (sfloat)v;
         }
 
         /// <summary>Constructs a float2 vector from a int2 vector by componentwise conversion.</summary>
@@ -89,17 +89,17 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public float2(int2 v)
         {
-            this.x = v.x;
-            this.y = v.y;
+            this.x = (sfloat)v.x;
+            this.y = (sfloat)v.y;
         }
 
-        /// <summary>Constructs a float2 vector from a single uint value by converting it to float and assigning it to every component.</summary>
+        /// <summary>Constructs a float2 vector from a single uint value by converting it to sfloat and assigning it to every component.</summary>
         /// <param name="v">uint to convert to float2</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public float2(uint v)
         {
-            this.x = v;
-            this.y = v;
+            this.x = (sfloat)(int)v;
+            this.y = (sfloat)(int)v;
         }
 
         /// <summary>Constructs a float2 vector from a uint2 vector by componentwise conversion.</summary>
@@ -107,54 +107,54 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public float2(uint2 v)
         {
-            this.x = v.x;
-            this.y = v.y;
+            this.x = (sfloat)(int)v.x;
+            this.y = (sfloat)(int)v.y;
         }
 
-        /// <summary>Constructs a float2 vector from a single half value by converting it to float and assigning it to every component.</summary>
+        /// <summary>Constructs a float2 vector from a single half value by converting it to sfloat and assigning it to every component.</summary>
         /// <param name="v">half to convert to float2</param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public float2(half v)
-        {
-            this.x = v;
-            this.y = v;
-        }
+        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // public float2(half v)
+        // {
+        //     this.x = v;
+        //     this.y = v;
+        // }
+        //
+        // /// <summary>Constructs a float2 vector from a half2 vector by componentwise conversion.</summary>
+        // /// <param name="v">half2 to convert to float2</param>
+        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // public float2(half2 v)
+        // {
+        //     this.x = v.x;
+        //     this.y = v.y;
+        // }
+        //
+        // /// <summary>Constructs a float2 vector from a single double value by converting it to sfloat and assigning it to every component.</summary>
+        // /// <param name="v">double to convert to float2</param>
+        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // public float2(double v)
+        // {
+        //     this.x = (sfloat)v;
+        //     this.y = (sfloat)v;
+        // }
+        //
+        // /// <summary>Constructs a float2 vector from a double2 vector by componentwise conversion.</summary>
+        // /// <param name="v">double2 to convert to float2</param>
+        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // public float2(double2 v)
+        // {
+        //     this.x = (sfloat)v.x;
+        //     this.y = (sfloat)v.y;
+        // }
 
-        /// <summary>Constructs a float2 vector from a half2 vector by componentwise conversion.</summary>
-        /// <param name="v">half2 to convert to float2</param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public float2(half2 v)
-        {
-            this.x = v.x;
-            this.y = v.y;
-        }
 
-        /// <summary>Constructs a float2 vector from a single double value by converting it to float and assigning it to every component.</summary>
-        /// <param name="v">double to convert to float2</param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public float2(double v)
-        {
-            this.x = (float)v;
-            this.y = (float)v;
-        }
-
-        /// <summary>Constructs a float2 vector from a double2 vector by componentwise conversion.</summary>
-        /// <param name="v">double2 to convert to float2</param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public float2(double2 v)
-        {
-            this.x = (float)v.x;
-            this.y = (float)v.y;
-        }
-
-
-        /// <summary>Implicitly converts a single float value to a float2 vector by assigning it to every component.</summary>
-        /// <param name="v">float to convert to float2</param>
+        /// <summary>Implicitly converts a single sfloat value to a float2 vector by assigning it to every component.</summary>
+        /// <param name="v">sfloat to convert to float2</param>
         /// <returns>Converted value.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static implicit operator float2(float v) { return new float2(v); }
+        public static implicit operator float2(sfloat v) { return new float2(v); }
 
-        /// <summary>Explicitly converts a single bool value to a float2 vector by converting it to float and assigning it to every component.</summary>
+        /// <summary>Explicitly converts a single bool value to a float2 vector by converting it to sfloat and assigning it to every component.</summary>
         /// <param name="v">bool to convert to float2</param>
         /// <returns>Converted value.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -166,7 +166,7 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static explicit operator float2(bool2 v) { return new float2(v); }
 
-        /// <summary>Implicitly converts a single int value to a float2 vector by converting it to float and assigning it to every component.</summary>
+        /// <summary>Implicitly converts a single int value to a float2 vector by converting it to sfloat and assigning it to every component.</summary>
         /// <param name="v">int to convert to float2</param>
         /// <returns>Converted value.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -178,7 +178,7 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static implicit operator float2(int2 v) { return new float2(v); }
 
-        /// <summary>Implicitly converts a single uint value to a float2 vector by converting it to float and assigning it to every component.</summary>
+        /// <summary>Implicitly converts a single uint value to a float2 vector by converting it to sfloat and assigning it to every component.</summary>
         /// <param name="v">uint to convert to float2</param>
         /// <returns>Converted value.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -190,29 +190,29 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static implicit operator float2(uint2 v) { return new float2(v); }
 
-        /// <summary>Implicitly converts a single half value to a float2 vector by converting it to float and assigning it to every component.</summary>
+        /// <summary>Implicitly converts a single half value to a float2 vector by converting it to sfloat and assigning it to every component.</summary>
         /// <param name="v">half to convert to float2</param>
         /// <returns>Converted value.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static implicit operator float2(half v) { return new float2(v); }
-
-        /// <summary>Implicitly converts a half2 vector to a float2 vector by componentwise conversion.</summary>
-        /// <param name="v">half2 to convert to float2</param>
-        /// <returns>Converted value.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static implicit operator float2(half2 v) { return new float2(v); }
-
-        /// <summary>Explicitly converts a single double value to a float2 vector by converting it to float and assigning it to every component.</summary>
-        /// <param name="v">double to convert to float2</param>
-        /// <returns>Converted value.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static explicit operator float2(double v) { return new float2(v); }
-
-        /// <summary>Explicitly converts a double2 vector to a float2 vector by componentwise conversion.</summary>
-        /// <param name="v">double2 to convert to float2</param>
-        /// <returns>Converted value.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static explicit operator float2(double2 v) { return new float2(v); }
+        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // public static implicit operator float2(half v) { return new float2(v); }
+        //
+        // /// <summary>Implicitly converts a half2 vector to a float2 vector by componentwise conversion.</summary>
+        // /// <param name="v">half2 to convert to float2</param>
+        // /// <returns>Converted value.</returns>
+        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // public static implicit operator float2(half2 v) { return new float2(v); }
+        //
+        // /// <summary>Explicitly converts a single double value to a float2 vector by converting it to sfloat and assigning it to every component.</summary>
+        // /// <param name="v">double to convert to float2</param>
+        // /// <returns>Converted value.</returns>
+        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // public static explicit operator float2(double v) { return new float2(v); }
+        //
+        // /// <summary>Explicitly converts a double2 vector to a float2 vector by componentwise conversion.</summary>
+        // /// <param name="v">double2 to convert to float2</param>
+        // /// <returns>Converted value.</returns>
+        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // public static explicit operator float2(double2 v) { return new float2(v); }
 
 
         /// <summary>Returns the result of a componentwise multiplication operation on two float2 vectors.</summary>
@@ -222,19 +222,19 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float2 operator * (float2 lhs, float2 rhs) { return new float2 (lhs.x * rhs.x, lhs.y * rhs.y); }
 
-        /// <summary>Returns the result of a componentwise multiplication operation on a float2 vector and a float value.</summary>
+        /// <summary>Returns the result of a componentwise multiplication operation on a float2 vector and a sfloat value.</summary>
         /// <param name="lhs">Left hand side float2 to use to compute componentwise multiplication.</param>
-        /// <param name="rhs">Right hand side float to use to compute componentwise multiplication.</param>
+        /// <param name="rhs">Right hand side sfloat to use to compute componentwise multiplication.</param>
         /// <returns>float2 result of the componentwise multiplication.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float2 operator * (float2 lhs, float rhs) { return new float2 (lhs.x * rhs, lhs.y * rhs); }
+        public static float2 operator * (float2 lhs, sfloat rhs) { return new float2 (lhs.x * rhs, lhs.y * rhs); }
 
-        /// <summary>Returns the result of a componentwise multiplication operation on a float value and a float2 vector.</summary>
-        /// <param name="lhs">Left hand side float to use to compute componentwise multiplication.</param>
+        /// <summary>Returns the result of a componentwise multiplication operation on a sfloat value and a float2 vector.</summary>
+        /// <param name="lhs">Left hand side sfloat to use to compute componentwise multiplication.</param>
         /// <param name="rhs">Right hand side float2 to use to compute componentwise multiplication.</param>
         /// <returns>float2 result of the componentwise multiplication.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float2 operator * (float lhs, float2 rhs) { return new float2 (lhs * rhs.x, lhs * rhs.y); }
+        public static float2 operator * (sfloat lhs, float2 rhs) { return new float2 (lhs * rhs.x, lhs * rhs.y); }
 
 
         /// <summary>Returns the result of a componentwise addition operation on two float2 vectors.</summary>
@@ -244,19 +244,19 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float2 operator + (float2 lhs, float2 rhs) { return new float2 (lhs.x + rhs.x, lhs.y + rhs.y); }
 
-        /// <summary>Returns the result of a componentwise addition operation on a float2 vector and a float value.</summary>
+        /// <summary>Returns the result of a componentwise addition operation on a float2 vector and a sfloat value.</summary>
         /// <param name="lhs">Left hand side float2 to use to compute componentwise addition.</param>
-        /// <param name="rhs">Right hand side float to use to compute componentwise addition.</param>
+        /// <param name="rhs">Right hand side sfloat to use to compute componentwise addition.</param>
         /// <returns>float2 result of the componentwise addition.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float2 operator + (float2 lhs, float rhs) { return new float2 (lhs.x + rhs, lhs.y + rhs); }
+        public static float2 operator + (float2 lhs, sfloat rhs) { return new float2 (lhs.x + rhs, lhs.y + rhs); }
 
-        /// <summary>Returns the result of a componentwise addition operation on a float value and a float2 vector.</summary>
-        /// <param name="lhs">Left hand side float to use to compute componentwise addition.</param>
+        /// <summary>Returns the result of a componentwise addition operation on a sfloat value and a float2 vector.</summary>
+        /// <param name="lhs">Left hand side sfloat to use to compute componentwise addition.</param>
         /// <param name="rhs">Right hand side float2 to use to compute componentwise addition.</param>
         /// <returns>float2 result of the componentwise addition.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float2 operator + (float lhs, float2 rhs) { return new float2 (lhs + rhs.x, lhs + rhs.y); }
+        public static float2 operator + (sfloat lhs, float2 rhs) { return new float2 (lhs + rhs.x, lhs + rhs.y); }
 
 
         /// <summary>Returns the result of a componentwise subtraction operation on two float2 vectors.</summary>
@@ -266,19 +266,19 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float2 operator - (float2 lhs, float2 rhs) { return new float2 (lhs.x - rhs.x, lhs.y - rhs.y); }
 
-        /// <summary>Returns the result of a componentwise subtraction operation on a float2 vector and a float value.</summary>
+        /// <summary>Returns the result of a componentwise subtraction operation on a float2 vector and a sfloat value.</summary>
         /// <param name="lhs">Left hand side float2 to use to compute componentwise subtraction.</param>
-        /// <param name="rhs">Right hand side float to use to compute componentwise subtraction.</param>
+        /// <param name="rhs">Right hand side sfloat to use to compute componentwise subtraction.</param>
         /// <returns>float2 result of the componentwise subtraction.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float2 operator - (float2 lhs, float rhs) { return new float2 (lhs.x - rhs, lhs.y - rhs); }
+        public static float2 operator - (float2 lhs, sfloat rhs) { return new float2 (lhs.x - rhs, lhs.y - rhs); }
 
-        /// <summary>Returns the result of a componentwise subtraction operation on a float value and a float2 vector.</summary>
-        /// <param name="lhs">Left hand side float to use to compute componentwise subtraction.</param>
+        /// <summary>Returns the result of a componentwise subtraction operation on a sfloat value and a float2 vector.</summary>
+        /// <param name="lhs">Left hand side sfloat to use to compute componentwise subtraction.</param>
         /// <param name="rhs">Right hand side float2 to use to compute componentwise subtraction.</param>
         /// <returns>float2 result of the componentwise subtraction.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float2 operator - (float lhs, float2 rhs) { return new float2 (lhs - rhs.x, lhs - rhs.y); }
+        public static float2 operator - (sfloat lhs, float2 rhs) { return new float2 (lhs - rhs.x, lhs - rhs.y); }
 
 
         /// <summary>Returns the result of a componentwise division operation on two float2 vectors.</summary>
@@ -288,19 +288,19 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float2 operator / (float2 lhs, float2 rhs) { return new float2 (lhs.x / rhs.x, lhs.y / rhs.y); }
 
-        /// <summary>Returns the result of a componentwise division operation on a float2 vector and a float value.</summary>
+        /// <summary>Returns the result of a componentwise division operation on a float2 vector and a sfloat value.</summary>
         /// <param name="lhs">Left hand side float2 to use to compute componentwise division.</param>
-        /// <param name="rhs">Right hand side float to use to compute componentwise division.</param>
+        /// <param name="rhs">Right hand side sfloat to use to compute componentwise division.</param>
         /// <returns>float2 result of the componentwise division.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float2 operator / (float2 lhs, float rhs) { return new float2 (lhs.x / rhs, lhs.y / rhs); }
+        public static float2 operator / (float2 lhs, sfloat rhs) { return new float2 (lhs.x / rhs, lhs.y / rhs); }
 
-        /// <summary>Returns the result of a componentwise division operation on a float value and a float2 vector.</summary>
-        /// <param name="lhs">Left hand side float to use to compute componentwise division.</param>
+        /// <summary>Returns the result of a componentwise division operation on a sfloat value and a float2 vector.</summary>
+        /// <param name="lhs">Left hand side sfloat to use to compute componentwise division.</param>
         /// <param name="rhs">Right hand side float2 to use to compute componentwise division.</param>
         /// <returns>float2 result of the componentwise division.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float2 operator / (float lhs, float2 rhs) { return new float2 (lhs / rhs.x, lhs / rhs.y); }
+        public static float2 operator / (sfloat lhs, float2 rhs) { return new float2 (lhs / rhs.x, lhs / rhs.y); }
 
 
         /// <summary>Returns the result of a componentwise modulus operation on two float2 vectors.</summary>
@@ -310,19 +310,19 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float2 operator % (float2 lhs, float2 rhs) { return new float2 (lhs.x % rhs.x, lhs.y % rhs.y); }
 
-        /// <summary>Returns the result of a componentwise modulus operation on a float2 vector and a float value.</summary>
+        /// <summary>Returns the result of a componentwise modulus operation on a float2 vector and a sfloat value.</summary>
         /// <param name="lhs">Left hand side float2 to use to compute componentwise modulus.</param>
-        /// <param name="rhs">Right hand side float to use to compute componentwise modulus.</param>
+        /// <param name="rhs">Right hand side sfloat to use to compute componentwise modulus.</param>
         /// <returns>float2 result of the componentwise modulus.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float2 operator % (float2 lhs, float rhs) { return new float2 (lhs.x % rhs, lhs.y % rhs); }
+        public static float2 operator % (float2 lhs, sfloat rhs) { return new float2 (lhs.x % rhs, lhs.y % rhs); }
 
-        /// <summary>Returns the result of a componentwise modulus operation on a float value and a float2 vector.</summary>
-        /// <param name="lhs">Left hand side float to use to compute componentwise modulus.</param>
+        /// <summary>Returns the result of a componentwise modulus operation on a sfloat value and a float2 vector.</summary>
+        /// <param name="lhs">Left hand side sfloat to use to compute componentwise modulus.</param>
         /// <param name="rhs">Right hand side float2 to use to compute componentwise modulus.</param>
         /// <returns>float2 result of the componentwise modulus.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float2 operator % (float lhs, float2 rhs) { return new float2 (lhs % rhs.x, lhs % rhs.y); }
+        public static float2 operator % (sfloat lhs, float2 rhs) { return new float2 (lhs % rhs.x, lhs % rhs.y); }
 
 
         /// <summary>Returns the result of a componentwise increment operation on a float2 vector.</summary>
@@ -330,8 +330,8 @@ namespace Fixed.Mathematics
         /// <returns>float2 result of the componentwise increment.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float2 operator ++ (float2 val) { return new float2 (++val.x, ++val.y); }
-
-
+        
+        
         /// <summary>Returns the result of a componentwise decrement operation on a float2 vector.</summary>
         /// <param name="val">Value to use when computing the componentwise decrement.</param>
         /// <returns>float2 result of the componentwise decrement.</returns>
@@ -346,19 +346,19 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool2 operator < (float2 lhs, float2 rhs) { return new bool2 (lhs.x < rhs.x, lhs.y < rhs.y); }
 
-        /// <summary>Returns the result of a componentwise less than operation on a float2 vector and a float value.</summary>
+        /// <summary>Returns the result of a componentwise less than operation on a float2 vector and a sfloat value.</summary>
         /// <param name="lhs">Left hand side float2 to use to compute componentwise less than.</param>
-        /// <param name="rhs">Right hand side float to use to compute componentwise less than.</param>
+        /// <param name="rhs">Right hand side sfloat to use to compute componentwise less than.</param>
         /// <returns>bool2 result of the componentwise less than.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool2 operator < (float2 lhs, float rhs) { return new bool2 (lhs.x < rhs, lhs.y < rhs); }
+        public static bool2 operator < (float2 lhs, sfloat rhs) { return new bool2 (lhs.x < rhs, lhs.y < rhs); }
 
-        /// <summary>Returns the result of a componentwise less than operation on a float value and a float2 vector.</summary>
-        /// <param name="lhs">Left hand side float to use to compute componentwise less than.</param>
+        /// <summary>Returns the result of a componentwise less than operation on a sfloat value and a float2 vector.</summary>
+        /// <param name="lhs">Left hand side sfloat to use to compute componentwise less than.</param>
         /// <param name="rhs">Right hand side float2 to use to compute componentwise less than.</param>
         /// <returns>bool2 result of the componentwise less than.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool2 operator < (float lhs, float2 rhs) { return new bool2 (lhs < rhs.x, lhs < rhs.y); }
+        public static bool2 operator < (sfloat lhs, float2 rhs) { return new bool2 (lhs < rhs.x, lhs < rhs.y); }
 
 
         /// <summary>Returns the result of a componentwise less or equal operation on two float2 vectors.</summary>
@@ -368,19 +368,19 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool2 operator <= (float2 lhs, float2 rhs) { return new bool2 (lhs.x <= rhs.x, lhs.y <= rhs.y); }
 
-        /// <summary>Returns the result of a componentwise less or equal operation on a float2 vector and a float value.</summary>
+        /// <summary>Returns the result of a componentwise less or equal operation on a float2 vector and a sfloat value.</summary>
         /// <param name="lhs">Left hand side float2 to use to compute componentwise less or equal.</param>
-        /// <param name="rhs">Right hand side float to use to compute componentwise less or equal.</param>
+        /// <param name="rhs">Right hand side sfloat to use to compute componentwise less or equal.</param>
         /// <returns>bool2 result of the componentwise less or equal.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool2 operator <= (float2 lhs, float rhs) { return new bool2 (lhs.x <= rhs, lhs.y <= rhs); }
+        public static bool2 operator <= (float2 lhs, sfloat rhs) { return new bool2 (lhs.x <= rhs, lhs.y <= rhs); }
 
-        /// <summary>Returns the result of a componentwise less or equal operation on a float value and a float2 vector.</summary>
-        /// <param name="lhs">Left hand side float to use to compute componentwise less or equal.</param>
+        /// <summary>Returns the result of a componentwise less or equal operation on a sfloat value and a float2 vector.</summary>
+        /// <param name="lhs">Left hand side sfloat to use to compute componentwise less or equal.</param>
         /// <param name="rhs">Right hand side float2 to use to compute componentwise less or equal.</param>
         /// <returns>bool2 result of the componentwise less or equal.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool2 operator <= (float lhs, float2 rhs) { return new bool2 (lhs <= rhs.x, lhs <= rhs.y); }
+        public static bool2 operator <= (sfloat lhs, float2 rhs) { return new bool2 (lhs <= rhs.x, lhs <= rhs.y); }
 
 
         /// <summary>Returns the result of a componentwise greater than operation on two float2 vectors.</summary>
@@ -390,19 +390,19 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool2 operator > (float2 lhs, float2 rhs) { return new bool2 (lhs.x > rhs.x, lhs.y > rhs.y); }
 
-        /// <summary>Returns the result of a componentwise greater than operation on a float2 vector and a float value.</summary>
+        /// <summary>Returns the result of a componentwise greater than operation on a float2 vector and a sfloat value.</summary>
         /// <param name="lhs">Left hand side float2 to use to compute componentwise greater than.</param>
-        /// <param name="rhs">Right hand side float to use to compute componentwise greater than.</param>
+        /// <param name="rhs">Right hand side sfloat to use to compute componentwise greater than.</param>
         /// <returns>bool2 result of the componentwise greater than.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool2 operator > (float2 lhs, float rhs) { return new bool2 (lhs.x > rhs, lhs.y > rhs); }
+        public static bool2 operator > (float2 lhs, sfloat rhs) { return new bool2 (lhs.x > rhs, lhs.y > rhs); }
 
-        /// <summary>Returns the result of a componentwise greater than operation on a float value and a float2 vector.</summary>
-        /// <param name="lhs">Left hand side float to use to compute componentwise greater than.</param>
+        /// <summary>Returns the result of a componentwise greater than operation on a sfloat value and a float2 vector.</summary>
+        /// <param name="lhs">Left hand side sfloat to use to compute componentwise greater than.</param>
         /// <param name="rhs">Right hand side float2 to use to compute componentwise greater than.</param>
         /// <returns>bool2 result of the componentwise greater than.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool2 operator > (float lhs, float2 rhs) { return new bool2 (lhs > rhs.x, lhs > rhs.y); }
+        public static bool2 operator > (sfloat lhs, float2 rhs) { return new bool2 (lhs > rhs.x, lhs > rhs.y); }
 
 
         /// <summary>Returns the result of a componentwise greater or equal operation on two float2 vectors.</summary>
@@ -412,19 +412,19 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool2 operator >= (float2 lhs, float2 rhs) { return new bool2 (lhs.x >= rhs.x, lhs.y >= rhs.y); }
 
-        /// <summary>Returns the result of a componentwise greater or equal operation on a float2 vector and a float value.</summary>
+        /// <summary>Returns the result of a componentwise greater or equal operation on a float2 vector and a sfloat value.</summary>
         /// <param name="lhs">Left hand side float2 to use to compute componentwise greater or equal.</param>
-        /// <param name="rhs">Right hand side float to use to compute componentwise greater or equal.</param>
+        /// <param name="rhs">Right hand side sfloat to use to compute componentwise greater or equal.</param>
         /// <returns>bool2 result of the componentwise greater or equal.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool2 operator >= (float2 lhs, float rhs) { return new bool2 (lhs.x >= rhs, lhs.y >= rhs); }
+        public static bool2 operator >= (float2 lhs, sfloat rhs) { return new bool2 (lhs.x >= rhs, lhs.y >= rhs); }
 
-        /// <summary>Returns the result of a componentwise greater or equal operation on a float value and a float2 vector.</summary>
-        /// <param name="lhs">Left hand side float to use to compute componentwise greater or equal.</param>
+        /// <summary>Returns the result of a componentwise greater or equal operation on a sfloat value and a float2 vector.</summary>
+        /// <param name="lhs">Left hand side sfloat to use to compute componentwise greater or equal.</param>
         /// <param name="rhs">Right hand side float2 to use to compute componentwise greater or equal.</param>
         /// <returns>bool2 result of the componentwise greater or equal.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool2 operator >= (float lhs, float2 rhs) { return new bool2 (lhs >= rhs.x, lhs >= rhs.y); }
+        public static bool2 operator >= (sfloat lhs, float2 rhs) { return new bool2 (lhs >= rhs.x, lhs >= rhs.y); }
 
 
         /// <summary>Returns the result of a componentwise unary minus operation on a float2 vector.</summary>
@@ -448,19 +448,19 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool2 operator == (float2 lhs, float2 rhs) { return new bool2 (lhs.x == rhs.x, lhs.y == rhs.y); }
 
-        /// <summary>Returns the result of a componentwise equality operation on a float2 vector and a float value.</summary>
+        /// <summary>Returns the result of a componentwise equality operation on a float2 vector and a sfloat value.</summary>
         /// <param name="lhs">Left hand side float2 to use to compute componentwise equality.</param>
-        /// <param name="rhs">Right hand side float to use to compute componentwise equality.</param>
+        /// <param name="rhs">Right hand side sfloat to use to compute componentwise equality.</param>
         /// <returns>bool2 result of the componentwise equality.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool2 operator == (float2 lhs, float rhs) { return new bool2 (lhs.x == rhs, lhs.y == rhs); }
+        public static bool2 operator == (float2 lhs, sfloat rhs) { return new bool2 (lhs.x == rhs, lhs.y == rhs); }
 
-        /// <summary>Returns the result of a componentwise equality operation on a float value and a float2 vector.</summary>
-        /// <param name="lhs">Left hand side float to use to compute componentwise equality.</param>
+        /// <summary>Returns the result of a componentwise equality operation on a sfloat value and a float2 vector.</summary>
+        /// <param name="lhs">Left hand side sfloat to use to compute componentwise equality.</param>
         /// <param name="rhs">Right hand side float2 to use to compute componentwise equality.</param>
         /// <returns>bool2 result of the componentwise equality.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool2 operator == (float lhs, float2 rhs) { return new bool2 (lhs == rhs.x, lhs == rhs.y); }
+        public static bool2 operator == (sfloat lhs, float2 rhs) { return new bool2 (lhs == rhs.x, lhs == rhs.y); }
 
 
         /// <summary>Returns the result of a componentwise not equal operation on two float2 vectors.</summary>
@@ -470,19 +470,19 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool2 operator != (float2 lhs, float2 rhs) { return new bool2 (lhs.x != rhs.x, lhs.y != rhs.y); }
 
-        /// <summary>Returns the result of a componentwise not equal operation on a float2 vector and a float value.</summary>
+        /// <summary>Returns the result of a componentwise not equal operation on a float2 vector and a sfloat value.</summary>
         /// <param name="lhs">Left hand side float2 to use to compute componentwise not equal.</param>
-        /// <param name="rhs">Right hand side float to use to compute componentwise not equal.</param>
+        /// <param name="rhs">Right hand side sfloat to use to compute componentwise not equal.</param>
         /// <returns>bool2 result of the componentwise not equal.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool2 operator != (float2 lhs, float rhs) { return new bool2 (lhs.x != rhs, lhs.y != rhs); }
+        public static bool2 operator != (float2 lhs, sfloat rhs) { return new bool2 (lhs.x != rhs, lhs.y != rhs); }
 
-        /// <summary>Returns the result of a componentwise not equal operation on a float value and a float2 vector.</summary>
-        /// <param name="lhs">Left hand side float to use to compute componentwise not equal.</param>
+        /// <summary>Returns the result of a componentwise not equal operation on a sfloat value and a float2 vector.</summary>
+        /// <param name="lhs">Left hand side sfloat to use to compute componentwise not equal.</param>
         /// <param name="rhs">Right hand side float2 to use to compute componentwise not equal.</param>
         /// <returns>bool2 result of the componentwise not equal.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool2 operator != (float lhs, float2 rhs) { return new bool2 (lhs != rhs.x, lhs != rhs.y); }
+        public static bool2 operator != (sfloat lhs, float2 rhs) { return new bool2 (lhs != rhs.x, lhs != rhs.y); }
 
 
 
@@ -744,8 +744,8 @@ namespace Fixed.Mathematics
 
 
 
-        /// <summary>Returns the float element at a specified index.</summary>
-        unsafe public float this[int index]
+        /// <summary>Returns the sfloat element at a specified index.</summary>
+        unsafe public sfloat this[int index]
         {
             get
             {
@@ -753,7 +753,7 @@ namespace Fixed.Mathematics
                 if ((uint)index >= 2)
                     throw new System.ArgumentException("index must be between[0...1]");
 #endif
-                fixed (float2* array = &this) { return ((float*)array)[index]; }
+                fixed (float2* array = &this) { return ((sfloat*)array)[index]; }
             }
             set
             {
@@ -761,7 +761,7 @@ namespace Fixed.Mathematics
                 if ((uint)index >= 2)
                     throw new System.ArgumentException("index must be between[0...1]");
 #endif
-                fixed (float* array = &x) { array[index] = value; }
+                fixed (sfloat* array = &x) { array[index] = value; }
             }
         }
 
@@ -803,8 +803,8 @@ namespace Fixed.Mathematics
 
         internal sealed class DebuggerProxy
         {
-            public float x;
-            public float y;
+            public sfloat x;
+            public sfloat y;
             public DebuggerProxy(float2 v)
             {
                 x = v.x;
@@ -816,12 +816,12 @@ namespace Fixed.Mathematics
 
     public static partial class math
     {
-        /// <summary>Returns a float2 vector constructed from two float values.</summary>
+        /// <summary>Returns a float2 vector constructed from two sfloat values.</summary>
         /// <param name="x">The constructed vector's x component will be set to this value.</param>
         /// <param name="y">The constructed vector's y component will be set to this value.</param>
         /// <returns>float2 constructed from arguments.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float2 float2(float x, float y) { return new float2(x, y); }
+        public static float2 float2(sfloat x, sfloat y) { return new float2(x, y); }
 
         /// <summary>Returns a float2 vector constructed from a float2 vector.</summary>
         /// <param name="xy">The constructed vector's xy components will be set to this value.</param>
@@ -829,13 +829,13 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float2 float2(float2 xy) { return new float2(xy); }
 
-        /// <summary>Returns a float2 vector constructed from a single float value by assigning it to every component.</summary>
-        /// <param name="v">float to convert to float2</param>
+        /// <summary>Returns a float2 vector constructed from a single sfloat value by assigning it to every component.</summary>
+        /// <param name="v">sfloat to convert to float2</param>
         /// <returns>Converted value.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float2 float2(float v) { return new float2(v); }
+        public static float2 float2(sfloat v) { return new float2(v); }
 
-        /// <summary>Returns a float2 vector constructed from a single bool value by converting it to float and assigning it to every component.</summary>
+        /// <summary>Returns a float2 vector constructed from a single bool value by converting it to sfloat and assigning it to every component.</summary>
         /// <param name="v">bool to convert to float2</param>
         /// <returns>Converted value.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -847,7 +847,7 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float2 float2(bool2 v) { return new float2(v); }
 
-        /// <summary>Returns a float2 vector constructed from a single int value by converting it to float and assigning it to every component.</summary>
+        /// <summary>Returns a float2 vector constructed from a single int value by converting it to sfloat and assigning it to every component.</summary>
         /// <param name="v">int to convert to float2</param>
         /// <returns>Converted value.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -859,7 +859,7 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float2 float2(int2 v) { return new float2(v); }
 
-        /// <summary>Returns a float2 vector constructed from a single uint value by converting it to float and assigning it to every component.</summary>
+        /// <summary>Returns a float2 vector constructed from a single uint value by converting it to sfloat and assigning it to every component.</summary>
         /// <param name="v">uint to convert to float2</param>
         /// <returns>Converted value.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -871,29 +871,29 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float2 float2(uint2 v) { return new float2(v); }
 
-        /// <summary>Returns a float2 vector constructed from a single half value by converting it to float and assigning it to every component.</summary>
+        /// <summary>Returns a float2 vector constructed from a single half value by converting it to sfloat and assigning it to every component.</summary>
         /// <param name="v">half to convert to float2</param>
         /// <returns>Converted value.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float2 float2(half v) { return new float2(v); }
-
-        /// <summary>Return a float2 vector constructed from a half2 vector by componentwise conversion.</summary>
-        /// <param name="v">half2 to convert to float2</param>
-        /// <returns>Converted value.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float2 float2(half2 v) { return new float2(v); }
-
-        /// <summary>Returns a float2 vector constructed from a single double value by converting it to float and assigning it to every component.</summary>
-        /// <param name="v">double to convert to float2</param>
-        /// <returns>Converted value.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float2 float2(double v) { return new float2(v); }
-
-        /// <summary>Return a float2 vector constructed from a double2 vector by componentwise conversion.</summary>
-        /// <param name="v">double2 to convert to float2</param>
-        /// <returns>Converted value.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float2 float2(double2 v) { return new float2(v); }
+        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // public static float2 float2(half v) { return new float2(v); }
+        //
+        // /// <summary>Return a float2 vector constructed from a half2 vector by componentwise conversion.</summary>
+        // /// <param name="v">half2 to convert to float2</param>
+        // /// <returns>Converted value.</returns>
+        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // public static float2 float2(half2 v) { return new float2(v); }
+        //
+        // /// <summary>Returns a float2 vector constructed from a single double value by converting it to sfloat and assigning it to every component.</summary>
+        // /// <param name="v">double to convert to float2</param>
+        // /// <returns>Converted value.</returns>
+        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // public static float2 float2(double v) { return new float2(v); }
+        //
+        // /// <summary>Return a float2 vector constructed from a double2 vector by componentwise conversion.</summary>
+        // /// <param name="v">double2 to convert to float2</param>
+        // /// <returns>Converted value.</returns>
+        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // public static float2 float2(double2 v) { return new float2(v); }
 
         /// <summary>Returns a uint hash code of a float2 vector.</summary>
         /// <param name="v">Vector value to hash.</param>
@@ -917,13 +917,13 @@ namespace Fixed.Mathematics
             return (asuint(v) * uint2(0x94DDD769u, 0xA1E92D39u)) + 0x4583C801u;
         }
 
-        /// <summary>Returns the result of specified shuffling of the components from two float2 vectors into a float value.</summary>
+        /// <summary>Returns the result of specified shuffling of the components from two float2 vectors into a sfloat value.</summary>
         /// <param name="left">float2 to use as the left argument of the shuffle operation.</param>
         /// <param name="right">float2 to use as the right argument of the shuffle operation.</param>
-        /// <param name="x">The ShuffleComponent to use when setting the resulting float.</param>
-        /// <returns>float result of the shuffle operation.</returns>
+        /// <param name="x">The ShuffleComponent to use when setting the resulting sfloat.</param>
+        /// <returns>sfloat result of the shuffle operation.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float shuffle(float2 left, float2 right, ShuffleComponent x)
+        public static sfloat shuffle(float2 left, float2 right, ShuffleComponent x)
         {
             return select_shuffle_component(left, right, x);
         }
@@ -977,7 +977,7 @@ namespace Fixed.Mathematics
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static float select_shuffle_component(float2 a, float2 b, ShuffleComponent component)
+        internal static sfloat select_shuffle_component(float2 a, float2 b, ShuffleComponent component)
         {
             switch(component)
             {

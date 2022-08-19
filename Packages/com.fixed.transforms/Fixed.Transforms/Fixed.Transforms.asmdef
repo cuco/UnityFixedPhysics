@@ -5,7 +5,8 @@
         "Unity.Collections",
         "Unity.Burst",
         "Unity.Jobs",
-        "Fixed.Mathematics"
+        "Fixed.Mathematics",
+        "Fixed.Sfloat"
     ],
     "optionalUnityReferences": [],
     "includePlatforms": [],

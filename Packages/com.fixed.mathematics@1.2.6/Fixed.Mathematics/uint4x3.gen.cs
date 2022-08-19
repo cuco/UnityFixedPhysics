@@ -115,10 +115,10 @@ namespace Fixed.Mathematics
             this.c2 = (uint4)v.c2;
         }
 
-        /// <summary>Constructs a uint4x3 matrix from a single float value by converting it to uint and assigning it to every component.</summary>
-        /// <param name="v">float to convert to uint4x3</param>
+        /// <summary>Constructs a uint4x3 matrix from a single sfloat value by converting it to uint and assigning it to every component.</summary>
+        /// <param name="v">sfloat to convert to uint4x3</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public uint4x3(float v)
+        public uint4x3(sfloat v)
         {
             this.c0 = (uint4)v;
             this.c1 = (uint4)v;
@@ -186,11 +186,11 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static explicit operator uint4x3(int4x3 v) { return new uint4x3(v); }
 
-        /// <summary>Explicitly converts a single float value to a uint4x3 matrix by converting it to uint and assigning it to every component.</summary>
-        /// <param name="v">float to convert to uint4x3</param>
+        /// <summary>Explicitly converts a single sfloat value to a uint4x3 matrix by converting it to uint and assigning it to every component.</summary>
+        /// <param name="v">sfloat to convert to uint4x3</param>
         /// <returns>Converted value.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static explicit operator uint4x3(float v) { return new uint4x3(v); }
+        public static explicit operator uint4x3(sfloat v) { return new uint4x3(v); }
 
         /// <summary>Explicitly converts a float4x3 matrix to a uint4x3 matrix by componentwise conversion.</summary>
         /// <param name="v">float4x3 to convert to uint4x3</param>
@@ -686,11 +686,11 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static uint4x3 uint4x3(int4x3 v) { return new uint4x3(v); }
 
-        /// <summary>Returns a uint4x3 matrix constructed from a single float value by converting it to uint and assigning it to every component.</summary>
-        /// <param name="v">float to convert to uint4x3</param>
+        /// <summary>Returns a uint4x3 matrix constructed from a single sfloat value by converting it to uint and assigning it to every component.</summary>
+        /// <param name="v">sfloat to convert to uint4x3</param>
         /// <returns>Converted value.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static uint4x3 uint4x3(float v) { return new uint4x3(v); }
+        public static uint4x3 uint4x3(sfloat v) { return new uint4x3(v); }
 
         /// <summary>Return a uint4x3 matrix constructed from a float4x3 matrix by componentwise conversion.</summary>
         /// <param name="v">float4x3 to convert to uint4x3</param>

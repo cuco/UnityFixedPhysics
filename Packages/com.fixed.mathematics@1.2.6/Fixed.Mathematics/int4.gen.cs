@@ -188,10 +188,10 @@ namespace Fixed.Mathematics
             this.w = (int)v.w;
         }
 
-        /// <summary>Constructs a int4 vector from a single float value by converting it to int and assigning it to every component.</summary>
-        /// <param name="v">float to convert to int4</param>
+        /// <summary>Constructs a int4 vector from a single sfloat value by converting it to int and assigning it to every component.</summary>
+        /// <param name="v">sfloat to convert to int4</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public int4(float v)
+        public int4(sfloat v)
         {
             this.x = (int)v;
             this.y = (int)v;
@@ -263,11 +263,11 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static explicit operator int4(uint4 v) { return new int4(v); }
 
-        /// <summary>Explicitly converts a single float value to a int4 vector by converting it to int and assigning it to every component.</summary>
-        /// <param name="v">float to convert to int4</param>
+        /// <summary>Explicitly converts a single sfloat value to a int4 vector by converting it to int and assigning it to every component.</summary>
+        /// <param name="v">sfloat to convert to int4</param>
         /// <returns>Converted value.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static explicit operator int4(float v) { return new int4(v); }
+        public static explicit operator int4(sfloat v) { return new int4(v); }
 
         /// <summary>Explicitly converts a float4 vector to a int4 vector by componentwise conversion.</summary>
         /// <param name="v">float4 to convert to int4</param>
@@ -3958,11 +3958,11 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int4 int4(uint4 v) { return new int4(v); }
 
-        /// <summary>Returns a int4 vector constructed from a single float value by converting it to int and assigning it to every component.</summary>
-        /// <param name="v">float to convert to int4</param>
+        /// <summary>Returns a int4 vector constructed from a single sfloat value by converting it to int and assigning it to every component.</summary>
+        /// <param name="v">sfloat to convert to int4</param>
         /// <returns>Converted value.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int4 int4(float v) { return new int4(v); }
+        public static int4 int4(sfloat v) { return new int4(v); }
 
         /// <summary>Return a int4 vector constructed from a float4 vector by componentwise conversion.</summary>
         /// <param name="v">float4 to convert to int4</param>

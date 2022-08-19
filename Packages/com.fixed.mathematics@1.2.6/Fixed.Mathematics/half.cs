@@ -5,7 +5,7 @@ using Unity.IL2CPP.CompilerServices;
 namespace Fixed.Mathematics
 {
     /// <summary>
-    /// A half precision float that uses 16 bits instead of 32 bits.
+    /// A half precision sfloat that uses 16 bits instead of 32 bits.
     /// </summary>
     [Il2CppEagerStaticClassConstruction]
     [Serializable]
@@ -20,24 +20,24 @@ namespace Fixed.Mathematics
         public static readonly half zero = new half();
 
         /// <summary>
-        /// The maximum finite half value as a single precision float.
+        /// The maximum finite half value as a single precision sfloat.
         /// </summary>
-        public static float MaxValue { get { return 65504.0f; } }
+        public static sfloat MaxValue { get { return (sfloat)65504; } }
 
         /// <summary>
-        /// The minimum finite half value as a single precision float.
+        /// The minimum finite half value as a single precision sfloat.
         /// </summary>
-        public static float MinValue { get { return -65504.0f; } }
+        public static sfloat MinValue { get { return -(sfloat)65504; } }
 
-        /// <summary>
-        /// The maximum finite half value as a half.
-        /// </summary>
-        public static half MaxValueAsHalf => new half(MaxValue);
-
-        /// <summary>
-        /// The minimum finite half value as a half.
-        /// </summary>
-        public static half MinValueAsHalf => new half(MinValue);
+        // /// <summary>
+        // /// The maximum finite half value as a half.
+        // /// </summary>
+        // public static half MaxValueAsHalf => new half(MaxValue);
+        //
+        // /// <summary>
+        // /// The minimum finite half value as a half.
+        // /// </summary>
+        // public static half MinValueAsHalf => new half(MinValue);
 
         /// <summary>Constructs a half value from a half value.</summary>
         /// <param name="x">The input half value to copy.</param>
@@ -47,45 +47,45 @@ namespace Fixed.Mathematics
             value = x.value;
         }
 
-        /// <summary>Constructs a half value from a float value.</summary>
-        /// <param name="v">The single precision float value to convert to half.</param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public half(float v)
-        {
-            value = (ushort)math.f32tof16(v);
-        }
+        // /// <summary>Constructs a half value from a sfloat value.</summary>
+        // /// <param name="v">The single precision sfloat value to convert to half.</param>
+        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // public half(sfloat v)
+        // {
+        //     value = (ushort)math.f32tof16(v);
+        // }
+        //
+        // /// <summary>Constructs a half value from a double value.</summary>
+        // /// <param name="v">The double precision sfloat value to convert to half.</param>
+        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // public half(double v)
+        // {
+        //     value = (ushort)math.f32tof16((sfloat)v);
+        // }
 
-        /// <summary>Constructs a half value from a double value.</summary>
-        /// <param name="v">The double precision float value to convert to half.</param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public half(double v)
-        {
-            value = (ushort)math.f32tof16((float)v);
-        }
+        // /// <summary>Explicitly converts a sfloat value to a half value.</summary>
+        // /// <param name="v">The single precision sfloat value to convert to half.</param>
+        // /// <returns>The converted half value.</returns>
+        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // public static explicit operator half(sfloat v) { return new half(v); }
+        //
+        // /// <summary>Explicitly converts a double value to a half value.</summary>
+        // /// <param name="v">The double precision sfloat value to convert to half.</param>
+        // /// <returns>The converted half value.</returns>
+        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // public static explicit operator half(double v) { return new half(v); }
+        //
+        // /// <summary>Implicitly converts a half value to a sfloat value.</summary>
+        // /// <param name="d">The half value to convert to a single precision sfloat.</param>
+        // /// <returns>The converted single precision sfloat value.</returns>
+        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // public static implicit operator sfloat(half d) { return math.f16tof32(d.value); }
 
-        /// <summary>Explicitly converts a float value to a half value.</summary>
-        /// <param name="v">The single precision float value to convert to half.</param>
-        /// <returns>The converted half value.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static explicit operator half(float v) { return new half(v); }
-
-        /// <summary>Explicitly converts a double value to a half value.</summary>
-        /// <param name="v">The double precision float value to convert to half.</param>
-        /// <returns>The converted half value.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static explicit operator half(double v) { return new half(v); }
-
-        /// <summary>Implicitly converts a half value to a float value.</summary>
-        /// <param name="d">The half value to convert to a single precision float.</param>
-        /// <returns>The converted single precision float value.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static implicit operator float(half d) { return math.f16tof32(d.value); }
-
-        /// <summary>Implicitly converts a half value to a double value.</summary>
-        /// <param name="d">The half value to convert to double precision float.</param>
-        /// <returns>The converted double precision float value.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static implicit operator double(half d) { return math.f16tof32(d.value); }
+        // /// <summary>Implicitly converts a half value to a double value.</summary>
+        // /// <param name="d">The half value to convert to double precision sfloat.</param>
+        // /// <returns>The converted double precision sfloat value.</returns>
+        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // public static implicit operator double(half d) { return math.f16tof32(d.value); }
 
 
         /// <summary>Returns whether two half values are bitwise equivalent.</summary>
@@ -124,7 +124,7 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override string ToString()
         {
-            return math.f16tof32(value).ToString();
+            return value.ToString();
         }
 
         /// <summary>Returns a string representation of the half using a specified format and culture-specific format information.</summary>
@@ -134,7 +134,7 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public string ToString(string format, IFormatProvider formatProvider)
         {
-            return math.f16tof32(value).ToString(format, formatProvider);
+            return value.ToString(format, formatProvider);
         }
     }
 
@@ -146,17 +146,17 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static half half(half x) { return new half(x); }
 
-        /// <summary>Returns a half value constructed from a float value.</summary>
-        /// <param name="v">The single precision float value to convert to half.</param>
-        /// <returns>The constructed half value.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static half half(float v) { return new half(v); }
-
-        /// <summary>Returns a half value constructed from a double value.</summary>
-        /// <param name="v">The double precision float value to convert to half.</param>
-        /// <returns>The constructed half value.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static half half(double v) { return new half(v); }
+        // /// <summary>Returns a half value constructed from a sfloat value.</summary>
+        // /// <param name="v">The single precision sfloat value to convert to half.</param>
+        // /// <returns>The constructed half value.</returns>
+        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // public static half half(sfloat v) { return new half(v); }
+        //
+        // /// <summary>Returns a half value constructed from a double value.</summary>
+        // /// <param name="v">The double precision sfloat value to convert to half.</param>
+        // /// <returns>The constructed half value.</returns>
+        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // public static half half(double v) { return new half(v); }
 
         /// <summary>Returns a uint hash code of a half value.</summary>
         /// <param name="v">The half value to hash.</param>

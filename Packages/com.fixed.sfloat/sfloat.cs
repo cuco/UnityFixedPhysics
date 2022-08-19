@@ -219,6 +219,8 @@ public struct sfloat : IEquatable<sfloat>, IComparable<sfloat>, IComparable, IFo
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static sfloat operator -(sfloat f) => new sfloat(f.rawValue ^ 0x80000000);
 
+    public static sfloat operator +(sfloat f) => f;
+
     private static sfloat InternalAdd(sfloat f1, sfloat f2)
     {
         byte rawExp1 = f1.RawExponent;
@@ -326,6 +328,10 @@ public struct sfloat : IEquatable<sfloat>, IComparable<sfloat>, IComparable, IFo
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static sfloat operator -(sfloat f1, sfloat f2) => f1 + (-f2);
+
+    public static sfloat operator ++(sfloat f1) => f1 + sfloat.One;
+
+    public static sfloat operator --(sfloat f1) => f1 - sfloat.One;
 
     public static sfloat operator *(sfloat f1, sfloat f2)
     {

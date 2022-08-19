@@ -65,7 +65,7 @@ namespace Fixed.Mathematics.Geometry
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static MinMaxAABB CreateFromCenterAndExtents(float3 center, float3 extents)
         {
-            return CreateFromCenterAndHalfExtents(center, extents * 0.5f);
+            return CreateFromCenterAndHalfExtents(center, extents / (sfloat)2);
         }
 
         /// <summary>
@@ -99,12 +99,12 @@ namespace Fixed.Mathematics.Geometry
         /// HalfExtents is half of the componentwise distance between min and max. Subtracting HalfExtents from Center
         /// gives Min and adding HalfExtents to Center gives Max.
         /// </remarks>
-        public float3 HalfExtents => (Max - Min) * 0.5f;
+        public float3 HalfExtents => (Max - Min) / (sfloat)2;
 
         /// <summary>
         /// Computes the center of the AABB.
         /// </summary>
-        public float3 Center => (Max + Min) * 0.5f;
+        public float3 Center => (Max + Min) / (sfloat)2;
 
         /// <summary>
         /// Check if the AABB is valid.
@@ -118,12 +118,12 @@ namespace Fixed.Mathematics.Geometry
         /// <summary>
         /// Computes the surface area for this axis aligned bounding box.
         /// </summary>
-        public float SurfaceArea
+        public sfloat SurfaceArea
         {
             get
             {
                 float3 diff = Max - Min;
-                return 2 * math.dot(diff, diff.yzx);
+                return (sfloat)2 * math.dot(diff, diff.yzx);
             }
         }
 
@@ -162,7 +162,7 @@ namespace Fixed.Mathematics.Geometry
         /// </remarks>
         /// <param name="signedDistance">Signed distance to expand the AABB with.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Expand(float signedDistance)
+        public void Expand(sfloat signedDistance)
         {
             Min -= signedDistance;
             Max += signedDistance;
@@ -230,9 +230,9 @@ namespace Fixed.Mathematics.Geometry
             float3 halfExtentsInA = aabb.HalfExtents;
 
             // Rotate each axis individually and find their new positions in the rotated space.
-            float3 x = math.rotate(transform.rot, new float3(halfExtentsInA.x, 0, 0));
-            float3 y = math.rotate(transform.rot, new float3(0, halfExtentsInA.y, 0));
-            float3 z = math.rotate(transform.rot, new float3(0, 0, halfExtentsInA.z));
+            float3 x = math.rotate(transform.rot, new float3(halfExtentsInA.x, sfloat.Zero, sfloat.Zero));
+            float3 y = math.rotate(transform.rot, new float3(sfloat.Zero, halfExtentsInA.y, sfloat.Zero));
+            float3 z = math.rotate(transform.rot, new float3(sfloat.Zero, sfloat.Zero, halfExtentsInA.z));
 
             // Find the new max corner by summing the rotated axes.  Absolute value of each axis
             // since we are trying to find the max corner.

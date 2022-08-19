@@ -151,7 +151,7 @@ namespace Fixed.Transforms
                         {
                             var scale = chunkScales[i].Value;
                             var pivot = chunkScalePivots[i].Value;
-                            var inversePivot = -1.0f * pivot;
+                            var inversePivot = -sfloat.One * pivot;
 
                             chunkCompositeScales[i] = new CompositeScale
                             {
@@ -171,7 +171,7 @@ namespace Fixed.Transforms
                         {
                             var scale = chunkNonUniformScale[i].Value;
                             var pivot = chunkScalePivots[i].Value;
-                            var inversePivot = -1.0f * pivot;
+                            var inversePivot = -sfloat.One * pivot;
 
                             chunkCompositeScales[i] = new CompositeScale
                             {
@@ -235,7 +235,7 @@ namespace Fixed.Transforms
                             var translation = chunkScalePivotTranslations[i].Value;
                             var scale = chunkScales[i].Value;
                             var pivot = chunkScalePivots[i].Value;
-                            var inversePivot = -1.0f * pivot;
+                            var inversePivot = -sfloat.One * pivot;
 
                             chunkCompositeScales[i] = new CompositeScale
                             {
@@ -258,7 +258,7 @@ namespace Fixed.Transforms
                             var translation = chunkScalePivotTranslations[i].Value;
                             var scale = chunkNonUniformScale[i].Value;
                             var pivot = chunkScalePivots[i].Value;
-                            var inversePivot = -1.0f * pivot;
+                            var inversePivot = -sfloat.One * pivot;
 
                             chunkCompositeScales[i] = new CompositeScale
                             {

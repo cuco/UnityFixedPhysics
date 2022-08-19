@@ -45,7 +45,7 @@ namespace Fixed.Mathematics
             this.c3 = c3;
         }
 
-        /// <summary>Constructs a float3x4 matrix from 12 float values given in row-major order.</summary>
+        /// <summary>Constructs a float3x4 matrix from 12 sfloat values given in row-major order.</summary>
         /// <param name="m00">The matrix at row 0, column 0 will be set to this value.</param>
         /// <param name="m01">The matrix at row 0, column 1 will be set to this value.</param>
         /// <param name="m02">The matrix at row 0, column 2 will be set to this value.</param>
@@ -59,9 +59,9 @@ namespace Fixed.Mathematics
         /// <param name="m22">The matrix at row 2, column 2 will be set to this value.</param>
         /// <param name="m23">The matrix at row 2, column 3 will be set to this value.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public float3x4(float m00, float m01, float m02, float m03,
-                        float m10, float m11, float m12, float m13,
-                        float m20, float m21, float m22, float m23)
+        public float3x4(sfloat m00, sfloat m01, sfloat m02, sfloat m03,
+                        sfloat m10, sfloat m11, sfloat m12, sfloat m13,
+                        sfloat m20, sfloat m21, sfloat m22, sfloat m23)
         {
             this.c0 = new float3(m00, m10, m20);
             this.c1 = new float3(m01, m11, m21);
@@ -69,10 +69,10 @@ namespace Fixed.Mathematics
             this.c3 = new float3(m03, m13, m23);
         }
 
-        /// <summary>Constructs a float3x4 matrix from a single float value by assigning it to every component.</summary>
-        /// <param name="v">float to convert to float3x4</param>
+        /// <summary>Constructs a float3x4 matrix from a single sfloat value by assigning it to every component.</summary>
+        /// <param name="v">sfloat to convert to float3x4</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public float3x4(float v)
+        public float3x4(sfloat v)
         {
             this.c0 = v;
             this.c1 = v;
@@ -80,15 +80,15 @@ namespace Fixed.Mathematics
             this.c3 = v;
         }
 
-        /// <summary>Constructs a float3x4 matrix from a single bool value by converting it to float and assigning it to every component.</summary>
+        /// <summary>Constructs a float3x4 matrix from a single bool value by converting it to sfloat and assigning it to every component.</summary>
         /// <param name="v">bool to convert to float3x4</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public float3x4(bool v)
         {
-            this.c0 = math.select(new float3(0.0f), new float3(1.0f), v);
-            this.c1 = math.select(new float3(0.0f), new float3(1.0f), v);
-            this.c2 = math.select(new float3(0.0f), new float3(1.0f), v);
-            this.c3 = math.select(new float3(0.0f), new float3(1.0f), v);
+            this.c0 = math.select(new float3(sfloat.Zero), new float3(sfloat.One), v);
+            this.c1 = math.select(new float3(sfloat.Zero), new float3(sfloat.One), v);
+            this.c2 = math.select(new float3(sfloat.Zero), new float3(sfloat.One), v);
+            this.c3 = math.select(new float3(sfloat.Zero), new float3(sfloat.One), v);
         }
 
         /// <summary>Constructs a float3x4 matrix from a bool3x4 matrix by componentwise conversion.</summary>
@@ -96,13 +96,13 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public float3x4(bool3x4 v)
         {
-            this.c0 = math.select(new float3(0.0f), new float3(1.0f), v.c0);
-            this.c1 = math.select(new float3(0.0f), new float3(1.0f), v.c1);
-            this.c2 = math.select(new float3(0.0f), new float3(1.0f), v.c2);
-            this.c3 = math.select(new float3(0.0f), new float3(1.0f), v.c3);
+            this.c0 = math.select(new float3(sfloat.Zero), new float3(sfloat.One), v.c0);
+            this.c1 = math.select(new float3(sfloat.Zero), new float3(sfloat.One), v.c1);
+            this.c2 = math.select(new float3(sfloat.Zero), new float3(sfloat.One), v.c2);
+            this.c3 = math.select(new float3(sfloat.Zero), new float3(sfloat.One), v.c3);
         }
 
-        /// <summary>Constructs a float3x4 matrix from a single int value by converting it to float and assigning it to every component.</summary>
+        /// <summary>Constructs a float3x4 matrix from a single int value by converting it to sfloat and assigning it to every component.</summary>
         /// <param name="v">int to convert to float3x4</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public float3x4(int v)
@@ -124,7 +124,7 @@ namespace Fixed.Mathematics
             this.c3 = v.c3;
         }
 
-        /// <summary>Constructs a float3x4 matrix from a single uint value by converting it to float and assigning it to every component.</summary>
+        /// <summary>Constructs a float3x4 matrix from a single uint value by converting it to sfloat and assigning it to every component.</summary>
         /// <param name="v">uint to convert to float3x4</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public float3x4(uint v)
@@ -146,36 +146,36 @@ namespace Fixed.Mathematics
             this.c3 = v.c3;
         }
 
-        /// <summary>Constructs a float3x4 matrix from a single double value by converting it to float and assigning it to every component.</summary>
-        /// <param name="v">double to convert to float3x4</param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public float3x4(double v)
-        {
-            this.c0 = (float3)v;
-            this.c1 = (float3)v;
-            this.c2 = (float3)v;
-            this.c3 = (float3)v;
-        }
+        // /// <summary>Constructs a float3x4 matrix from a single double value by converting it to sfloat and assigning it to every component.</summary>
+        // /// <param name="v">double to convert to float3x4</param>
+        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // public float3x4(double v)
+        // {
+        //     this.c0 = (float3)v;
+        //     this.c1 = (float3)v;
+        //     this.c2 = (float3)v;
+        //     this.c3 = (float3)v;
+        // }
+        //
+        // /// <summary>Constructs a float3x4 matrix from a double3x4 matrix by componentwise conversion.</summary>
+        // /// <param name="v">double3x4 to convert to float3x4</param>
+        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // public float3x4(double3x4 v)
+        // {
+        //     this.c0 = (float3)v.c0;
+        //     this.c1 = (float3)v.c1;
+        //     this.c2 = (float3)v.c2;
+        //     this.c3 = (float3)v.c3;
+        // }
 
-        /// <summary>Constructs a float3x4 matrix from a double3x4 matrix by componentwise conversion.</summary>
-        /// <param name="v">double3x4 to convert to float3x4</param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public float3x4(double3x4 v)
-        {
-            this.c0 = (float3)v.c0;
-            this.c1 = (float3)v.c1;
-            this.c2 = (float3)v.c2;
-            this.c3 = (float3)v.c3;
-        }
 
-
-        /// <summary>Implicitly converts a single float value to a float3x4 matrix by assigning it to every component.</summary>
-        /// <param name="v">float to convert to float3x4</param>
+        /// <summary>Implicitly converts a single sfloat value to a float3x4 matrix by assigning it to every component.</summary>
+        /// <param name="v">sfloat to convert to float3x4</param>
         /// <returns>Converted value.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static implicit operator float3x4(float v) { return new float3x4(v); }
+        public static implicit operator float3x4(sfloat v) { return new float3x4(v); }
 
-        /// <summary>Explicitly converts a single bool value to a float3x4 matrix by converting it to float and assigning it to every component.</summary>
+        /// <summary>Explicitly converts a single bool value to a float3x4 matrix by converting it to sfloat and assigning it to every component.</summary>
         /// <param name="v">bool to convert to float3x4</param>
         /// <returns>Converted value.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -187,7 +187,7 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static explicit operator float3x4(bool3x4 v) { return new float3x4(v); }
 
-        /// <summary>Implicitly converts a single int value to a float3x4 matrix by converting it to float and assigning it to every component.</summary>
+        /// <summary>Implicitly converts a single int value to a float3x4 matrix by converting it to sfloat and assigning it to every component.</summary>
         /// <param name="v">int to convert to float3x4</param>
         /// <returns>Converted value.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -199,7 +199,7 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static implicit operator float3x4(int3x4 v) { return new float3x4(v); }
 
-        /// <summary>Implicitly converts a single uint value to a float3x4 matrix by converting it to float and assigning it to every component.</summary>
+        /// <summary>Implicitly converts a single uint value to a float3x4 matrix by converting it to sfloat and assigning it to every component.</summary>
         /// <param name="v">uint to convert to float3x4</param>
         /// <returns>Converted value.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -211,17 +211,17 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static implicit operator float3x4(uint3x4 v) { return new float3x4(v); }
 
-        /// <summary>Explicitly converts a single double value to a float3x4 matrix by converting it to float and assigning it to every component.</summary>
-        /// <param name="v">double to convert to float3x4</param>
-        /// <returns>Converted value.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static explicit operator float3x4(double v) { return new float3x4(v); }
-
-        /// <summary>Explicitly converts a double3x4 matrix to a float3x4 matrix by componentwise conversion.</summary>
-        /// <param name="v">double3x4 to convert to float3x4</param>
-        /// <returns>Converted value.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static explicit operator float3x4(double3x4 v) { return new float3x4(v); }
+        // /// <summary>Explicitly converts a single double value to a float3x4 matrix by converting it to sfloat and assigning it to every component.</summary>
+        // /// <param name="v">double to convert to float3x4</param>
+        // /// <returns>Converted value.</returns>
+        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // public static explicit operator float3x4(double v) { return new float3x4(v); }
+        //
+        // /// <summary>Explicitly converts a double3x4 matrix to a float3x4 matrix by componentwise conversion.</summary>
+        // /// <param name="v">double3x4 to convert to float3x4</param>
+        // /// <returns>Converted value.</returns>
+        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // public static explicit operator float3x4(double3x4 v) { return new float3x4(v); }
 
 
         /// <summary>Returns the result of a componentwise multiplication operation on two float3x4 matrices.</summary>
@@ -231,19 +231,19 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float3x4 operator * (float3x4 lhs, float3x4 rhs) { return new float3x4 (lhs.c0 * rhs.c0, lhs.c1 * rhs.c1, lhs.c2 * rhs.c2, lhs.c3 * rhs.c3); }
 
-        /// <summary>Returns the result of a componentwise multiplication operation on a float3x4 matrix and a float value.</summary>
+        /// <summary>Returns the result of a componentwise multiplication operation on a float3x4 matrix and a sfloat value.</summary>
         /// <param name="lhs">Left hand side float3x4 to use to compute componentwise multiplication.</param>
-        /// <param name="rhs">Right hand side float to use to compute componentwise multiplication.</param>
+        /// <param name="rhs">Right hand side sfloat to use to compute componentwise multiplication.</param>
         /// <returns>float3x4 result of the componentwise multiplication.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float3x4 operator * (float3x4 lhs, float rhs) { return new float3x4 (lhs.c0 * rhs, lhs.c1 * rhs, lhs.c2 * rhs, lhs.c3 * rhs); }
+        public static float3x4 operator * (float3x4 lhs, sfloat rhs) { return new float3x4 (lhs.c0 * rhs, lhs.c1 * rhs, lhs.c2 * rhs, lhs.c3 * rhs); }
 
-        /// <summary>Returns the result of a componentwise multiplication operation on a float value and a float3x4 matrix.</summary>
-        /// <param name="lhs">Left hand side float to use to compute componentwise multiplication.</param>
+        /// <summary>Returns the result of a componentwise multiplication operation on a sfloat value and a float3x4 matrix.</summary>
+        /// <param name="lhs">Left hand side sfloat to use to compute componentwise multiplication.</param>
         /// <param name="rhs">Right hand side float3x4 to use to compute componentwise multiplication.</param>
         /// <returns>float3x4 result of the componentwise multiplication.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float3x4 operator * (float lhs, float3x4 rhs) { return new float3x4 (lhs * rhs.c0, lhs * rhs.c1, lhs * rhs.c2, lhs * rhs.c3); }
+        public static float3x4 operator * (sfloat lhs, float3x4 rhs) { return new float3x4 (lhs * rhs.c0, lhs * rhs.c1, lhs * rhs.c2, lhs * rhs.c3); }
 
 
         /// <summary>Returns the result of a componentwise addition operation on two float3x4 matrices.</summary>
@@ -253,19 +253,19 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float3x4 operator + (float3x4 lhs, float3x4 rhs) { return new float3x4 (lhs.c0 + rhs.c0, lhs.c1 + rhs.c1, lhs.c2 + rhs.c2, lhs.c3 + rhs.c3); }
 
-        /// <summary>Returns the result of a componentwise addition operation on a float3x4 matrix and a float value.</summary>
+        /// <summary>Returns the result of a componentwise addition operation on a float3x4 matrix and a sfloat value.</summary>
         /// <param name="lhs">Left hand side float3x4 to use to compute componentwise addition.</param>
-        /// <param name="rhs">Right hand side float to use to compute componentwise addition.</param>
+        /// <param name="rhs">Right hand side sfloat to use to compute componentwise addition.</param>
         /// <returns>float3x4 result of the componentwise addition.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float3x4 operator + (float3x4 lhs, float rhs) { return new float3x4 (lhs.c0 + rhs, lhs.c1 + rhs, lhs.c2 + rhs, lhs.c3 + rhs); }
+        public static float3x4 operator + (float3x4 lhs, sfloat rhs) { return new float3x4 (lhs.c0 + rhs, lhs.c1 + rhs, lhs.c2 + rhs, lhs.c3 + rhs); }
 
-        /// <summary>Returns the result of a componentwise addition operation on a float value and a float3x4 matrix.</summary>
-        /// <param name="lhs">Left hand side float to use to compute componentwise addition.</param>
+        /// <summary>Returns the result of a componentwise addition operation on a sfloat value and a float3x4 matrix.</summary>
+        /// <param name="lhs">Left hand side sfloat to use to compute componentwise addition.</param>
         /// <param name="rhs">Right hand side float3x4 to use to compute componentwise addition.</param>
         /// <returns>float3x4 result of the componentwise addition.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float3x4 operator + (float lhs, float3x4 rhs) { return new float3x4 (lhs + rhs.c0, lhs + rhs.c1, lhs + rhs.c2, lhs + rhs.c3); }
+        public static float3x4 operator + (sfloat lhs, float3x4 rhs) { return new float3x4 (lhs + rhs.c0, lhs + rhs.c1, lhs + rhs.c2, lhs + rhs.c3); }
 
 
         /// <summary>Returns the result of a componentwise subtraction operation on two float3x4 matrices.</summary>
@@ -275,19 +275,19 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float3x4 operator - (float3x4 lhs, float3x4 rhs) { return new float3x4 (lhs.c0 - rhs.c0, lhs.c1 - rhs.c1, lhs.c2 - rhs.c2, lhs.c3 - rhs.c3); }
 
-        /// <summary>Returns the result of a componentwise subtraction operation on a float3x4 matrix and a float value.</summary>
+        /// <summary>Returns the result of a componentwise subtraction operation on a float3x4 matrix and a sfloat value.</summary>
         /// <param name="lhs">Left hand side float3x4 to use to compute componentwise subtraction.</param>
-        /// <param name="rhs">Right hand side float to use to compute componentwise subtraction.</param>
+        /// <param name="rhs">Right hand side sfloat to use to compute componentwise subtraction.</param>
         /// <returns>float3x4 result of the componentwise subtraction.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float3x4 operator - (float3x4 lhs, float rhs) { return new float3x4 (lhs.c0 - rhs, lhs.c1 - rhs, lhs.c2 - rhs, lhs.c3 - rhs); }
+        public static float3x4 operator - (float3x4 lhs, sfloat rhs) { return new float3x4 (lhs.c0 - rhs, lhs.c1 - rhs, lhs.c2 - rhs, lhs.c3 - rhs); }
 
-        /// <summary>Returns the result of a componentwise subtraction operation on a float value and a float3x4 matrix.</summary>
-        /// <param name="lhs">Left hand side float to use to compute componentwise subtraction.</param>
+        /// <summary>Returns the result of a componentwise subtraction operation on a sfloat value and a float3x4 matrix.</summary>
+        /// <param name="lhs">Left hand side sfloat to use to compute componentwise subtraction.</param>
         /// <param name="rhs">Right hand side float3x4 to use to compute componentwise subtraction.</param>
         /// <returns>float3x4 result of the componentwise subtraction.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float3x4 operator - (float lhs, float3x4 rhs) { return new float3x4 (lhs - rhs.c0, lhs - rhs.c1, lhs - rhs.c2, lhs - rhs.c3); }
+        public static float3x4 operator - (sfloat lhs, float3x4 rhs) { return new float3x4 (lhs - rhs.c0, lhs - rhs.c1, lhs - rhs.c2, lhs - rhs.c3); }
 
 
         /// <summary>Returns the result of a componentwise division operation on two float3x4 matrices.</summary>
@@ -297,19 +297,19 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float3x4 operator / (float3x4 lhs, float3x4 rhs) { return new float3x4 (lhs.c0 / rhs.c0, lhs.c1 / rhs.c1, lhs.c2 / rhs.c2, lhs.c3 / rhs.c3); }
 
-        /// <summary>Returns the result of a componentwise division operation on a float3x4 matrix and a float value.</summary>
+        /// <summary>Returns the result of a componentwise division operation on a float3x4 matrix and a sfloat value.</summary>
         /// <param name="lhs">Left hand side float3x4 to use to compute componentwise division.</param>
-        /// <param name="rhs">Right hand side float to use to compute componentwise division.</param>
+        /// <param name="rhs">Right hand side sfloat to use to compute componentwise division.</param>
         /// <returns>float3x4 result of the componentwise division.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float3x4 operator / (float3x4 lhs, float rhs) { return new float3x4 (lhs.c0 / rhs, lhs.c1 / rhs, lhs.c2 / rhs, lhs.c3 / rhs); }
+        public static float3x4 operator / (float3x4 lhs, sfloat rhs) { return new float3x4 (lhs.c0 / rhs, lhs.c1 / rhs, lhs.c2 / rhs, lhs.c3 / rhs); }
 
-        /// <summary>Returns the result of a componentwise division operation on a float value and a float3x4 matrix.</summary>
-        /// <param name="lhs">Left hand side float to use to compute componentwise division.</param>
+        /// <summary>Returns the result of a componentwise division operation on a sfloat value and a float3x4 matrix.</summary>
+        /// <param name="lhs">Left hand side sfloat to use to compute componentwise division.</param>
         /// <param name="rhs">Right hand side float3x4 to use to compute componentwise division.</param>
         /// <returns>float3x4 result of the componentwise division.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float3x4 operator / (float lhs, float3x4 rhs) { return new float3x4 (lhs / rhs.c0, lhs / rhs.c1, lhs / rhs.c2, lhs / rhs.c3); }
+        public static float3x4 operator / (sfloat lhs, float3x4 rhs) { return new float3x4 (lhs / rhs.c0, lhs / rhs.c1, lhs / rhs.c2, lhs / rhs.c3); }
 
 
         /// <summary>Returns the result of a componentwise modulus operation on two float3x4 matrices.</summary>
@@ -319,19 +319,19 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float3x4 operator % (float3x4 lhs, float3x4 rhs) { return new float3x4 (lhs.c0 % rhs.c0, lhs.c1 % rhs.c1, lhs.c2 % rhs.c2, lhs.c3 % rhs.c3); }
 
-        /// <summary>Returns the result of a componentwise modulus operation on a float3x4 matrix and a float value.</summary>
+        /// <summary>Returns the result of a componentwise modulus operation on a float3x4 matrix and a sfloat value.</summary>
         /// <param name="lhs">Left hand side float3x4 to use to compute componentwise modulus.</param>
-        /// <param name="rhs">Right hand side float to use to compute componentwise modulus.</param>
+        /// <param name="rhs">Right hand side sfloat to use to compute componentwise modulus.</param>
         /// <returns>float3x4 result of the componentwise modulus.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float3x4 operator % (float3x4 lhs, float rhs) { return new float3x4 (lhs.c0 % rhs, lhs.c1 % rhs, lhs.c2 % rhs, lhs.c3 % rhs); }
+        public static float3x4 operator % (float3x4 lhs, sfloat rhs) { return new float3x4 (lhs.c0 % rhs, lhs.c1 % rhs, lhs.c2 % rhs, lhs.c3 % rhs); }
 
-        /// <summary>Returns the result of a componentwise modulus operation on a float value and a float3x4 matrix.</summary>
-        /// <param name="lhs">Left hand side float to use to compute componentwise modulus.</param>
+        /// <summary>Returns the result of a componentwise modulus operation on a sfloat value and a float3x4 matrix.</summary>
+        /// <param name="lhs">Left hand side sfloat to use to compute componentwise modulus.</param>
         /// <param name="rhs">Right hand side float3x4 to use to compute componentwise modulus.</param>
         /// <returns>float3x4 result of the componentwise modulus.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float3x4 operator % (float lhs, float3x4 rhs) { return new float3x4 (lhs % rhs.c0, lhs % rhs.c1, lhs % rhs.c2, lhs % rhs.c3); }
+        public static float3x4 operator % (sfloat lhs, float3x4 rhs) { return new float3x4 (lhs % rhs.c0, lhs % rhs.c1, lhs % rhs.c2, lhs % rhs.c3); }
 
 
         /// <summary>Returns the result of a componentwise increment operation on a float3x4 matrix.</summary>
@@ -355,19 +355,19 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool3x4 operator < (float3x4 lhs, float3x4 rhs) { return new bool3x4 (lhs.c0 < rhs.c0, lhs.c1 < rhs.c1, lhs.c2 < rhs.c2, lhs.c3 < rhs.c3); }
 
-        /// <summary>Returns the result of a componentwise less than operation on a float3x4 matrix and a float value.</summary>
+        /// <summary>Returns the result of a componentwise less than operation on a float3x4 matrix and a sfloat value.</summary>
         /// <param name="lhs">Left hand side float3x4 to use to compute componentwise less than.</param>
-        /// <param name="rhs">Right hand side float to use to compute componentwise less than.</param>
+        /// <param name="rhs">Right hand side sfloat to use to compute componentwise less than.</param>
         /// <returns>bool3x4 result of the componentwise less than.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool3x4 operator < (float3x4 lhs, float rhs) { return new bool3x4 (lhs.c0 < rhs, lhs.c1 < rhs, lhs.c2 < rhs, lhs.c3 < rhs); }
+        public static bool3x4 operator < (float3x4 lhs, sfloat rhs) { return new bool3x4 (lhs.c0 < rhs, lhs.c1 < rhs, lhs.c2 < rhs, lhs.c3 < rhs); }
 
-        /// <summary>Returns the result of a componentwise less than operation on a float value and a float3x4 matrix.</summary>
-        /// <param name="lhs">Left hand side float to use to compute componentwise less than.</param>
+        /// <summary>Returns the result of a componentwise less than operation on a sfloat value and a float3x4 matrix.</summary>
+        /// <param name="lhs">Left hand side sfloat to use to compute componentwise less than.</param>
         /// <param name="rhs">Right hand side float3x4 to use to compute componentwise less than.</param>
         /// <returns>bool3x4 result of the componentwise less than.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool3x4 operator < (float lhs, float3x4 rhs) { return new bool3x4 (lhs < rhs.c0, lhs < rhs.c1, lhs < rhs.c2, lhs < rhs.c3); }
+        public static bool3x4 operator < (sfloat lhs, float3x4 rhs) { return new bool3x4 (lhs < rhs.c0, lhs < rhs.c1, lhs < rhs.c2, lhs < rhs.c3); }
 
 
         /// <summary>Returns the result of a componentwise less or equal operation on two float3x4 matrices.</summary>
@@ -377,19 +377,19 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool3x4 operator <= (float3x4 lhs, float3x4 rhs) { return new bool3x4 (lhs.c0 <= rhs.c0, lhs.c1 <= rhs.c1, lhs.c2 <= rhs.c2, lhs.c3 <= rhs.c3); }
 
-        /// <summary>Returns the result of a componentwise less or equal operation on a float3x4 matrix and a float value.</summary>
+        /// <summary>Returns the result of a componentwise less or equal operation on a float3x4 matrix and a sfloat value.</summary>
         /// <param name="lhs">Left hand side float3x4 to use to compute componentwise less or equal.</param>
-        /// <param name="rhs">Right hand side float to use to compute componentwise less or equal.</param>
+        /// <param name="rhs">Right hand side sfloat to use to compute componentwise less or equal.</param>
         /// <returns>bool3x4 result of the componentwise less or equal.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool3x4 operator <= (float3x4 lhs, float rhs) { return new bool3x4 (lhs.c0 <= rhs, lhs.c1 <= rhs, lhs.c2 <= rhs, lhs.c3 <= rhs); }
+        public static bool3x4 operator <= (float3x4 lhs, sfloat rhs) { return new bool3x4 (lhs.c0 <= rhs, lhs.c1 <= rhs, lhs.c2 <= rhs, lhs.c3 <= rhs); }
 
-        /// <summary>Returns the result of a componentwise less or equal operation on a float value and a float3x4 matrix.</summary>
-        /// <param name="lhs">Left hand side float to use to compute componentwise less or equal.</param>
+        /// <summary>Returns the result of a componentwise less or equal operation on a sfloat value and a float3x4 matrix.</summary>
+        /// <param name="lhs">Left hand side sfloat to use to compute componentwise less or equal.</param>
         /// <param name="rhs">Right hand side float3x4 to use to compute componentwise less or equal.</param>
         /// <returns>bool3x4 result of the componentwise less or equal.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool3x4 operator <= (float lhs, float3x4 rhs) { return new bool3x4 (lhs <= rhs.c0, lhs <= rhs.c1, lhs <= rhs.c2, lhs <= rhs.c3); }
+        public static bool3x4 operator <= (sfloat lhs, float3x4 rhs) { return new bool3x4 (lhs <= rhs.c0, lhs <= rhs.c1, lhs <= rhs.c2, lhs <= rhs.c3); }
 
 
         /// <summary>Returns the result of a componentwise greater than operation on two float3x4 matrices.</summary>
@@ -399,19 +399,19 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool3x4 operator > (float3x4 lhs, float3x4 rhs) { return new bool3x4 (lhs.c0 > rhs.c0, lhs.c1 > rhs.c1, lhs.c2 > rhs.c2, lhs.c3 > rhs.c3); }
 
-        /// <summary>Returns the result of a componentwise greater than operation on a float3x4 matrix and a float value.</summary>
+        /// <summary>Returns the result of a componentwise greater than operation on a float3x4 matrix and a sfloat value.</summary>
         /// <param name="lhs">Left hand side float3x4 to use to compute componentwise greater than.</param>
-        /// <param name="rhs">Right hand side float to use to compute componentwise greater than.</param>
+        /// <param name="rhs">Right hand side sfloat to use to compute componentwise greater than.</param>
         /// <returns>bool3x4 result of the componentwise greater than.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool3x4 operator > (float3x4 lhs, float rhs) { return new bool3x4 (lhs.c0 > rhs, lhs.c1 > rhs, lhs.c2 > rhs, lhs.c3 > rhs); }
+        public static bool3x4 operator > (float3x4 lhs, sfloat rhs) { return new bool3x4 (lhs.c0 > rhs, lhs.c1 > rhs, lhs.c2 > rhs, lhs.c3 > rhs); }
 
-        /// <summary>Returns the result of a componentwise greater than operation on a float value and a float3x4 matrix.</summary>
-        /// <param name="lhs">Left hand side float to use to compute componentwise greater than.</param>
+        /// <summary>Returns the result of a componentwise greater than operation on a sfloat value and a float3x4 matrix.</summary>
+        /// <param name="lhs">Left hand side sfloat to use to compute componentwise greater than.</param>
         /// <param name="rhs">Right hand side float3x4 to use to compute componentwise greater than.</param>
         /// <returns>bool3x4 result of the componentwise greater than.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool3x4 operator > (float lhs, float3x4 rhs) { return new bool3x4 (lhs > rhs.c0, lhs > rhs.c1, lhs > rhs.c2, lhs > rhs.c3); }
+        public static bool3x4 operator > (sfloat lhs, float3x4 rhs) { return new bool3x4 (lhs > rhs.c0, lhs > rhs.c1, lhs > rhs.c2, lhs > rhs.c3); }
 
 
         /// <summary>Returns the result of a componentwise greater or equal operation on two float3x4 matrices.</summary>
@@ -421,19 +421,19 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool3x4 operator >= (float3x4 lhs, float3x4 rhs) { return new bool3x4 (lhs.c0 >= rhs.c0, lhs.c1 >= rhs.c1, lhs.c2 >= rhs.c2, lhs.c3 >= rhs.c3); }
 
-        /// <summary>Returns the result of a componentwise greater or equal operation on a float3x4 matrix and a float value.</summary>
+        /// <summary>Returns the result of a componentwise greater or equal operation on a float3x4 matrix and a sfloat value.</summary>
         /// <param name="lhs">Left hand side float3x4 to use to compute componentwise greater or equal.</param>
-        /// <param name="rhs">Right hand side float to use to compute componentwise greater or equal.</param>
+        /// <param name="rhs">Right hand side sfloat to use to compute componentwise greater or equal.</param>
         /// <returns>bool3x4 result of the componentwise greater or equal.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool3x4 operator >= (float3x4 lhs, float rhs) { return new bool3x4 (lhs.c0 >= rhs, lhs.c1 >= rhs, lhs.c2 >= rhs, lhs.c3 >= rhs); }
+        public static bool3x4 operator >= (float3x4 lhs, sfloat rhs) { return new bool3x4 (lhs.c0 >= rhs, lhs.c1 >= rhs, lhs.c2 >= rhs, lhs.c3 >= rhs); }
 
-        /// <summary>Returns the result of a componentwise greater or equal operation on a float value and a float3x4 matrix.</summary>
-        /// <param name="lhs">Left hand side float to use to compute componentwise greater or equal.</param>
+        /// <summary>Returns the result of a componentwise greater or equal operation on a sfloat value and a float3x4 matrix.</summary>
+        /// <param name="lhs">Left hand side sfloat to use to compute componentwise greater or equal.</param>
         /// <param name="rhs">Right hand side float3x4 to use to compute componentwise greater or equal.</param>
         /// <returns>bool3x4 result of the componentwise greater or equal.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool3x4 operator >= (float lhs, float3x4 rhs) { return new bool3x4 (lhs >= rhs.c0, lhs >= rhs.c1, lhs >= rhs.c2, lhs >= rhs.c3); }
+        public static bool3x4 operator >= (sfloat lhs, float3x4 rhs) { return new bool3x4 (lhs >= rhs.c0, lhs >= rhs.c1, lhs >= rhs.c2, lhs >= rhs.c3); }
 
 
         /// <summary>Returns the result of a componentwise unary minus operation on a float3x4 matrix.</summary>
@@ -457,19 +457,19 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool3x4 operator == (float3x4 lhs, float3x4 rhs) { return new bool3x4 (lhs.c0 == rhs.c0, lhs.c1 == rhs.c1, lhs.c2 == rhs.c2, lhs.c3 == rhs.c3); }
 
-        /// <summary>Returns the result of a componentwise equality operation on a float3x4 matrix and a float value.</summary>
+        /// <summary>Returns the result of a componentwise equality operation on a float3x4 matrix and a sfloat value.</summary>
         /// <param name="lhs">Left hand side float3x4 to use to compute componentwise equality.</param>
-        /// <param name="rhs">Right hand side float to use to compute componentwise equality.</param>
+        /// <param name="rhs">Right hand side sfloat to use to compute componentwise equality.</param>
         /// <returns>bool3x4 result of the componentwise equality.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool3x4 operator == (float3x4 lhs, float rhs) { return new bool3x4 (lhs.c0 == rhs, lhs.c1 == rhs, lhs.c2 == rhs, lhs.c3 == rhs); }
+        public static bool3x4 operator == (float3x4 lhs, sfloat rhs) { return new bool3x4 (lhs.c0 == rhs, lhs.c1 == rhs, lhs.c2 == rhs, lhs.c3 == rhs); }
 
-        /// <summary>Returns the result of a componentwise equality operation on a float value and a float3x4 matrix.</summary>
-        /// <param name="lhs">Left hand side float to use to compute componentwise equality.</param>
+        /// <summary>Returns the result of a componentwise equality operation on a sfloat value and a float3x4 matrix.</summary>
+        /// <param name="lhs">Left hand side sfloat to use to compute componentwise equality.</param>
         /// <param name="rhs">Right hand side float3x4 to use to compute componentwise equality.</param>
         /// <returns>bool3x4 result of the componentwise equality.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool3x4 operator == (float lhs, float3x4 rhs) { return new bool3x4 (lhs == rhs.c0, lhs == rhs.c1, lhs == rhs.c2, lhs == rhs.c3); }
+        public static bool3x4 operator == (sfloat lhs, float3x4 rhs) { return new bool3x4 (lhs == rhs.c0, lhs == rhs.c1, lhs == rhs.c2, lhs == rhs.c3); }
 
 
         /// <summary>Returns the result of a componentwise not equal operation on two float3x4 matrices.</summary>
@@ -479,19 +479,19 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool3x4 operator != (float3x4 lhs, float3x4 rhs) { return new bool3x4 (lhs.c0 != rhs.c0, lhs.c1 != rhs.c1, lhs.c2 != rhs.c2, lhs.c3 != rhs.c3); }
 
-        /// <summary>Returns the result of a componentwise not equal operation on a float3x4 matrix and a float value.</summary>
+        /// <summary>Returns the result of a componentwise not equal operation on a float3x4 matrix and a sfloat value.</summary>
         /// <param name="lhs">Left hand side float3x4 to use to compute componentwise not equal.</param>
-        /// <param name="rhs">Right hand side float to use to compute componentwise not equal.</param>
+        /// <param name="rhs">Right hand side sfloat to use to compute componentwise not equal.</param>
         /// <returns>bool3x4 result of the componentwise not equal.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool3x4 operator != (float3x4 lhs, float rhs) { return new bool3x4 (lhs.c0 != rhs, lhs.c1 != rhs, lhs.c2 != rhs, lhs.c3 != rhs); }
+        public static bool3x4 operator != (float3x4 lhs, sfloat rhs) { return new bool3x4 (lhs.c0 != rhs, lhs.c1 != rhs, lhs.c2 != rhs, lhs.c3 != rhs); }
 
-        /// <summary>Returns the result of a componentwise not equal operation on a float value and a float3x4 matrix.</summary>
-        /// <param name="lhs">Left hand side float to use to compute componentwise not equal.</param>
+        /// <summary>Returns the result of a componentwise not equal operation on a sfloat value and a float3x4 matrix.</summary>
+        /// <param name="lhs">Left hand side sfloat to use to compute componentwise not equal.</param>
         /// <param name="rhs">Right hand side float3x4 to use to compute componentwise not equal.</param>
         /// <returns>bool3x4 result of the componentwise not equal.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool3x4 operator != (float lhs, float3x4 rhs) { return new bool3x4 (lhs != rhs.c0, lhs != rhs.c1, lhs != rhs.c2, lhs != rhs.c3); }
+        public static bool3x4 operator != (sfloat lhs, float3x4 rhs) { return new bool3x4 (lhs != rhs.c0, lhs != rhs.c1, lhs != rhs.c2, lhs != rhs.c3); }
 
 
 
@@ -557,7 +557,7 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float3x4 float3x4(float3 c0, float3 c1, float3 c2, float3 c3) { return new float3x4(c0, c1, c2, c3); }
 
-        /// <summary>Returns a float3x4 matrix constructed from from 12 float values given in row-major order.</summary>
+        /// <summary>Returns a float3x4 matrix constructed from from 12 sfloat values given in row-major order.</summary>
         /// <param name="m00">The matrix at row 0, column 0 will be set to this value.</param>
         /// <param name="m01">The matrix at row 0, column 1 will be set to this value.</param>
         /// <param name="m02">The matrix at row 0, column 2 will be set to this value.</param>
@@ -572,22 +572,22 @@ namespace Fixed.Mathematics
         /// <param name="m23">The matrix at row 2, column 3 will be set to this value.</param>
         /// <returns>float3x4 constructed from arguments.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float3x4 float3x4(float m00, float m01, float m02, float m03,
-                                        float m10, float m11, float m12, float m13,
-                                        float m20, float m21, float m22, float m23)
+        public static float3x4 float3x4(sfloat m00, sfloat m01, sfloat m02, sfloat m03,
+                                        sfloat m10, sfloat m11, sfloat m12, sfloat m13,
+                                        sfloat m20, sfloat m21, sfloat m22, sfloat m23)
         {
             return new float3x4(m00, m01, m02, m03,
                                 m10, m11, m12, m13,
                                 m20, m21, m22, m23);
         }
 
-        /// <summary>Returns a float3x4 matrix constructed from a single float value by assigning it to every component.</summary>
-        /// <param name="v">float to convert to float3x4</param>
+        /// <summary>Returns a float3x4 matrix constructed from a single sfloat value by assigning it to every component.</summary>
+        /// <param name="v">sfloat to convert to float3x4</param>
         /// <returns>Converted value.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float3x4 float3x4(float v) { return new float3x4(v); }
+        public static float3x4 float3x4(sfloat v) { return new float3x4(v); }
 
-        /// <summary>Returns a float3x4 matrix constructed from a single bool value by converting it to float and assigning it to every component.</summary>
+        /// <summary>Returns a float3x4 matrix constructed from a single bool value by converting it to sfloat and assigning it to every component.</summary>
         /// <param name="v">bool to convert to float3x4</param>
         /// <returns>Converted value.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -599,7 +599,7 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float3x4 float3x4(bool3x4 v) { return new float3x4(v); }
 
-        /// <summary>Returns a float3x4 matrix constructed from a single int value by converting it to float and assigning it to every component.</summary>
+        /// <summary>Returns a float3x4 matrix constructed from a single int value by converting it to sfloat and assigning it to every component.</summary>
         /// <param name="v">int to convert to float3x4</param>
         /// <returns>Converted value.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -611,7 +611,7 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float3x4 float3x4(int3x4 v) { return new float3x4(v); }
 
-        /// <summary>Returns a float3x4 matrix constructed from a single uint value by converting it to float and assigning it to every component.</summary>
+        /// <summary>Returns a float3x4 matrix constructed from a single uint value by converting it to sfloat and assigning it to every component.</summary>
         /// <param name="v">uint to convert to float3x4</param>
         /// <returns>Converted value.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -623,17 +623,17 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float3x4 float3x4(uint3x4 v) { return new float3x4(v); }
 
-        /// <summary>Returns a float3x4 matrix constructed from a single double value by converting it to float and assigning it to every component.</summary>
-        /// <param name="v">double to convert to float3x4</param>
-        /// <returns>Converted value.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float3x4 float3x4(double v) { return new float3x4(v); }
-
-        /// <summary>Return a float3x4 matrix constructed from a double3x4 matrix by componentwise conversion.</summary>
-        /// <param name="v">double3x4 to convert to float3x4</param>
-        /// <returns>Converted value.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float3x4 float3x4(double3x4 v) { return new float3x4(v); }
+        // /// <summary>Returns a float3x4 matrix constructed from a single double value by converting it to sfloat and assigning it to every component.</summary>
+        // /// <param name="v">double to convert to float3x4</param>
+        // /// <returns>Converted value.</returns>
+        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // public static float3x4 float3x4(double v) { return new float3x4(v); }
+        //
+        // /// <summary>Return a float3x4 matrix constructed from a double3x4 matrix by componentwise conversion.</summary>
+        // /// <param name="v">double3x4 to convert to float3x4</param>
+        // /// <returns>Converted value.</returns>
+        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // public static float3x4 float3x4(double3x4 v) { return new float3x4(v); }
 
         /// <summary>Return the float4x3 transpose of a float3x4 matrix.</summary>
         /// <param name="v">Value to transpose.</param>

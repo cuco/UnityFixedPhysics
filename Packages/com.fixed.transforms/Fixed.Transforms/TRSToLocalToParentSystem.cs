@@ -264,7 +264,7 @@ namespace Fixed.Transforms
                                 chunkLocalToParent[i] = new LocalToParent
                                 {
                                     Value = math.mul(math.mul(float4x4.Translate(translation), parentScaleInverse),
-                                        new float4x4(rotation, new float3(0.0f)))
+                                        new float4x4(rotation, new float3(sfloat.Zero)))
                                 };
                             }
                         }
@@ -286,7 +286,7 @@ namespace Fixed.Transforms
                                 {
                                     Value = math.mul(
                                         math.mul(math.mul(float4x4.Translate(translation), parentScaleInverse),
-                                            new float4x4(rotation, new float3(0.0f))), scale)
+                                            new float4x4(rotation, new float3(sfloat.Zero))), scale)
                                 };
                             }
                         }

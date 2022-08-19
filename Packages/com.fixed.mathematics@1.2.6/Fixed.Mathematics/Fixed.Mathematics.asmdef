@@ -1,4 +1,16 @@
 {
-	"name": "Fixed.Mathematics",
-	"allowUnsafeCode": true
+    "name": "Fixed.Mathematics",
+    "rootNamespace": "",
+    "references": [
+        "Fixed.Sfloat"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
 }

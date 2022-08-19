@@ -10,6 +10,6 @@ namespace Fixed.Transforms
     [WriteGroup(typeof(ParentScaleInverse))]
     public struct Scale : IComponentData
     {
-        public float Value;
+        public sfloat Value;
     }
 }

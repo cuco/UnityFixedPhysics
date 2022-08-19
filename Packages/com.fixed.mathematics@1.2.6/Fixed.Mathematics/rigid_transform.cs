@@ -23,7 +23,7 @@ namespace Fixed.Mathematics
         public float3 pos;
 
         /// <summary>A RigidTransform representing the identity transform.</summary>
-        public static readonly RigidTransform identity = new RigidTransform(new quaternion(0.0f, 0.0f, 0.0f, 1.0f), new float3(0.0f, 0.0f, 0.0f));
+        public static readonly RigidTransform identity = new RigidTransform(new quaternion(sfloat.Zero, sfloat.Zero, sfloat.Zero, sfloat.One), new float3(sfloat.Zero, sfloat.Zero, sfloat.Zero));
 
         /// <summary>Constructs a RigidTransform from a rotation represented by a unit quaternion and a translation represented by a float3 vector.</summary>
         /// <param name="rotation">The quaternion rotation.</param>
@@ -63,7 +63,7 @@ namespace Fixed.Mathematics
         /// <param name="angle">The rotation angle in radians.</param>
         /// <returns>The RigidTransform from a rotation axis and angle of rotation.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static RigidTransform AxisAngle(float3 axis, float angle) { return new RigidTransform(quaternion.AxisAngle(axis, angle), float3.zero); }
+        public static RigidTransform AxisAngle(float3 axis, sfloat angle) { return new RigidTransform(quaternion.AxisAngle(axis, angle), float3.zero); }
 
         /// <summary>
         /// Returns a RigidTransform constructed by first performing a rotation around the x-axis, then the y-axis and finally the z-axis.
@@ -130,7 +130,7 @@ namespace Fixed.Mathematics
         /// <param name="z">The rotation angle around the z-axis in radians.</param>
         /// <returns>The RigidTransform of the Euler angle transformation in x-y-z order.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static RigidTransform EulerXYZ(float x, float y, float z) { return EulerXYZ(float3(x, y, z)); }
+        public static RigidTransform EulerXYZ(sfloat x, sfloat y, sfloat z) { return EulerXYZ(float3(x, y, z)); }
 
         /// <summary>
         /// Returns a RigidTransform constructed by first performing a rotation around the x-axis, then the z-axis and finally the y-axis.
@@ -141,7 +141,7 @@ namespace Fixed.Mathematics
         /// <param name="z">The rotation angle around the z-axis in radians.</param>
         /// <returns>The RigidTransform of the Euler angle transformation in x-z-y order.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static RigidTransform EulerXZY(float x, float y, float z) { return EulerXZY(float3(x, y, z)); }
+        public static RigidTransform EulerXZY(sfloat x, sfloat y, sfloat z) { return EulerXZY(float3(x, y, z)); }
 
         /// <summary>
         /// Returns a RigidTransform constructed by first performing a rotation around the y-axis, then the x-axis and finally the z-axis.
@@ -152,7 +152,7 @@ namespace Fixed.Mathematics
         /// <param name="z">The rotation angle around the z-axis in radians.</param>
         /// <returns>The RigidTransform of the Euler angle transformation in y-x-z order.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static RigidTransform EulerYXZ(float x, float y, float z) { return EulerYXZ(float3(x, y, z)); }
+        public static RigidTransform EulerYXZ(sfloat x, sfloat y, sfloat z) { return EulerYXZ(float3(x, y, z)); }
 
         /// <summary>
         /// Returns a RigidTransform constructed by first performing a rotation around the y-axis, then the z-axis and finally the x-axis.
@@ -163,7 +163,7 @@ namespace Fixed.Mathematics
         /// <param name="z">The rotation angle around the z-axis in radians.</param>
         /// <returns>The RigidTransform of the Euler angle transformation in y-z-x order.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static RigidTransform EulerYZX(float x, float y, float z) { return EulerYZX(float3(x, y, z)); }
+        public static RigidTransform EulerYZX(sfloat x, sfloat y, sfloat z) { return EulerYZX(float3(x, y, z)); }
 
         /// <summary>
         /// Returns a RigidTransform constructed by first performing a rotation around the z-axis, then the x-axis and finally the y-axis.
@@ -175,7 +175,7 @@ namespace Fixed.Mathematics
         /// <param name="z">The rotation angle around the z-axis in radians.</param>
         /// <returns>The RigidTransform of the Euler angle transformation in z-x-y order.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static RigidTransform EulerZXY(float x, float y, float z) { return EulerZXY(float3(x, y, z)); }
+        public static RigidTransform EulerZXY(sfloat x, sfloat y, sfloat z) { return EulerZXY(float3(x, y, z)); }
 
         /// <summary>
         /// Returns a RigidTransform constructed by first performing a rotation around the z-axis, then the y-axis and finally the x-axis.
@@ -186,7 +186,7 @@ namespace Fixed.Mathematics
         /// <param name="z">The rotation angle around the z-axis in radians.</param>
         /// <returns>The RigidTransform of the Euler angle transformation in z-y-x order.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static RigidTransform EulerZYX(float x, float y, float z) { return EulerZYX(float3(x, y, z)); }
+        public static RigidTransform EulerZYX(sfloat x, sfloat y, sfloat z) { return EulerZYX(float3(x, y, z)); }
 
         /// <summary>
         /// Returns a RigidTransform constructed by first performing 3 rotations around the principal axes in a given order.
@@ -231,7 +231,7 @@ namespace Fixed.Mathematics
         /// <param name="order">The order in which the rotations are applied.</param>
         /// <returns>The RigidTransform of the Euler angle transformation in the given rotation order.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static RigidTransform Euler(float x, float y, float z, RotationOrder order = RotationOrder.Default)
+        public static RigidTransform Euler(sfloat x, sfloat y, sfloat z, RotationOrder order = RotationOrder.Default)
         {
             return Euler(float3(x, y, z), order);
         }
@@ -240,7 +240,7 @@ namespace Fixed.Mathematics
         /// <param name="angle">The clockwise rotation angle when looking along the x-axis towards the origin in radians.</param>
         /// <returns>The RigidTransform of rotating around the x-axis by the given angle.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static RigidTransform RotateX(float angle)
+        public static RigidTransform RotateX(sfloat angle)
         {
             return new RigidTransform(quaternion.RotateX(angle), float3.zero);
         }
@@ -249,7 +249,7 @@ namespace Fixed.Mathematics
         /// <param name="angle">The clockwise rotation angle when looking along the y-axis towards the origin in radians.</param>
         /// <returns>The RigidTransform of rotating around the y-axis by the given angle.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static RigidTransform RotateY(float angle)
+        public static RigidTransform RotateY(sfloat angle)
         {
             return new RigidTransform(quaternion.RotateY(angle), float3.zero);
         }
@@ -258,7 +258,7 @@ namespace Fixed.Mathematics
         /// <param name="angle">The clockwise rotation angle when looking along the z-axis towards the origin in radians.</param>
         /// <returns>The RigidTransform of rotating around the z-axis by the given angle.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static RigidTransform RotateZ(float angle)
+        public static RigidTransform RotateZ(sfloat angle)
         {
             return new RigidTransform(quaternion.RotateZ(angle), float3.zero);
         }

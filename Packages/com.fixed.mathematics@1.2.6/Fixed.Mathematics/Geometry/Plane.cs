@@ -37,7 +37,7 @@ namespace Fixed.Mathematics.Geometry
         /// <param name="coefficientC">Coefficient C from plane equation.</param>
         /// <param name="coefficientD">Coefficient D from plane equation.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Plane(float coefficientA, float coefficientB, float coefficientC, float coefficientD)
+        public Plane(sfloat coefficientA, sfloat coefficientB, sfloat coefficientC, sfloat coefficientD)
         {
             NormalAndDistance = Normalize(new float4(coefficientA, coefficientB, coefficientC, coefficientD));
         }
@@ -52,7 +52,7 @@ namespace Fixed.Mathematics.Geometry
         /// <param name="distance">Distance from the origin along the normal.  A negative value moves the plane in the
         /// same direction as the normal while a positive value moves it in the opposite direction.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Plane(float3 normal, float distance)
+        public Plane(float3 normal, sfloat distance)
         {
             NormalAndDistance = Normalize(new float4(normal, distance));
         }
@@ -98,7 +98,7 @@ namespace Fixed.Mathematics.Geometry
         /// same direction as the normal while a positive value moves it in the opposite direction.</param>
         /// <returns>Normalized Plane constructed from given inputs.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Plane CreateFromUnitNormalAndDistance(float3 unitNormal, float distance)
+        public static Plane CreateFromUnitNormalAndDistance(float3 unitNormal, sfloat distance)
         {
             return new Plane { NormalAndDistance = new float4(unitNormal, distance) };
         }
@@ -139,7 +139,7 @@ namespace Fixed.Mathematics.Geometry
         /// It is assumed that the normal is unit length.  If you set a new plane such that Ax + By + Cz + Dw = 0 but
         /// (A, B, C) is not unit length, then you must normalize the plane by calling <see cref="Normalize(Plane)"/>.
         /// </remarks>
-        public float Distance
+        public sfloat Distance
         {
             get => NormalAndDistance.w;
             set => NormalAndDistance.w = value;
@@ -167,7 +167,7 @@ namespace Fixed.Mathematics.Geometry
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float4 Normalize(float4 planeCoefficients)
         {
-            float recipLength = math.rsqrt(math.lengthsq(planeCoefficients.xyz));
+            sfloat recipLength = math.rsqrt(math.lengthsq(planeCoefficients.xyz));
             return new Plane { NormalAndDistance = planeCoefficients * recipLength };
         }
 
@@ -177,16 +177,16 @@ namespace Fixed.Mathematics.Geometry
         /// <remarks>
         /// Plane must be normalized prior to calling this function.  Distance is positive if point is on side of the
         /// plane the normal points to, negative if on the opposite side and zero if the point lies in the plane.
-        /// Avoid comparing equality with 0.0f when testing if a point lies exactly in the plane and use an approximate
+        /// Avoid comparing equality with sfloat.Zero when testing if a point lies exactly in the plane and use an approximate
         /// comparison instead.
         /// </remarks>
         /// <param name="point">Point to find the signed distance with.</param>
         /// <returns>Signed distance of the point from the plane.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public float SignedDistanceToPoint(float3 point)
+        public sfloat SignedDistanceToPoint(float3 point)
         {
             CheckPlaneIsNormalized();
-            return math.dot(NormalAndDistance, new float4(point, 1.0f));
+            return math.dot(NormalAndDistance, new float4(point, sfloat.One));
         }
 
         /// <summary>
@@ -221,14 +221,15 @@ namespace Fixed.Mathematics.Geometry
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
         void CheckPlaneIsNormalized()
         {
-            float ll = math.lengthsq(Normal.xyz);
-            const float lowerBound = 0.999f * 0.999f;
-            const float upperBound = 1.001f * 1.001f;
-
-            if (ll < lowerBound || ll > upperBound)
-            {
-                throw new System.ArgumentException("Plane must be normalized. Call Plane.Normalize() to normalize plane.");
-            }
+            //TODO gary
+            // sfloat ll = math.lengthsq(Normal.xyz);
+            // const sfloat lowerBound = 0.999f * 0.999f;
+            // const sfloat upperBound = 1.001f * 1.001f;
+            //
+            // if (ll < lowerBound || ll > upperBound)
+            // {
+            //     throw new System.ArgumentException("Plane must be normalized. Call Plane.Normalize() to normalize plane.");
+            // }
         }
     }
 }

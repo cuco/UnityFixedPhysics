@@ -18,15 +18,15 @@ namespace Fixed.Mathematics
         public float4 value;
 
         /// <summary>A quaternion representing the identity transform.</summary>
-        public static readonly quaternion identity = new quaternion(0.0f, 0.0f, 0.0f, 1.0f);
+        public static readonly quaternion identity = new quaternion(sfloat.Zero, sfloat.Zero, sfloat.Zero, sfloat.One);
 
-        /// <summary>Constructs a quaternion from four float values.</summary>
+        /// <summary>Constructs a quaternion from four sfloat values.</summary>
         /// <param name="x">The quaternion x component.</param>
         /// <param name="y">The quaternion y component.</param>
         /// <param name="z">The quaternion z component.</param>
         /// <param name="w">The quaternion w component.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public quaternion(float x, float y, float z, float w) { value.x = x; value.y = y; value.z = z; value.w = w; }
+        public quaternion(sfloat x, sfloat y, sfloat z, sfloat w) { value.x = x; value.y = y; value.z = z; value.w = w; }
 
         /// <summary>Constructs a quaternion from float4 vector.</summary>
         /// <param name="value">The quaternion xyzw component values.</param>
@@ -48,11 +48,11 @@ namespace Fixed.Mathematics
             float3 w = m.c2;
 
             uint u_sign = (asuint(u.x) & 0x80000000);
-            float t = v.y + asfloat(asuint(w.z) ^ u_sign);
+            sfloat t = v.y + asfloat(asuint(w.z) ^ u_sign);
             uint4 u_mask = uint4((int)u_sign >> 31);
             uint4 t_mask = uint4(asint(t) >> 31);
 
-            float tr = 1.0f + abs(u.x);
+            sfloat tr = sfloat.One + abs(u.x);
 
             uint4 sign_flips = uint4(0x00000000, 0x80000000, 0x80000000, 0x80000000) ^ (u_mask & uint4(0x00000000, 0x80000000, 0x00000000, 0x80000000)) ^ (t_mask & uint4(0x80000000, 0x80000000, 0x80000000, 0x00000000));
 
@@ -72,11 +72,11 @@ namespace Fixed.Mathematics
             float4 w = m.c2;
 
             uint u_sign = (asuint(u.x) & 0x80000000);
-            float t = v.y + asfloat(asuint(w.z) ^ u_sign);
+            sfloat t = v.y + asfloat(asuint(w.z) ^ u_sign);
             uint4 u_mask = uint4((int)u_sign >> 31);
             uint4 t_mask = uint4(asint(t) >> 31);
 
-            float tr = 1.0f + abs(u.x);
+            sfloat tr = sfloat.One + abs(u.x);
 
             uint4 sign_flips = uint4(0x00000000, 0x80000000, 0x80000000, 0x80000000) ^ (u_mask & uint4(0x00000000, 0x80000000, 0x00000000, 0x80000000)) ^ (t_mask & uint4(0x80000000, 0x80000000, 0x80000000, 0x00000000));
 
@@ -96,10 +96,10 @@ namespace Fixed.Mathematics
         /// <param name="angle">The angle of rotation in radians.</param>
         /// <returns>The quaternion representing a rotation around an axis.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static quaternion AxisAngle(float3 axis, float angle)
+        public static quaternion AxisAngle(float3 axis, sfloat angle)
         {
-            float sina, cosa;
-            math.sincos(0.5f * angle, out sina, out cosa);
+            sfloat sina, cosa;
+            math.sincos((sfloat)0.5f * angle, out sina, out cosa);
             return quaternion(float4(axis * sina, cosa));
         }
 
@@ -114,13 +114,13 @@ namespace Fixed.Mathematics
         {
             // return mul(rotateZ(xyz.z), mul(rotateY(xyz.y), rotateX(xyz.x)));
             float3 s, c;
-            sincos(0.5f * xyz, out s, out c);
+            sincos((sfloat)0.5f * xyz, out s, out c);
             return quaternion(
                 // s.x * c.y * c.z - s.y * s.z * c.x,
                 // s.y * c.x * c.z + s.x * s.z * c.y,
                 // s.z * c.x * c.y - s.x * s.y * c.z,
                 // c.x * c.y * c.z + s.y * s.z * s.x
-                float4(s.xyz, c.x) * c.yxxy * c.zzyz + s.yxxy * s.zzyz * float4(c.xyz, s.x) * float4(-1.0f, 1.0f, -1.0f, 1.0f)
+                float4(s.xyz, c.x) * c.yxxy * c.zzyz + s.yxxy * s.zzyz * float4(c.xyz, s.x) * float4(-sfloat.One, sfloat.One, -sfloat.One, sfloat.One)
                 );
         }
 
@@ -135,13 +135,13 @@ namespace Fixed.Mathematics
         {
             // return mul(rotateY(xyz.y), mul(rotateZ(xyz.z), rotateX(xyz.x)));
             float3 s, c;
-            sincos(0.5f * xyz, out s, out c);
+            sincos((sfloat)0.5f * xyz, out s, out c);
             return quaternion(
                 // s.x * c.y * c.z + s.y * s.z * c.x,
                 // s.y * c.x * c.z + s.x * s.z * c.y,
                 // s.z * c.x * c.y - s.x * s.y * c.z,
                 // c.x * c.y * c.z - s.y * s.z * s.x
-                float4(s.xyz, c.x) * c.yxxy * c.zzyz + s.yxxy * s.zzyz * float4(c.xyz, s.x) * float4(1.0f, 1.0f, -1.0f, -1.0f)
+                float4(s.xyz, c.x) * c.yxxy * c.zzyz + s.yxxy * s.zzyz * float4(c.xyz, s.x) * float4(sfloat.One, sfloat.One, -sfloat.One, -sfloat.One)
                 );
         }
 
@@ -156,13 +156,13 @@ namespace Fixed.Mathematics
         {
             // return mul(rotateZ(xyz.z), mul(rotateX(xyz.x), rotateY(xyz.y)));
             float3 s, c;
-            sincos(0.5f * xyz, out s, out c);
+            sincos((sfloat)0.5f * xyz, out s, out c);
             return quaternion(
                 // s.x * c.y * c.z - s.y * s.z * c.x,
                 // s.y * c.x * c.z + s.x * s.z * c.y,
                 // s.z * c.x * c.y + s.x * s.y * c.z,
                 // c.x * c.y * c.z - s.y * s.z * s.x
-                float4(s.xyz, c.x) * c.yxxy * c.zzyz + s.yxxy * s.zzyz * float4(c.xyz, s.x) * float4(-1.0f, 1.0f, 1.0f, -1.0f)
+                float4(s.xyz, c.x) * c.yxxy * c.zzyz + s.yxxy * s.zzyz * float4(c.xyz, s.x) * float4(-sfloat.One, sfloat.One, sfloat.One, -sfloat.One)
                 );
         }
 
@@ -177,13 +177,13 @@ namespace Fixed.Mathematics
         {
             // return mul(rotateX(xyz.x), mul(rotateZ(xyz.z), rotateY(xyz.y)));
             float3 s, c;
-            sincos(0.5f * xyz, out s, out c);
+            sincos((sfloat)0.5f * xyz, out s, out c);
             return quaternion(
                 // s.x * c.y * c.z - s.y * s.z * c.x,
                 // s.y * c.x * c.z - s.x * s.z * c.y,
                 // s.z * c.x * c.y + s.x * s.y * c.z,
                 // c.x * c.y * c.z + s.y * s.z * s.x
-                float4(s.xyz, c.x) * c.yxxy * c.zzyz + s.yxxy * s.zzyz * float4(c.xyz, s.x) * float4(-1.0f, -1.0f, 1.0f, 1.0f)
+                float4(s.xyz, c.x) * c.yxxy * c.zzyz + s.yxxy * s.zzyz * float4(c.xyz, s.x) * float4(-sfloat.One, -sfloat.One, sfloat.One, sfloat.One)
                 );
         }
 
@@ -199,13 +199,13 @@ namespace Fixed.Mathematics
         {
             // return mul(rotateY(xyz.y), mul(rotateX(xyz.x), rotateZ(xyz.z)));
             float3 s, c;
-            sincos(0.5f * xyz, out s, out c);
+            sincos((sfloat)0.5f * xyz, out s, out c);
             return quaternion(
                 // s.x * c.y * c.z + s.y * s.z * c.x,
                 // s.y * c.x * c.z - s.x * s.z * c.y,
                 // s.z * c.x * c.y - s.x * s.y * c.z,
                 // c.x * c.y * c.z + s.y * s.z * s.x
-                float4(s.xyz, c.x) * c.yxxy * c.zzyz + s.yxxy * s.zzyz * float4(c.xyz, s.x) * float4(1.0f, -1.0f, -1.0f, 1.0f)
+                float4(s.xyz, c.x) * c.yxxy * c.zzyz + s.yxxy * s.zzyz * float4(c.xyz, s.x) * float4(sfloat.One, -sfloat.One, -sfloat.One, sfloat.One)
                 );
         }
 
@@ -220,13 +220,13 @@ namespace Fixed.Mathematics
         {
             // return mul(rotateX(xyz.x), mul(rotateY(xyz.y), rotateZ(xyz.z)));
             float3 s, c;
-            sincos(0.5f * xyz, out s, out c);
+            sincos((sfloat)0.5f * xyz, out s, out c);
             return quaternion(
                 // s.x * c.y * c.z + s.y * s.z * c.x,
                 // s.y * c.x * c.z - s.x * s.z * c.y,
                 // s.z * c.x * c.y + s.x * s.y * c.z,
                 // c.x * c.y * c.z - s.y * s.x * s.z
-                float4(s.xyz, c.x) * c.yxxy * c.zzyz + s.yxxy * s.zzyz * float4(c.xyz, s.x) * float4(1.0f, -1.0f, 1.0f, -1.0f)
+                float4(s.xyz, c.x) * c.yxxy * c.zzyz + s.yxxy * s.zzyz * float4(c.xyz, s.x) * float4(sfloat.One, -sfloat.One, sfloat.One, -sfloat.One)
                 );
         }
 
@@ -239,7 +239,7 @@ namespace Fixed.Mathematics
         /// <param name="z">The rotation angle around the z-axis in radians.</param>
         /// <returns>The quaternion representing the Euler angle rotation in x-y-z order.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static quaternion EulerXYZ(float x, float y, float z) { return EulerXYZ(float3(x, y, z)); }
+        public static quaternion EulerXYZ(sfloat x, sfloat y, sfloat z) { return EulerXYZ(float3(x, y, z)); }
 
         /// <summary>
         /// Returns a quaternion constructed by first performing a rotation around the x-axis, then the z-axis and finally the y-axis.
@@ -250,7 +250,7 @@ namespace Fixed.Mathematics
         /// <param name="z">The rotation angle around the z-axis in radians.</param>
         /// <returns>The quaternion representing the Euler angle rotation in x-z-y order.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static quaternion EulerXZY(float x, float y, float z) { return EulerXZY(float3(x, y, z)); }
+        public static quaternion EulerXZY(sfloat x, sfloat y, sfloat z) { return EulerXZY(float3(x, y, z)); }
 
         /// <summary>
         /// Returns a quaternion constructed by first performing a rotation around the y-axis, then the x-axis and finally the z-axis.
@@ -261,7 +261,7 @@ namespace Fixed.Mathematics
         /// <param name="z">The rotation angle around the z-axis in radians.</param>
         /// <returns>The quaternion representing the Euler angle rotation in y-x-z order.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static quaternion EulerYXZ(float x, float y, float z) { return EulerYXZ(float3(x, y, z)); }
+        public static quaternion EulerYXZ(sfloat x, sfloat y, sfloat z) { return EulerYXZ(float3(x, y, z)); }
 
         /// <summary>
         /// Returns a quaternion constructed by first performing a rotation around the y-axis, then the z-axis and finally the x-axis.
@@ -272,7 +272,7 @@ namespace Fixed.Mathematics
         /// <param name="z">The rotation angle around the z-axis in radians.</param>
         /// <returns>The quaternion representing the Euler angle rotation in y-z-x order.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static quaternion EulerYZX(float x, float y, float z) { return EulerYZX(float3(x, y, z)); }
+        public static quaternion EulerYZX(sfloat x, sfloat y, sfloat z) { return EulerYZX(float3(x, y, z)); }
 
         /// <summary>
         /// Returns a quaternion constructed by first performing a rotation around the z-axis, then the x-axis and finally the y-axis.
@@ -284,7 +284,7 @@ namespace Fixed.Mathematics
         /// <param name="z">The rotation angle around the z-axis in radians.</param>
         /// <returns>The quaternion representing the Euler angle rotation in z-x-y order.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static quaternion EulerZXY(float x, float y, float z) { return EulerZXY(float3(x, y, z)); }
+        public static quaternion EulerZXY(sfloat x, sfloat y, sfloat z) { return EulerZXY(float3(x, y, z)); }
 
         /// <summary>
         /// Returns a quaternion constructed by first performing a rotation around the z-axis, then the y-axis and finally the x-axis.
@@ -295,7 +295,7 @@ namespace Fixed.Mathematics
         /// <param name="z">The rotation angle around the z-axis in radians.</param>
         /// <returns>The quaternion representing the Euler angle rotation in z-y-x order.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static quaternion EulerZYX(float x, float y, float z) { return EulerZYX(float3(x, y, z)); }
+        public static quaternion EulerZYX(sfloat x, sfloat y, sfloat z) { return EulerZYX(float3(x, y, z)); }
 
         /// <summary>
         /// Returns a quaternion constructed by first performing 3 rotations around the principal axes in a given order.
@@ -340,7 +340,7 @@ namespace Fixed.Mathematics
         /// <param name="order">The order in which the rotations are applied.</param>
         /// <returns>The quaternion representing the Euler angle rotation in the specified order.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static quaternion Euler(float x, float y, float z, RotationOrder order = RotationOrder.Default)
+        public static quaternion Euler(sfloat x, sfloat y, sfloat z, RotationOrder order = RotationOrder.Default)
         {
             return Euler(float3(x, y, z), order);
         }
@@ -349,33 +349,33 @@ namespace Fixed.Mathematics
         /// <param name="angle">The clockwise rotation angle when looking along the x-axis towards the origin in radians.</param>
         /// <returns>The quaternion representing a rotation around the x-axis.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static quaternion RotateX(float angle)
+        public static quaternion RotateX(sfloat angle)
         {
-            float sina, cosa;
-            math.sincos(0.5f * angle, out sina, out cosa);
-            return quaternion(sina, 0.0f, 0.0f, cosa);
+            sfloat sina, cosa;
+            math.sincos((sfloat)0.5f * angle, out sina, out cosa);
+            return quaternion(sina, sfloat.Zero, sfloat.Zero, cosa);
         }
 
         /// <summary>Returns a quaternion that rotates around the y-axis by a given number of radians.</summary>
         /// <param name="angle">The clockwise rotation angle when looking along the y-axis towards the origin in radians.</param>
         /// <returns>The quaternion representing a rotation around the y-axis.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static quaternion RotateY(float angle)
+        public static quaternion RotateY(sfloat angle)
         {
-            float sina, cosa;
-            math.sincos(0.5f * angle, out sina, out cosa);
-            return quaternion(0.0f, sina, 0.0f, cosa);
+            sfloat sina, cosa;
+            math.sincos((sfloat)0.5f * angle, out sina, out cosa);
+            return quaternion(sfloat.Zero, sina, sfloat.Zero, cosa);
         }
 
         /// <summary>Returns a quaternion that rotates around the z-axis by a given number of radians.</summary>
         /// <param name="angle">The clockwise rotation angle when looking along the z-axis towards the origin in radians.</param>
         /// <returns>The quaternion representing a rotation around the z-axis.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static quaternion RotateZ(float angle)
+        public static quaternion RotateZ(sfloat angle)
         {
-            float sina, cosa;
-            math.sincos(0.5f * angle, out sina, out cosa);
-            return quaternion(0.0f, 0.0f, sina, cosa);
+            sfloat sina, cosa;
+            math.sincos((sfloat)0.5f * angle, out sina, out cosa);
+            return quaternion(sfloat.Zero, sfloat.Zero, sina, cosa);
         }
 
         /// <summary>
@@ -404,21 +404,24 @@ namespace Fixed.Mathematics
         /// <returns>The quaternion view rotation or the identity quaternion.</returns>
         public static quaternion LookRotationSafe(float3 forward, float3 up)
         {
-            float forwardLengthSq = dot(forward, forward);
-            float upLengthSq = dot(up, up);
+            sfloat forwardLengthSq = dot(forward, forward);
+            sfloat upLengthSq = dot(up, up);
 
             forward *= rsqrt(forwardLengthSq);
             up *= rsqrt(upLengthSq);
 
             float3 t = cross(up, forward);
-            float tLengthSq = dot(t, t);
+            sfloat tLengthSq = dot(t, t);
             t *= rsqrt(tLengthSq);
 
-            float mn = min(min(forwardLengthSq, upLengthSq), tLengthSq);
-            float mx = max(max(forwardLengthSq, upLengthSq), tLengthSq);
+            sfloat mn = min(min(forwardLengthSq, upLengthSq), tLengthSq);
+            sfloat mx = max(max(forwardLengthSq, upLengthSq), tLengthSq);
 
-            bool accept = mn > 1e-35f && mx < 1e35f && isfinite(forwardLengthSq) && isfinite(upLengthSq) && isfinite(tLengthSq);
-            return quaternion(select(float4(0.0f, 0.0f, 0.0f, 1.0f), quaternion(float3x3(t, cross(forward, t),forward)).value, accept));
+            const uint bigValue = 0x799a130c;
+            const uint smallValue = 0x0554ad2e;
+
+            bool accept = mn > sfloat.FromRaw(smallValue) && mx < sfloat.FromRaw(bigValue) && isfinite(forwardLengthSq) && isfinite(upLengthSq) && isfinite(tLengthSq);
+            return quaternion(select(float4(sfloat.Zero, sfloat.Zero, sfloat.Zero, sfloat.One), quaternion(float3x3(t, cross(forward, t),forward)).value, accept));
         }
 
         /// <summary>Returns true if the quaternion is equal to a given quaternion, false otherwise.</summary>
@@ -459,14 +462,14 @@ namespace Fixed.Mathematics
 
     public static partial class math
     {
-        /// <summary>Returns a quaternion constructed from four float values.</summary>
+        /// <summary>Returns a quaternion constructed from four sfloat values.</summary>
         /// <param name="x">The x component of the quaternion.</param>
         /// <param name="y">The y component of the quaternion.</param>
         /// <param name="z">The z component of the quaternion.</param>
         /// <param name="w">The w component of the quaternion.</param>
         /// <returns>The quaternion constructed from individual components.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static quaternion quaternion(float x, float y, float z, float w) { return new quaternion(x, y, z, w); }
+        public static quaternion quaternion(sfloat x, sfloat y, sfloat z, sfloat w) { return new quaternion(x, y, z, w); }
 
         /// <summary>Returns a quaternion constructed from a float4 vector.</summary>
         /// <param name="value">The float4 containing the components of the quaternion.</param>
@@ -492,7 +495,7 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static quaternion conjugate(quaternion q)
         {
-            return quaternion(q.value * float4(-1.0f, -1.0f, -1.0f, 1.0f));
+            return quaternion(q.value * float4(-sfloat.One, -sfloat.One, -sfloat.One, sfloat.One));
         }
 
        /// <summary>Returns the inverse of a quaternion value.</summary>
@@ -502,7 +505,7 @@ namespace Fixed.Mathematics
         public static quaternion inverse(quaternion q)
         {
             float4 x = q.value;
-            return quaternion(rcp(dot(x, x)) * x * float4(-1.0f, -1.0f, -1.0f, 1.0f));
+            return quaternion(rcp(dot(x, x)) * x * float4(-sfloat.One, -sfloat.One, -sfloat.One, sfloat.One));
         }
 
         /// <summary>Returns the dot product of two quaternions.</summary>
@@ -510,7 +513,7 @@ namespace Fixed.Mathematics
         /// <param name="b">The second quaternion.</param>
         /// <returns>The dot product of two quaternions.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float dot(quaternion a, quaternion b)
+        public static sfloat dot(quaternion a, quaternion b)
         {
             return dot(a.value, b.value);
         }
@@ -519,7 +522,7 @@ namespace Fixed.Mathematics
         /// <param name="q">The input quaternion.</param>
         /// <returns>The length of the input quaternion.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float length(quaternion q)
+        public static sfloat length(quaternion q)
         {
             return sqrt(dot(q.value, q.value));
         }
@@ -528,7 +531,7 @@ namespace Fixed.Mathematics
         /// <param name="q">The input quaternion.</param>
         /// <returns>The length squared of the input quaternion.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float lengthsq(quaternion q)
+        public static sfloat lengthsq(quaternion q)
         {
             return dot(q.value, q.value);
         }
@@ -553,7 +556,7 @@ namespace Fixed.Mathematics
         public static quaternion normalizesafe(quaternion q)
         {
             float4 x = q.value;
-            float len = math.dot(x, x);
+            sfloat len = math.dot(x, x);
             return quaternion(math.select(Mathematics.quaternion.identity.value, x * math.rsqrt(len), len > FLT_MIN_NORMAL));
         }
 
@@ -568,7 +571,7 @@ namespace Fixed.Mathematics
         public static quaternion normalizesafe(quaternion q, quaternion defaultvalue)
         {
             float4 x = q.value;
-            float len = math.dot(x, x);
+            sfloat len = math.dot(x, x);
             return quaternion(math.select(defaultvalue.value, x * math.rsqrt(len), len > FLT_MIN_NORMAL));
         }
 
@@ -578,9 +581,9 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static quaternion unitexp(quaternion q)
         {
-            float v_rcp_len = rsqrt(dot(q.value.xyz, q.value.xyz));
-            float v_len = rcp(v_rcp_len);
-            float sin_v_len, cos_v_len;
+            sfloat v_rcp_len = rsqrt(dot(q.value.xyz, q.value.xyz));
+            sfloat v_len = rcp(v_rcp_len);
+            sfloat sin_v_len, cos_v_len;
             sincos(v_len, out sin_v_len, out cos_v_len);
             return quaternion(float4(q.value.xyz * v_rcp_len * sin_v_len, cos_v_len));
         }
@@ -591,9 +594,9 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static quaternion exp(quaternion q)
         {
-            float v_rcp_len = rsqrt(dot(q.value.xyz, q.value.xyz));
-            float v_len = rcp(v_rcp_len);
-            float sin_v_len, cos_v_len;
+            sfloat v_rcp_len = rsqrt(dot(q.value.xyz, q.value.xyz));
+            sfloat v_len = rcp(v_rcp_len);
+            sfloat sin_v_len, cos_v_len;
             sincos(v_len, out sin_v_len, out cos_v_len);
             return quaternion(float4(q.value.xyz * v_rcp_len * sin_v_len, cos_v_len) * exp(q.value.w));
         }
@@ -604,9 +607,9 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static quaternion unitlog(quaternion q)
         {
-            float w = clamp(q.value.w, -1.0f, 1.0f);
-            float s = acos(w) * rsqrt(1.0f - w*w);
-            return quaternion(float4(q.value.xyz * s, 0.0f));
+            sfloat w = clamp(q.value.w, -sfloat.One, sfloat.One);
+            sfloat s = acos(w) * rsqrt(sfloat.One - w*w);
+            return quaternion(float4(q.value.xyz * s, sfloat.Zero));
         }
 
         /// <summary>Returns the natural logarithm of a quaternion.</summary>
@@ -615,11 +618,11 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static quaternion log(quaternion q)
         {
-            float v_len_sq = dot(q.value.xyz, q.value.xyz);
-            float q_len_sq = v_len_sq + q.value.w*q.value.w;
+            sfloat v_len_sq = dot(q.value.xyz, q.value.xyz);
+            sfloat q_len_sq = v_len_sq + q.value.w*q.value.w;
 
-            float s = acos(clamp(q.value.w * rsqrt(q_len_sq), -1.0f, 1.0f)) * rsqrt(v_len_sq);
-            return quaternion(float4(q.value.xyz * s, 0.5f * log(q_len_sq)));
+            sfloat s = acos(clamp(q.value.w * rsqrt(q_len_sq), -sfloat.One, sfloat.One)) * rsqrt(v_len_sq);
+            return quaternion(float4(q.value.xyz * s, (sfloat)0.5f * log(q_len_sq)));
         }
 
         /// <summary>Returns the result of transforming the quaternion b by the quaternion a.</summary>
@@ -629,7 +632,7 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static quaternion mul(quaternion a, quaternion b)
         {
-            return quaternion(a.value.wwww * b.value + (a.value.xyzx * b.value.wwwx + a.value.yzxy * b.value.zxyy) * float4(1.0f, 1.0f, 1.0f, -1.0f) - a.value.zxyz * b.value.yzxz);
+            return quaternion(a.value.wwww * b.value + (a.value.xyzx * b.value.wwwx + a.value.yzxy * b.value.zxyy) * float4(sfloat.One, sfloat.One, sfloat.One, -sfloat.One) - a.value.zxyz * b.value.yzxz);
         }
 
         /// <summary>Returns the result of transforming a vector by a quaternion.</summary>
@@ -639,7 +642,7 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float3 mul(quaternion q, float3 v)
         {
-            float3 t = 2 * cross(q.value.xyz, v);
+            float3 t = (sfloat)2.0f * cross(q.value.xyz, v);
             return v + q.value.w * t + cross(q.value.xyz, t);
         }
 
@@ -650,7 +653,7 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float3 rotate(quaternion q, float3 v)
         {
-            float3 t = 2 * cross(q.value.xyz, v);
+            float3 t = (sfloat)2.0f * cross(q.value.xyz, v);
             return v + q.value.w * t + cross(q.value.xyz, t);
         }
 
@@ -664,10 +667,10 @@ namespace Fixed.Mathematics
         /// <param name="t">The interpolation parameter.</param>
         /// <returns>The normalized linear interpolation of two quaternions.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static quaternion nlerp(quaternion q1, quaternion q2, float t)
+        public static quaternion nlerp(quaternion q1, quaternion q2, sfloat t)
         {
-            float dt = dot(q1, q2);
-            if(dt < 0.0f)
+            sfloat dt = dot(q1, q2);
+            if(dt < sfloat.Zero)
             {
                 q2.value = -q2.value;
             }
@@ -681,21 +684,23 @@ namespace Fixed.Mathematics
         /// <param name="t">The interpolation parameter.</param>
         /// <returns>The spherical linear interpolation of two quaternions.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static quaternion slerp(quaternion q1, quaternion q2, float t)
+        public static quaternion slerp(quaternion q1, quaternion q2, sfloat t)
         {
-            float dt = dot(q1, q2);
-            if (dt < 0.0f)
+            sfloat dt = dot(q1, q2);
+            if (dt < sfloat.Zero)
             {
                 dt = -dt;
                 q2.value = -q2.value;
             }
 
-            if (dt < 0.9995f)
+            //0.9995f
+            const uint almostOne = 0x3f7fdf3b;
+            if (dt < sfloat.FromRaw(almostOne))
             {
-                float angle = acos(dt);
-                float s = rsqrt(1.0f - dt * dt);    // 1.0f / sin(angle)
-                float w1 = sin(angle * (1.0f - t)) * s;
-                float w2 = sin(angle * t) * s;
+                sfloat angle = acos(dt);
+                sfloat s = rsqrt(sfloat.One - dt * dt);    // sfloat.One / sin(angle)
+                sfloat w1 = sin(angle * (sfloat.One - t)) * s;
+                sfloat w2 = sin(angle * t) * s;
                 return quaternion(q1.value * w1 + q2.value * w2);
             }
             else
@@ -734,6 +739,6 @@ namespace Fixed.Mathematics
         /// <param name="q">The quaternion transformation.</param>
         /// <returns>The forward vector transformed by the input quaternion.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float3 forward(quaternion q) { return mul(q, float3(0, 0, 1)); }  // for compatibility
+        public static float3 forward(quaternion q) { return mul(q, float3(sfloat.Zero, sfloat.Zero, sfloat.One)); }  // for compatibility
     }
 }

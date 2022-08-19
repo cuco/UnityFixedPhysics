@@ -22,24 +22,24 @@ namespace Fixed.Mathematics
     public partial struct float4 : System.IEquatable<float4>, IFormattable
     {
         /// <summary>x component of the vector.</summary>
-        public float x;
+        public sfloat x;
         /// <summary>y component of the vector.</summary>
-        public float y;
+        public sfloat y;
         /// <summary>z component of the vector.</summary>
-        public float z;
+        public sfloat z;
         /// <summary>w component of the vector.</summary>
-        public float w;
+        public sfloat w;
 
         /// <summary>float4 zero value.</summary>
         public static readonly float4 zero;
 
-        /// <summary>Constructs a float4 vector from four float values.</summary>
+        /// <summary>Constructs a float4 vector from four sfloat values.</summary>
         /// <param name="x">The constructed vector's x component will be set to this value.</param>
         /// <param name="y">The constructed vector's y component will be set to this value.</param>
         /// <param name="z">The constructed vector's z component will be set to this value.</param>
         /// <param name="w">The constructed vector's w component will be set to this value.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public float4(float x, float y, float z, float w)
+        public float4(sfloat x, sfloat y, sfloat z, sfloat w)
         {
             this.x = x;
             this.y = y;
@@ -47,12 +47,12 @@ namespace Fixed.Mathematics
             this.w = w;
         }
 
-        /// <summary>Constructs a float4 vector from two float values and a float2 vector.</summary>
+        /// <summary>Constructs a float4 vector from two sfloat values and a float2 vector.</summary>
         /// <param name="x">The constructed vector's x component will be set to this value.</param>
         /// <param name="y">The constructed vector's y component will be set to this value.</param>
         /// <param name="zw">The constructed vector's zw components will be set to this value.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public float4(float x, float y, float2 zw)
+        public float4(sfloat x, sfloat y, float2 zw)
         {
             this.x = x;
             this.y = y;
@@ -60,12 +60,12 @@ namespace Fixed.Mathematics
             this.w = zw.y;
         }
 
-        /// <summary>Constructs a float4 vector from a float value, a float2 vector and a float value.</summary>
+        /// <summary>Constructs a float4 vector from a sfloat value, a float2 vector and a sfloat value.</summary>
         /// <param name="x">The constructed vector's x component will be set to this value.</param>
         /// <param name="yz">The constructed vector's yz components will be set to this value.</param>
         /// <param name="w">The constructed vector's w component will be set to this value.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public float4(float x, float2 yz, float w)
+        public float4(sfloat x, float2 yz, sfloat w)
         {
             this.x = x;
             this.y = yz.x;
@@ -73,11 +73,11 @@ namespace Fixed.Mathematics
             this.w = w;
         }
 
-        /// <summary>Constructs a float4 vector from a float value and a float3 vector.</summary>
+        /// <summary>Constructs a float4 vector from a sfloat value and a float3 vector.</summary>
         /// <param name="x">The constructed vector's x component will be set to this value.</param>
         /// <param name="yzw">The constructed vector's yzw components will be set to this value.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public float4(float x, float3 yzw)
+        public float4(sfloat x, float3 yzw)
         {
             this.x = x;
             this.y = yzw.x;
@@ -85,12 +85,12 @@ namespace Fixed.Mathematics
             this.w = yzw.z;
         }
 
-        /// <summary>Constructs a float4 vector from a float2 vector and two float values.</summary>
+        /// <summary>Constructs a float4 vector from a float2 vector and two sfloat values.</summary>
         /// <param name="xy">The constructed vector's xy components will be set to this value.</param>
         /// <param name="z">The constructed vector's z component will be set to this value.</param>
         /// <param name="w">The constructed vector's w component will be set to this value.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public float4(float2 xy, float z, float w)
+        public float4(float2 xy, sfloat z, sfloat w)
         {
             this.x = xy.x;
             this.y = xy.y;
@@ -110,11 +110,11 @@ namespace Fixed.Mathematics
             this.w = zw.y;
         }
 
-        /// <summary>Constructs a float4 vector from a float3 vector and a float value.</summary>
+        /// <summary>Constructs a float4 vector from a float3 vector and a sfloat value.</summary>
         /// <param name="xyz">The constructed vector's xyz components will be set to this value.</param>
         /// <param name="w">The constructed vector's w component will be set to this value.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public float4(float3 xyz, float w)
+        public float4(float3 xyz, sfloat w)
         {
             this.x = xyz.x;
             this.y = xyz.y;
@@ -133,10 +133,10 @@ namespace Fixed.Mathematics
             this.w = xyzw.w;
         }
 
-        /// <summary>Constructs a float4 vector from a single float value by assigning it to every component.</summary>
-        /// <param name="v">float to convert to float4</param>
+        /// <summary>Constructs a float4 vector from a single sfloat value by assigning it to every component.</summary>
+        /// <param name="v">sfloat to convert to float4</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public float4(float v)
+        public float4(sfloat v)
         {
             this.x = v;
             this.y = v;
@@ -144,15 +144,15 @@ namespace Fixed.Mathematics
             this.w = v;
         }
 
-        /// <summary>Constructs a float4 vector from a single bool value by converting it to float and assigning it to every component.</summary>
+        /// <summary>Constructs a float4 vector from a single bool value by converting it to sfloat and assigning it to every component.</summary>
         /// <param name="v">bool to convert to float4</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public float4(bool v)
         {
-            this.x = v ? 1.0f : 0.0f;
-            this.y = v ? 1.0f : 0.0f;
-            this.z = v ? 1.0f : 0.0f;
-            this.w = v ? 1.0f : 0.0f;
+            this.x = v ? sfloat.One : sfloat.Zero;
+            this.y = v ? sfloat.One : sfloat.Zero;
+            this.z = v ? sfloat.One : sfloat.Zero;
+            this.w = v ? sfloat.One : sfloat.Zero;
         }
 
         /// <summary>Constructs a float4 vector from a bool4 vector by componentwise conversion.</summary>
@@ -160,21 +160,21 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public float4(bool4 v)
         {
-            this.x = v.x ? 1.0f : 0.0f;
-            this.y = v.y ? 1.0f : 0.0f;
-            this.z = v.z ? 1.0f : 0.0f;
-            this.w = v.w ? 1.0f : 0.0f;
+            this.x = v.x ? sfloat.One : sfloat.Zero;
+            this.y = v.y ? sfloat.One : sfloat.Zero;
+            this.z = v.z ? sfloat.One : sfloat.Zero;
+            this.w = v.w ? sfloat.One : sfloat.Zero;
         }
 
-        /// <summary>Constructs a float4 vector from a single int value by converting it to float and assigning it to every component.</summary>
+        /// <summary>Constructs a float4 vector from a single int value by converting it to sfloat and assigning it to every component.</summary>
         /// <param name="v">int to convert to float4</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public float4(int v)
         {
-            this.x = v;
-            this.y = v;
-            this.z = v;
-            this.w = v;
+            this.x = (sfloat)v;
+            this.y = (sfloat)v;
+            this.z = (sfloat)v;
+            this.w = (sfloat)v;
         }
 
         /// <summary>Constructs a float4 vector from a int4 vector by componentwise conversion.</summary>
@@ -182,21 +182,21 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public float4(int4 v)
         {
-            this.x = v.x;
-            this.y = v.y;
-            this.z = v.z;
-            this.w = v.w;
+            this.x = (sfloat)v.x;
+            this.y = (sfloat)v.y;
+            this.z = (sfloat)v.z;
+            this.w = (sfloat)v.w;
         }
 
-        /// <summary>Constructs a float4 vector from a single uint value by converting it to float and assigning it to every component.</summary>
+        /// <summary>Constructs a float4 vector from a single uint value by converting it to sfloat and assigning it to every component.</summary>
         /// <param name="v">uint to convert to float4</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public float4(uint v)
         {
-            this.x = v;
-            this.y = v;
-            this.z = v;
-            this.w = v;
+            this.x = (sfloat)(int)v;
+            this.y = (sfloat)(int)v;
+            this.z = (sfloat)(int)v;
+            this.w = (sfloat)(int)v;
         }
 
         /// <summary>Constructs a float4 vector from a uint4 vector by componentwise conversion.</summary>
@@ -204,43 +204,43 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public float4(uint4 v)
         {
-            this.x = v.x;
-            this.y = v.y;
-            this.z = v.z;
-            this.w = v.w;
+            this.x = (sfloat)(int)v.x;
+            this.y = (sfloat)(int)v.y;
+            this.z = (sfloat)(int)v.z;
+            this.w = (sfloat)(int)v.w;
         }
 
-        /// <summary>Constructs a float4 vector from a single half value by converting it to float and assigning it to every component.</summary>
-        /// <param name="v">half to convert to float4</param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public float4(half v)
-        {
-            this.x = v;
-            this.y = v;
-            this.z = v;
-            this.w = v;
-        }
+        // /// <summary>Constructs a float4 vector from a single half value by converting it to sfloat and assigning it to every component.</summary>
+        // /// <param name="v">half to convert to float4</param>
+        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // public float4(half v)
+        // {
+        //     this.x = v;
+        //     this.y = v;
+        //     this.z = v;
+        //     this.w = v;
+        // }
+        //
+        // /// <summary>Constructs a float4 vector from a half4 vector by componentwise conversion.</summary>
+        // /// <param name="v">half4 to convert to float4</param>
+        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // public float4(half4 v)
+        // {
+        //     this.x = v.x;
+        //     this.y = v.y;
+        //     this.z = v.z;
+        //     this.w = v.w;
+        // }
 
-        /// <summary>Constructs a float4 vector from a half4 vector by componentwise conversion.</summary>
-        /// <param name="v">half4 to convert to float4</param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public float4(half4 v)
-        {
-            this.x = v.x;
-            this.y = v.y;
-            this.z = v.z;
-            this.w = v.w;
-        }
-
-        /// <summary>Constructs a float4 vector from a single double value by converting it to float and assigning it to every component.</summary>
+        /// <summary>Constructs a float4 vector from a single double value by converting it to sfloat and assigning it to every component.</summary>
         /// <param name="v">double to convert to float4</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public float4(double v)
         {
-            this.x = (float)v;
-            this.y = (float)v;
-            this.z = (float)v;
-            this.w = (float)v;
+            this.x = (sfloat)v;
+            this.y = (sfloat)v;
+            this.z = (sfloat)v;
+            this.w = (sfloat)v;
         }
 
         /// <summary>Constructs a float4 vector from a double4 vector by componentwise conversion.</summary>
@@ -248,20 +248,20 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public float4(double4 v)
         {
-            this.x = (float)v.x;
-            this.y = (float)v.y;
-            this.z = (float)v.z;
-            this.w = (float)v.w;
+            this.x = (sfloat)v.x;
+            this.y = (sfloat)v.y;
+            this.z = (sfloat)v.z;
+            this.w = (sfloat)v.w;
         }
 
 
-        /// <summary>Implicitly converts a single float value to a float4 vector by assigning it to every component.</summary>
-        /// <param name="v">float to convert to float4</param>
+        /// <summary>Implicitly converts a single sfloat value to a float4 vector by assigning it to every component.</summary>
+        /// <param name="v">sfloat to convert to float4</param>
         /// <returns>Converted value.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static implicit operator float4(float v) { return new float4(v); }
+        public static implicit operator float4(sfloat v) { return new float4(v); }
 
-        /// <summary>Explicitly converts a single bool value to a float4 vector by converting it to float and assigning it to every component.</summary>
+        /// <summary>Explicitly converts a single bool value to a float4 vector by converting it to sfloat and assigning it to every component.</summary>
         /// <param name="v">bool to convert to float4</param>
         /// <returns>Converted value.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -273,7 +273,7 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static explicit operator float4(bool4 v) { return new float4(v); }
 
-        /// <summary>Implicitly converts a single int value to a float4 vector by converting it to float and assigning it to every component.</summary>
+        /// <summary>Implicitly converts a single int value to a float4 vector by converting it to sfloat and assigning it to every component.</summary>
         /// <param name="v">int to convert to float4</param>
         /// <returns>Converted value.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -285,7 +285,7 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static implicit operator float4(int4 v) { return new float4(v); }
 
-        /// <summary>Implicitly converts a single uint value to a float4 vector by converting it to float and assigning it to every component.</summary>
+        /// <summary>Implicitly converts a single uint value to a float4 vector by converting it to sfloat and assigning it to every component.</summary>
         /// <param name="v">uint to convert to float4</param>
         /// <returns>Converted value.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -297,7 +297,7 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static implicit operator float4(uint4 v) { return new float4(v); }
 
-        /// <summary>Implicitly converts a single half value to a float4 vector by converting it to float and assigning it to every component.</summary>
+        /// <summary>Implicitly converts a single half value to a float4 vector by converting it to sfloat and assigning it to every component.</summary>
         /// <param name="v">half to convert to float4</param>
         /// <returns>Converted value.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -309,7 +309,7 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static implicit operator float4(half4 v) { return new float4(v); }
 
-        /// <summary>Explicitly converts a single double value to a float4 vector by converting it to float and assigning it to every component.</summary>
+        /// <summary>Explicitly converts a single double value to a float4 vector by converting it to sfloat and assigning it to every component.</summary>
         /// <param name="v">double to convert to float4</param>
         /// <returns>Converted value.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -329,19 +329,19 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float4 operator * (float4 lhs, float4 rhs) { return new float4 (lhs.x * rhs.x, lhs.y * rhs.y, lhs.z * rhs.z, lhs.w * rhs.w); }
 
-        /// <summary>Returns the result of a componentwise multiplication operation on a float4 vector and a float value.</summary>
+        /// <summary>Returns the result of a componentwise multiplication operation on a float4 vector and a sfloat value.</summary>
         /// <param name="lhs">Left hand side float4 to use to compute componentwise multiplication.</param>
-        /// <param name="rhs">Right hand side float to use to compute componentwise multiplication.</param>
+        /// <param name="rhs">Right hand side sfloat to use to compute componentwise multiplication.</param>
         /// <returns>float4 result of the componentwise multiplication.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float4 operator * (float4 lhs, float rhs) { return new float4 (lhs.x * rhs, lhs.y * rhs, lhs.z * rhs, lhs.w * rhs); }
+        public static float4 operator * (float4 lhs, sfloat rhs) { return new float4 (lhs.x * rhs, lhs.y * rhs, lhs.z * rhs, lhs.w * rhs); }
 
-        /// <summary>Returns the result of a componentwise multiplication operation on a float value and a float4 vector.</summary>
-        /// <param name="lhs">Left hand side float to use to compute componentwise multiplication.</param>
+        /// <summary>Returns the result of a componentwise multiplication operation on a sfloat value and a float4 vector.</summary>
+        /// <param name="lhs">Left hand side sfloat to use to compute componentwise multiplication.</param>
         /// <param name="rhs">Right hand side float4 to use to compute componentwise multiplication.</param>
         /// <returns>float4 result of the componentwise multiplication.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float4 operator * (float lhs, float4 rhs) { return new float4 (lhs * rhs.x, lhs * rhs.y, lhs * rhs.z, lhs * rhs.w); }
+        public static float4 operator * (sfloat lhs, float4 rhs) { return new float4 (lhs * rhs.x, lhs * rhs.y, lhs * rhs.z, lhs * rhs.w); }
 
 
         /// <summary>Returns the result of a componentwise addition operation on two float4 vectors.</summary>
@@ -351,19 +351,19 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float4 operator + (float4 lhs, float4 rhs) { return new float4 (lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z, lhs.w + rhs.w); }
 
-        /// <summary>Returns the result of a componentwise addition operation on a float4 vector and a float value.</summary>
+        /// <summary>Returns the result of a componentwise addition operation on a float4 vector and a sfloat value.</summary>
         /// <param name="lhs">Left hand side float4 to use to compute componentwise addition.</param>
-        /// <param name="rhs">Right hand side float to use to compute componentwise addition.</param>
+        /// <param name="rhs">Right hand side sfloat to use to compute componentwise addition.</param>
         /// <returns>float4 result of the componentwise addition.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float4 operator + (float4 lhs, float rhs) { return new float4 (lhs.x + rhs, lhs.y + rhs, lhs.z + rhs, lhs.w + rhs); }
+        public static float4 operator + (float4 lhs, sfloat rhs) { return new float4 (lhs.x + rhs, lhs.y + rhs, lhs.z + rhs, lhs.w + rhs); }
 
-        /// <summary>Returns the result of a componentwise addition operation on a float value and a float4 vector.</summary>
-        /// <param name="lhs">Left hand side float to use to compute componentwise addition.</param>
+        /// <summary>Returns the result of a componentwise addition operation on a sfloat value and a float4 vector.</summary>
+        /// <param name="lhs">Left hand side sfloat to use to compute componentwise addition.</param>
         /// <param name="rhs">Right hand side float4 to use to compute componentwise addition.</param>
         /// <returns>float4 result of the componentwise addition.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float4 operator + (float lhs, float4 rhs) { return new float4 (lhs + rhs.x, lhs + rhs.y, lhs + rhs.z, lhs + rhs.w); }
+        public static float4 operator + (sfloat lhs, float4 rhs) { return new float4 (lhs + rhs.x, lhs + rhs.y, lhs + rhs.z, lhs + rhs.w); }
 
 
         /// <summary>Returns the result of a componentwise subtraction operation on two float4 vectors.</summary>
@@ -373,19 +373,19 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float4 operator - (float4 lhs, float4 rhs) { return new float4 (lhs.x - rhs.x, lhs.y - rhs.y, lhs.z - rhs.z, lhs.w - rhs.w); }
 
-        /// <summary>Returns the result of a componentwise subtraction operation on a float4 vector and a float value.</summary>
+        /// <summary>Returns the result of a componentwise subtraction operation on a float4 vector and a sfloat value.</summary>
         /// <param name="lhs">Left hand side float4 to use to compute componentwise subtraction.</param>
-        /// <param name="rhs">Right hand side float to use to compute componentwise subtraction.</param>
+        /// <param name="rhs">Right hand side sfloat to use to compute componentwise subtraction.</param>
         /// <returns>float4 result of the componentwise subtraction.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float4 operator - (float4 lhs, float rhs) { return new float4 (lhs.x - rhs, lhs.y - rhs, lhs.z - rhs, lhs.w - rhs); }
+        public static float4 operator - (float4 lhs, sfloat rhs) { return new float4 (lhs.x - rhs, lhs.y - rhs, lhs.z - rhs, lhs.w - rhs); }
 
-        /// <summary>Returns the result of a componentwise subtraction operation on a float value and a float4 vector.</summary>
-        /// <param name="lhs">Left hand side float to use to compute componentwise subtraction.</param>
+        /// <summary>Returns the result of a componentwise subtraction operation on a sfloat value and a float4 vector.</summary>
+        /// <param name="lhs">Left hand side sfloat to use to compute componentwise subtraction.</param>
         /// <param name="rhs">Right hand side float4 to use to compute componentwise subtraction.</param>
         /// <returns>float4 result of the componentwise subtraction.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float4 operator - (float lhs, float4 rhs) { return new float4 (lhs - rhs.x, lhs - rhs.y, lhs - rhs.z, lhs - rhs.w); }
+        public static float4 operator - (sfloat lhs, float4 rhs) { return new float4 (lhs - rhs.x, lhs - rhs.y, lhs - rhs.z, lhs - rhs.w); }
 
 
         /// <summary>Returns the result of a componentwise division operation on two float4 vectors.</summary>
@@ -395,19 +395,19 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float4 operator / (float4 lhs, float4 rhs) { return new float4 (lhs.x / rhs.x, lhs.y / rhs.y, lhs.z / rhs.z, lhs.w / rhs.w); }
 
-        /// <summary>Returns the result of a componentwise division operation on a float4 vector and a float value.</summary>
+        /// <summary>Returns the result of a componentwise division operation on a float4 vector and a sfloat value.</summary>
         /// <param name="lhs">Left hand side float4 to use to compute componentwise division.</param>
-        /// <param name="rhs">Right hand side float to use to compute componentwise division.</param>
+        /// <param name="rhs">Right hand side sfloat to use to compute componentwise division.</param>
         /// <returns>float4 result of the componentwise division.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float4 operator / (float4 lhs, float rhs) { return new float4 (lhs.x / rhs, lhs.y / rhs, lhs.z / rhs, lhs.w / rhs); }
+        public static float4 operator / (float4 lhs, sfloat rhs) { return new float4 (lhs.x / rhs, lhs.y / rhs, lhs.z / rhs, lhs.w / rhs); }
 
-        /// <summary>Returns the result of a componentwise division operation on a float value and a float4 vector.</summary>
-        /// <param name="lhs">Left hand side float to use to compute componentwise division.</param>
+        /// <summary>Returns the result of a componentwise division operation on a sfloat value and a float4 vector.</summary>
+        /// <param name="lhs">Left hand side sfloat to use to compute componentwise division.</param>
         /// <param name="rhs">Right hand side float4 to use to compute componentwise division.</param>
         /// <returns>float4 result of the componentwise division.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float4 operator / (float lhs, float4 rhs) { return new float4 (lhs / rhs.x, lhs / rhs.y, lhs / rhs.z, lhs / rhs.w); }
+        public static float4 operator / (sfloat lhs, float4 rhs) { return new float4 (lhs / rhs.x, lhs / rhs.y, lhs / rhs.z, lhs / rhs.w); }
 
 
         /// <summary>Returns the result of a componentwise modulus operation on two float4 vectors.</summary>
@@ -417,19 +417,19 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float4 operator % (float4 lhs, float4 rhs) { return new float4 (lhs.x % rhs.x, lhs.y % rhs.y, lhs.z % rhs.z, lhs.w % rhs.w); }
 
-        /// <summary>Returns the result of a componentwise modulus operation on a float4 vector and a float value.</summary>
+        /// <summary>Returns the result of a componentwise modulus operation on a float4 vector and a sfloat value.</summary>
         /// <param name="lhs">Left hand side float4 to use to compute componentwise modulus.</param>
-        /// <param name="rhs">Right hand side float to use to compute componentwise modulus.</param>
+        /// <param name="rhs">Right hand side sfloat to use to compute componentwise modulus.</param>
         /// <returns>float4 result of the componentwise modulus.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float4 operator % (float4 lhs, float rhs) { return new float4 (lhs.x % rhs, lhs.y % rhs, lhs.z % rhs, lhs.w % rhs); }
+        public static float4 operator % (float4 lhs, sfloat rhs) { return new float4 (lhs.x % rhs, lhs.y % rhs, lhs.z % rhs, lhs.w % rhs); }
 
-        /// <summary>Returns the result of a componentwise modulus operation on a float value and a float4 vector.</summary>
-        /// <param name="lhs">Left hand side float to use to compute componentwise modulus.</param>
+        /// <summary>Returns the result of a componentwise modulus operation on a sfloat value and a float4 vector.</summary>
+        /// <param name="lhs">Left hand side sfloat to use to compute componentwise modulus.</param>
         /// <param name="rhs">Right hand side float4 to use to compute componentwise modulus.</param>
         /// <returns>float4 result of the componentwise modulus.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float4 operator % (float lhs, float4 rhs) { return new float4 (lhs % rhs.x, lhs % rhs.y, lhs % rhs.z, lhs % rhs.w); }
+        public static float4 operator % (sfloat lhs, float4 rhs) { return new float4 (lhs % rhs.x, lhs % rhs.y, lhs % rhs.z, lhs % rhs.w); }
 
 
         /// <summary>Returns the result of a componentwise increment operation on a float4 vector.</summary>
@@ -453,19 +453,19 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool4 operator < (float4 lhs, float4 rhs) { return new bool4 (lhs.x < rhs.x, lhs.y < rhs.y, lhs.z < rhs.z, lhs.w < rhs.w); }
 
-        /// <summary>Returns the result of a componentwise less than operation on a float4 vector and a float value.</summary>
+        /// <summary>Returns the result of a componentwise less than operation on a float4 vector and a sfloat value.</summary>
         /// <param name="lhs">Left hand side float4 to use to compute componentwise less than.</param>
-        /// <param name="rhs">Right hand side float to use to compute componentwise less than.</param>
+        /// <param name="rhs">Right hand side sfloat to use to compute componentwise less than.</param>
         /// <returns>bool4 result of the componentwise less than.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool4 operator < (float4 lhs, float rhs) { return new bool4 (lhs.x < rhs, lhs.y < rhs, lhs.z < rhs, lhs.w < rhs); }
+        public static bool4 operator < (float4 lhs, sfloat rhs) { return new bool4 (lhs.x < rhs, lhs.y < rhs, lhs.z < rhs, lhs.w < rhs); }
 
-        /// <summary>Returns the result of a componentwise less than operation on a float value and a float4 vector.</summary>
-        /// <param name="lhs">Left hand side float to use to compute componentwise less than.</param>
+        /// <summary>Returns the result of a componentwise less than operation on a sfloat value and a float4 vector.</summary>
+        /// <param name="lhs">Left hand side sfloat to use to compute componentwise less than.</param>
         /// <param name="rhs">Right hand side float4 to use to compute componentwise less than.</param>
         /// <returns>bool4 result of the componentwise less than.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool4 operator < (float lhs, float4 rhs) { return new bool4 (lhs < rhs.x, lhs < rhs.y, lhs < rhs.z, lhs < rhs.w); }
+        public static bool4 operator < (sfloat lhs, float4 rhs) { return new bool4 (lhs < rhs.x, lhs < rhs.y, lhs < rhs.z, lhs < rhs.w); }
 
 
         /// <summary>Returns the result of a componentwise less or equal operation on two float4 vectors.</summary>
@@ -475,19 +475,19 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool4 operator <= (float4 lhs, float4 rhs) { return new bool4 (lhs.x <= rhs.x, lhs.y <= rhs.y, lhs.z <= rhs.z, lhs.w <= rhs.w); }
 
-        /// <summary>Returns the result of a componentwise less or equal operation on a float4 vector and a float value.</summary>
+        /// <summary>Returns the result of a componentwise less or equal operation on a float4 vector and a sfloat value.</summary>
         /// <param name="lhs">Left hand side float4 to use to compute componentwise less or equal.</param>
-        /// <param name="rhs">Right hand side float to use to compute componentwise less or equal.</param>
+        /// <param name="rhs">Right hand side sfloat to use to compute componentwise less or equal.</param>
         /// <returns>bool4 result of the componentwise less or equal.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool4 operator <= (float4 lhs, float rhs) { return new bool4 (lhs.x <= rhs, lhs.y <= rhs, lhs.z <= rhs, lhs.w <= rhs); }
+        public static bool4 operator <= (float4 lhs, sfloat rhs) { return new bool4 (lhs.x <= rhs, lhs.y <= rhs, lhs.z <= rhs, lhs.w <= rhs); }
 
-        /// <summary>Returns the result of a componentwise less or equal operation on a float value and a float4 vector.</summary>
-        /// <param name="lhs">Left hand side float to use to compute componentwise less or equal.</param>
+        /// <summary>Returns the result of a componentwise less or equal operation on a sfloat value and a float4 vector.</summary>
+        /// <param name="lhs">Left hand side sfloat to use to compute componentwise less or equal.</param>
         /// <param name="rhs">Right hand side float4 to use to compute componentwise less or equal.</param>
         /// <returns>bool4 result of the componentwise less or equal.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool4 operator <= (float lhs, float4 rhs) { return new bool4 (lhs <= rhs.x, lhs <= rhs.y, lhs <= rhs.z, lhs <= rhs.w); }
+        public static bool4 operator <= (sfloat lhs, float4 rhs) { return new bool4 (lhs <= rhs.x, lhs <= rhs.y, lhs <= rhs.z, lhs <= rhs.w); }
 
 
         /// <summary>Returns the result of a componentwise greater than operation on two float4 vectors.</summary>
@@ -497,19 +497,19 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool4 operator > (float4 lhs, float4 rhs) { return new bool4 (lhs.x > rhs.x, lhs.y > rhs.y, lhs.z > rhs.z, lhs.w > rhs.w); }
 
-        /// <summary>Returns the result of a componentwise greater than operation on a float4 vector and a float value.</summary>
+        /// <summary>Returns the result of a componentwise greater than operation on a float4 vector and a sfloat value.</summary>
         /// <param name="lhs">Left hand side float4 to use to compute componentwise greater than.</param>
-        /// <param name="rhs">Right hand side float to use to compute componentwise greater than.</param>
+        /// <param name="rhs">Right hand side sfloat to use to compute componentwise greater than.</param>
         /// <returns>bool4 result of the componentwise greater than.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool4 operator > (float4 lhs, float rhs) { return new bool4 (lhs.x > rhs, lhs.y > rhs, lhs.z > rhs, lhs.w > rhs); }
+        public static bool4 operator > (float4 lhs, sfloat rhs) { return new bool4 (lhs.x > rhs, lhs.y > rhs, lhs.z > rhs, lhs.w > rhs); }
 
-        /// <summary>Returns the result of a componentwise greater than operation on a float value and a float4 vector.</summary>
-        /// <param name="lhs">Left hand side float to use to compute componentwise greater than.</param>
+        /// <summary>Returns the result of a componentwise greater than operation on a sfloat value and a float4 vector.</summary>
+        /// <param name="lhs">Left hand side sfloat to use to compute componentwise greater than.</param>
         /// <param name="rhs">Right hand side float4 to use to compute componentwise greater than.</param>
         /// <returns>bool4 result of the componentwise greater than.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool4 operator > (float lhs, float4 rhs) { return new bool4 (lhs > rhs.x, lhs > rhs.y, lhs > rhs.z, lhs > rhs.w); }
+        public static bool4 operator > (sfloat lhs, float4 rhs) { return new bool4 (lhs > rhs.x, lhs > rhs.y, lhs > rhs.z, lhs > rhs.w); }
 
 
         /// <summary>Returns the result of a componentwise greater or equal operation on two float4 vectors.</summary>
@@ -519,19 +519,19 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool4 operator >= (float4 lhs, float4 rhs) { return new bool4 (lhs.x >= rhs.x, lhs.y >= rhs.y, lhs.z >= rhs.z, lhs.w >= rhs.w); }
 
-        /// <summary>Returns the result of a componentwise greater or equal operation on a float4 vector and a float value.</summary>
+        /// <summary>Returns the result of a componentwise greater or equal operation on a float4 vector and a sfloat value.</summary>
         /// <param name="lhs">Left hand side float4 to use to compute componentwise greater or equal.</param>
-        /// <param name="rhs">Right hand side float to use to compute componentwise greater or equal.</param>
+        /// <param name="rhs">Right hand side sfloat to use to compute componentwise greater or equal.</param>
         /// <returns>bool4 result of the componentwise greater or equal.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool4 operator >= (float4 lhs, float rhs) { return new bool4 (lhs.x >= rhs, lhs.y >= rhs, lhs.z >= rhs, lhs.w >= rhs); }
+        public static bool4 operator >= (float4 lhs, sfloat rhs) { return new bool4 (lhs.x >= rhs, lhs.y >= rhs, lhs.z >= rhs, lhs.w >= rhs); }
 
-        /// <summary>Returns the result of a componentwise greater or equal operation on a float value and a float4 vector.</summary>
-        /// <param name="lhs">Left hand side float to use to compute componentwise greater or equal.</param>
+        /// <summary>Returns the result of a componentwise greater or equal operation on a sfloat value and a float4 vector.</summary>
+        /// <param name="lhs">Left hand side sfloat to use to compute componentwise greater or equal.</param>
         /// <param name="rhs">Right hand side float4 to use to compute componentwise greater or equal.</param>
         /// <returns>bool4 result of the componentwise greater or equal.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool4 operator >= (float lhs, float4 rhs) { return new bool4 (lhs >= rhs.x, lhs >= rhs.y, lhs >= rhs.z, lhs >= rhs.w); }
+        public static bool4 operator >= (sfloat lhs, float4 rhs) { return new bool4 (lhs >= rhs.x, lhs >= rhs.y, lhs >= rhs.z, lhs >= rhs.w); }
 
 
         /// <summary>Returns the result of a componentwise unary minus operation on a float4 vector.</summary>
@@ -555,19 +555,19 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool4 operator == (float4 lhs, float4 rhs) { return new bool4 (lhs.x == rhs.x, lhs.y == rhs.y, lhs.z == rhs.z, lhs.w == rhs.w); }
 
-        /// <summary>Returns the result of a componentwise equality operation on a float4 vector and a float value.</summary>
+        /// <summary>Returns the result of a componentwise equality operation on a float4 vector and a sfloat value.</summary>
         /// <param name="lhs">Left hand side float4 to use to compute componentwise equality.</param>
-        /// <param name="rhs">Right hand side float to use to compute componentwise equality.</param>
+        /// <param name="rhs">Right hand side sfloat to use to compute componentwise equality.</param>
         /// <returns>bool4 result of the componentwise equality.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool4 operator == (float4 lhs, float rhs) { return new bool4 (lhs.x == rhs, lhs.y == rhs, lhs.z == rhs, lhs.w == rhs); }
+        public static bool4 operator == (float4 lhs, sfloat rhs) { return new bool4 (lhs.x == rhs, lhs.y == rhs, lhs.z == rhs, lhs.w == rhs); }
 
-        /// <summary>Returns the result of a componentwise equality operation on a float value and a float4 vector.</summary>
-        /// <param name="lhs">Left hand side float to use to compute componentwise equality.</param>
+        /// <summary>Returns the result of a componentwise equality operation on a sfloat value and a float4 vector.</summary>
+        /// <param name="lhs">Left hand side sfloat to use to compute componentwise equality.</param>
         /// <param name="rhs">Right hand side float4 to use to compute componentwise equality.</param>
         /// <returns>bool4 result of the componentwise equality.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool4 operator == (float lhs, float4 rhs) { return new bool4 (lhs == rhs.x, lhs == rhs.y, lhs == rhs.z, lhs == rhs.w); }
+        public static bool4 operator == (sfloat lhs, float4 rhs) { return new bool4 (lhs == rhs.x, lhs == rhs.y, lhs == rhs.z, lhs == rhs.w); }
 
 
         /// <summary>Returns the result of a componentwise not equal operation on two float4 vectors.</summary>
@@ -577,19 +577,19 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool4 operator != (float4 lhs, float4 rhs) { return new bool4 (lhs.x != rhs.x, lhs.y != rhs.y, lhs.z != rhs.z, lhs.w != rhs.w); }
 
-        /// <summary>Returns the result of a componentwise not equal operation on a float4 vector and a float value.</summary>
+        /// <summary>Returns the result of a componentwise not equal operation on a float4 vector and a sfloat value.</summary>
         /// <param name="lhs">Left hand side float4 to use to compute componentwise not equal.</param>
-        /// <param name="rhs">Right hand side float to use to compute componentwise not equal.</param>
+        /// <param name="rhs">Right hand side sfloat to use to compute componentwise not equal.</param>
         /// <returns>bool4 result of the componentwise not equal.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool4 operator != (float4 lhs, float rhs) { return new bool4 (lhs.x != rhs, lhs.y != rhs, lhs.z != rhs, lhs.w != rhs); }
+        public static bool4 operator != (float4 lhs, sfloat rhs) { return new bool4 (lhs.x != rhs, lhs.y != rhs, lhs.z != rhs, lhs.w != rhs); }
 
-        /// <summary>Returns the result of a componentwise not equal operation on a float value and a float4 vector.</summary>
-        /// <param name="lhs">Left hand side float to use to compute componentwise not equal.</param>
+        /// <summary>Returns the result of a componentwise not equal operation on a sfloat value and a float4 vector.</summary>
+        /// <param name="lhs">Left hand side sfloat to use to compute componentwise not equal.</param>
         /// <param name="rhs">Right hand side float4 to use to compute componentwise not equal.</param>
         /// <returns>bool4 result of the componentwise not equal.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool4 operator != (float lhs, float4 rhs) { return new bool4 (lhs != rhs.x, lhs != rhs.y, lhs != rhs.z, lhs != rhs.w); }
+        public static bool4 operator != (sfloat lhs, float4 rhs) { return new bool4 (lhs != rhs.x, lhs != rhs.y, lhs != rhs.z, lhs != rhs.w); }
 
 
 
@@ -3739,8 +3739,8 @@ namespace Fixed.Mathematics
 
 
 
-        /// <summary>Returns the float element at a specified index.</summary>
-        unsafe public float this[int index]
+        /// <summary>Returns the sfloat element at a specified index.</summary>
+        unsafe public sfloat this[int index]
         {
             get
             {
@@ -3748,7 +3748,7 @@ namespace Fixed.Mathematics
                 if ((uint)index >= 4)
                     throw new System.ArgumentException("index must be between[0...3]");
 #endif
-                fixed (float4* array = &this) { return ((float*)array)[index]; }
+                fixed (float4* array = &this) { return ((sfloat*)array)[index]; }
             }
             set
             {
@@ -3756,7 +3756,7 @@ namespace Fixed.Mathematics
                 if ((uint)index >= 4)
                     throw new System.ArgumentException("index must be between[0...3]");
 #endif
-                fixed (float* array = &x) { array[index] = value; }
+                fixed (sfloat* array = &x) { array[index] = value; }
             }
         }
 
@@ -3798,10 +3798,10 @@ namespace Fixed.Mathematics
 
         internal sealed class DebuggerProxy
         {
-            public float x;
-            public float y;
-            public float z;
-            public float w;
+            public sfloat x;
+            public sfloat y;
+            public sfloat z;
+            public sfloat w;
             public DebuggerProxy(float4 v)
             {
                 x = v.x;
@@ -3815,45 +3815,45 @@ namespace Fixed.Mathematics
 
     public static partial class math
     {
-        /// <summary>Returns a float4 vector constructed from four float values.</summary>
+        /// <summary>Returns a float4 vector constructed from four sfloat values.</summary>
         /// <param name="x">The constructed vector's x component will be set to this value.</param>
         /// <param name="y">The constructed vector's y component will be set to this value.</param>
         /// <param name="z">The constructed vector's z component will be set to this value.</param>
         /// <param name="w">The constructed vector's w component will be set to this value.</param>
         /// <returns>float4 constructed from arguments.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float4 float4(float x, float y, float z, float w) { return new float4(x, y, z, w); }
+        public static float4 float4(sfloat x, sfloat y, sfloat z, sfloat w) { return new float4(x, y, z, w); }
 
-        /// <summary>Returns a float4 vector constructed from two float values and a float2 vector.</summary>
+        /// <summary>Returns a float4 vector constructed from two sfloat values and a float2 vector.</summary>
         /// <param name="x">The constructed vector's x component will be set to this value.</param>
         /// <param name="y">The constructed vector's y component will be set to this value.</param>
         /// <param name="zw">The constructed vector's zw components will be set to this value.</param>
         /// <returns>float4 constructed from arguments.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float4 float4(float x, float y, float2 zw) { return new float4(x, y, zw); }
+        public static float4 float4(sfloat x, sfloat y, float2 zw) { return new float4(x, y, zw); }
 
-        /// <summary>Returns a float4 vector constructed from a float value, a float2 vector and a float value.</summary>
+        /// <summary>Returns a float4 vector constructed from a sfloat value, a float2 vector and a sfloat value.</summary>
         /// <param name="x">The constructed vector's x component will be set to this value.</param>
         /// <param name="yz">The constructed vector's yz components will be set to this value.</param>
         /// <param name="w">The constructed vector's w component will be set to this value.</param>
         /// <returns>float4 constructed from arguments.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float4 float4(float x, float2 yz, float w) { return new float4(x, yz, w); }
+        public static float4 float4(sfloat x, float2 yz, sfloat w) { return new float4(x, yz, w); }
 
-        /// <summary>Returns a float4 vector constructed from a float value and a float3 vector.</summary>
+        /// <summary>Returns a float4 vector constructed from a sfloat value and a float3 vector.</summary>
         /// <param name="x">The constructed vector's x component will be set to this value.</param>
         /// <param name="yzw">The constructed vector's yzw components will be set to this value.</param>
         /// <returns>float4 constructed from arguments.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float4 float4(float x, float3 yzw) { return new float4(x, yzw); }
+        public static float4 float4(sfloat x, float3 yzw) { return new float4(x, yzw); }
 
-        /// <summary>Returns a float4 vector constructed from a float2 vector and two float values.</summary>
+        /// <summary>Returns a float4 vector constructed from a float2 vector and two sfloat values.</summary>
         /// <param name="xy">The constructed vector's xy components will be set to this value.</param>
         /// <param name="z">The constructed vector's z component will be set to this value.</param>
         /// <param name="w">The constructed vector's w component will be set to this value.</param>
         /// <returns>float4 constructed from arguments.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float4 float4(float2 xy, float z, float w) { return new float4(xy, z, w); }
+        public static float4 float4(float2 xy, sfloat z, sfloat w) { return new float4(xy, z, w); }
 
         /// <summary>Returns a float4 vector constructed from two float2 vectors.</summary>
         /// <param name="xy">The constructed vector's xy components will be set to this value.</param>
@@ -3862,12 +3862,12 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float4 float4(float2 xy, float2 zw) { return new float4(xy, zw); }
 
-        /// <summary>Returns a float4 vector constructed from a float3 vector and a float value.</summary>
+        /// <summary>Returns a float4 vector constructed from a float3 vector and a sfloat value.</summary>
         /// <param name="xyz">The constructed vector's xyz components will be set to this value.</param>
         /// <param name="w">The constructed vector's w component will be set to this value.</param>
         /// <returns>float4 constructed from arguments.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float4 float4(float3 xyz, float w) { return new float4(xyz, w); }
+        public static float4 float4(float3 xyz, sfloat w) { return new float4(xyz, w); }
 
         /// <summary>Returns a float4 vector constructed from a float4 vector.</summary>
         /// <param name="xyzw">The constructed vector's xyzw components will be set to this value.</param>
@@ -3875,13 +3875,13 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float4 float4(float4 xyzw) { return new float4(xyzw); }
 
-        /// <summary>Returns a float4 vector constructed from a single float value by assigning it to every component.</summary>
-        /// <param name="v">float to convert to float4</param>
+        /// <summary>Returns a float4 vector constructed from a single sfloat value by assigning it to every component.</summary>
+        /// <param name="v">sfloat to convert to float4</param>
         /// <returns>Converted value.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float4 float4(float v) { return new float4(v); }
+        public static float4 float4(sfloat v) { return new float4(v); }
 
-        /// <summary>Returns a float4 vector constructed from a single bool value by converting it to float and assigning it to every component.</summary>
+        /// <summary>Returns a float4 vector constructed from a single bool value by converting it to sfloat and assigning it to every component.</summary>
         /// <param name="v">bool to convert to float4</param>
         /// <returns>Converted value.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -3893,7 +3893,7 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float4 float4(bool4 v) { return new float4(v); }
 
-        /// <summary>Returns a float4 vector constructed from a single int value by converting it to float and assigning it to every component.</summary>
+        /// <summary>Returns a float4 vector constructed from a single int value by converting it to sfloat and assigning it to every component.</summary>
         /// <param name="v">int to convert to float4</param>
         /// <returns>Converted value.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -3905,7 +3905,7 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float4 float4(int4 v) { return new float4(v); }
 
-        /// <summary>Returns a float4 vector constructed from a single uint value by converting it to float and assigning it to every component.</summary>
+        /// <summary>Returns a float4 vector constructed from a single uint value by converting it to sfloat and assigning it to every component.</summary>
         /// <param name="v">uint to convert to float4</param>
         /// <returns>Converted value.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -3917,7 +3917,7 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float4 float4(uint4 v) { return new float4(v); }
 
-        /// <summary>Returns a float4 vector constructed from a single half value by converting it to float and assigning it to every component.</summary>
+        /// <summary>Returns a float4 vector constructed from a single half value by converting it to sfloat and assigning it to every component.</summary>
         /// <param name="v">half to convert to float4</param>
         /// <returns>Converted value.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -3929,7 +3929,7 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float4 float4(half4 v) { return new float4(v); }
 
-        /// <summary>Returns a float4 vector constructed from a single double value by converting it to float and assigning it to every component.</summary>
+        /// <summary>Returns a float4 vector constructed from a single double value by converting it to sfloat and assigning it to every component.</summary>
         /// <param name="v">double to convert to float4</param>
         /// <returns>Converted value.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -3963,13 +3963,13 @@ namespace Fixed.Mathematics
             return (asuint(v) * uint4(0xB130C137u, 0x54834775u, 0x7C022221u, 0xA2D00EDFu)) + 0xA8977779u;
         }
 
-        /// <summary>Returns the result of specified shuffling of the components from two float4 vectors into a float value.</summary>
+        /// <summary>Returns the result of specified shuffling of the components from two float4 vectors into a sfloat value.</summary>
         /// <param name="left">float4 to use as the left argument of the shuffle operation.</param>
         /// <param name="right">float4 to use as the right argument of the shuffle operation.</param>
-        /// <param name="x">The ShuffleComponent to use when setting the resulting float.</param>
-        /// <returns>float result of the shuffle operation.</returns>
+        /// <param name="x">The ShuffleComponent to use when setting the resulting sfloat.</param>
+        /// <returns>sfloat result of the shuffle operation.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float shuffle(float4 left, float4 right, ShuffleComponent x)
+        public static sfloat shuffle(float4 left, float4 right, ShuffleComponent x)
         {
             return select_shuffle_component(left, right, x);
         }
@@ -4023,7 +4023,7 @@ namespace Fixed.Mathematics
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static float select_shuffle_component(float4 a, float4 b, ShuffleComponent component)
+        internal static sfloat select_shuffle_component(float4 a, float4 b, ShuffleComponent component)
         {
             switch(component)
             {

@@ -13,22 +13,22 @@ namespace Fixed.Mathematics
 {
     partial class math
     {
-        /// <summary>Returns the float value result of a matrix multiplication between a float value and a float value.</summary>
+        /// <summary>Returns the sfloat value result of a matrix multiplication between a sfloat value and a sfloat value.</summary>
         /// <param name="a">Left hand side argument of the matrix multiply.</param>
         /// <param name="b">Right hand side argument of the matrix multiply.</param>
         /// <returns>The computed matrix multiplication.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float mul(float a, float b)
+        public static sfloat mul(sfloat a, sfloat b)
         {
             return a * b;
         }
 
-        /// <summary>Returns the float value result of a matrix multiplication between a float2 row vector and a float2 column vector.</summary>
+        /// <summary>Returns the sfloat value result of a matrix multiplication between a float2 row vector and a float2 column vector.</summary>
         /// <param name="a">Left hand side argument of the matrix multiply.</param>
         /// <param name="b">Right hand side argument of the matrix multiply.</param>
         /// <returns>The computed matrix multiplication.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float mul(float2 a, float2 b)
+        public static sfloat mul(float2 a, float2 b)
         {
             return a.x * b.x + a.y * b.y;
         }
@@ -72,12 +72,12 @@ namespace Fixed.Mathematics
                 a.x * b.c3.x + a.y * b.c3.y);
         }
 
-        /// <summary>Returns the float value result of a matrix multiplication between a float3 row vector and a float3 column vector.</summary>
+        /// <summary>Returns the sfloat value result of a matrix multiplication between a float3 row vector and a float3 column vector.</summary>
         /// <param name="a">Left hand side argument of the matrix multiply.</param>
         /// <param name="b">Right hand side argument of the matrix multiply.</param>
         /// <returns>The computed matrix multiplication.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float mul(float3 a, float3 b)
+        public static sfloat mul(float3 a, float3 b)
         {
             return a.x * b.x + a.y * b.y + a.z * b.z;
         }
@@ -121,12 +121,12 @@ namespace Fixed.Mathematics
                 a.x * b.c3.x + a.y * b.c3.y + a.z * b.c3.z);
         }
 
-        /// <summary>Returns the float value result of a matrix multiplication between a float4 row vector and a float4 column vector.</summary>
+        /// <summary>Returns the sfloat value result of a matrix multiplication between a float4 row vector and a float4 column vector.</summary>
         /// <param name="a">Left hand side argument of the matrix multiply.</param>
         /// <param name="b">Right hand side argument of the matrix multiply.</param>
         /// <returns>The computed matrix multiplication.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float mul(float4 a, float4 b)
+        public static sfloat mul(float4 a, float4 b)
         {
             return a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;
         }

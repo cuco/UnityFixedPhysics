@@ -78,7 +78,7 @@ namespace Fixed.Transforms
                     var chunkChildren = batchInChunk.GetBufferAccessor(ChildTypeHandle);
                     for (var i = 0; i < batchInChunk.Count; i++)
                     {
-                        var inverseScale = float4x4.Scale(1.0f / chunkScales[i].Value);
+                        var inverseScale = float4x4.Scale(sfloat.One / chunkScales[i].Value);
                         var children = chunkChildren[i];
                         for (var j = 0; j < children.Length; j++)
                         {
@@ -101,7 +101,7 @@ namespace Fixed.Transforms
                     var chunkChildren = batchInChunk.GetBufferAccessor(ChildTypeHandle);
                     for (var i = 0; i < batchInChunk.Count; i++)
                     {
-                        var inverseScale = float4x4.Scale(1.0f / chunkNonUniformScales[i].Value);
+                        var inverseScale = float4x4.Scale(sfloat.One / chunkNonUniformScales[i].Value);
                         var children = chunkChildren[i];
                         for (var j = 0; j < children.Length; j++)
                         {

@@ -97,32 +97,41 @@ namespace Fixed.Mathematics
         /// </summary>
         public const double NAN_DBL = Double.NaN;
 
-        /// <summary>The smallest positive normal number representable in a float.</summary>
-        public const float FLT_MIN_NORMAL = 1.175494351e-38F;
+        /// <summary>The smallest positive normal number representable in a sfloat.</summary>
+        public static sfloat FLT_MIN_NORMAL => sfloat.FromRaw(0x00800000);
 
         /// <summary>The smallest positive normal number representable in a double. This is a f64/double precision constant.</summary>
         public const double DBL_MIN_NORMAL = 2.2250738585072014e-308;
 
         /// <summary>The mathematical constant e also known as Euler's number. Approximately 2.72.</summary>
-        public const float E = (float)E_DBL;
+        public static sfloat E => sfloat.FromRaw(0x402df854);
 
         /// <summary>The base 2 logarithm of e. Approximately 1.44.</summary>
-        public const float LOG2E = (float)LOG2E_DBL;
+        public static sfloat LOG2E => sfloat.FromRaw(0x3fb8aa3b);
 
         /// <summary>The base 10 logarithm of e. Approximately 0.43.</summary>
-        public const float LOG10E = (float)LOG10E_DBL;
+        public static sfloat LOG10E => sfloat.FromRaw(0x3ede5bd9);
 
         /// <summary>The natural logarithm of 2. Approximately 0.69.</summary>
-        public const float LN2 = (float)LN2_DBL;
+        public static sfloat LN2 => sfloat.FromRaw(0x3f317218);
 
         /// <summary>The natural logarithm of 10. Approximately 2.30.</summary>
-        public const float LN10 = (float)LN10_DBL;
+        public static sfloat LN10 => sfloat.FromRaw(0x40135d8e);
 
         /// <summary>The mathematical constant pi. Approximately 3.14.</summary>
-        public const float PI = (float)PI_DBL;
+        public static sfloat PI => sfloat.FromRaw(0x40490fdb);
+
+        /// <summary>pi / 2. Approximately 1.57.</summary>
+        public static sfloat PI_HALF => sfloat.FromRaw(0x3fc90fdb);
+
+        /// <summary>pi / 4. Approximately 0.79.</summary>
+        public static sfloat PI_OVER_4 => sfloat.FromRaw(0x3f490fdb);
+
+        /// <summary>pi * 2. Approximately 6.28.</summary>
+        public static sfloat TWO_PI => sfloat.FromRaw(0x40c90fdb);
 
         /// <summary>The square root 2. Approximately 1.41.</summary>
-        public const float SQRT2 = (float)SQRT2_DBL;
+        public static sfloat SQRT2 => sfloat.FromRaw(0x3fb504f3);
 
         /// <summary>
         /// The difference between 1.0f and the next representable f32/single precision number.
@@ -130,12 +139,12 @@ namespace Fixed.Mathematics
         /// Beware:
         /// This value is different from System.Single.Epsilon, which is the smallest, positive, denormalized f32/single.
         /// </summary>
-        public const float EPSILON = 1.1920928955078125e-7f;
+        public static sfloat EPSILON => sfloat.FromRaw(0x34000000);
 
         /// <summary>
         /// Single precision constant for positive infinity.
         /// </summary>
-        public const float INFINITY = Single.PositiveInfinity;
+        public static sfloat INFINITY => sfloat.PositiveInfinity;
 
         /// <summary>
         /// Single precision constant for Not a Number.
@@ -146,7 +155,7 @@ namespace Fixed.Mathematics
         /// Additionally, there are multiple bit representations for Not a Number, so if you must test if your value
         /// is NAN, use isnan().
         /// </summary>
-        public const float NAN = Single.NaN;
+        public static sfloat NAN => sfloat.NaN;
 
         /// <summary>Returns the bit pattern of a uint as an int.</summary>
         /// <param name="x">The uint bits to copy.</param>
@@ -173,15 +182,12 @@ namespace Fixed.Mathematics
         public static int4 asint(uint4 x) { return int4((int)x.x, (int)x.y, (int)x.z, (int)x.w); }
 
 
-        /// <summary>Returns the bit pattern of a float as an int.</summary>
-        /// <param name="x">The float bits to copy.</param>
+        /// <summary>Returns the bit pattern of a sfloat as an int.</summary>
+        /// <param name="x">The sfloat bits to copy.</param>
         /// <returns>The int with the same bit pattern as the input.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int asint(float x) {
-            IntFloatUnion u;
-            u.intValue = 0;
-            u.floatValue = x;
-            return u.intValue;
+        public static int asint(sfloat x) {
+            return (int)x.RawValue;
         }
 
         /// <summary>Returns the bit pattern of a float2 as an int2.</summary>
@@ -228,11 +234,11 @@ namespace Fixed.Mathematics
         public static uint4 asuint(int4 x) { return uint4((uint)x.x, (uint)x.y, (uint)x.z, (uint)x.w); }
 
 
-        /// <summary>Returns the bit pattern of a float as a uint.</summary>
-        /// <param name="x">The float bits to copy.</param>
+        /// <summary>Returns the bit pattern of a sfloat as a uint.</summary>
+        /// <param name="x">The sfloat bits to copy.</param>
         /// <returns>The uint with the same bit pattern as the input.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static uint asuint(float x) { return (uint)asint(x); }
+        public static uint asuint(sfloat x) { return (uint)asint(x); }
 
         /// <summary>Returns the bit pattern of a float2 as a uint2.</summary>
         /// <param name="x">The float2 bits to copy.</param>
@@ -285,17 +291,13 @@ namespace Fixed.Mathematics
         public static ulong asulong(double x) { return (ulong) aslong(x); }
 
 
-        /// <summary>Returns the bit pattern of an int as a float.</summary>
+        /// <summary>Returns the bit pattern of an int as a sfloat.</summary>
         /// <param name="x">The int bits to copy.</param>
-        /// <returns>The float with the same bit pattern as the input.</returns>
+        /// <returns>The sfloat with the same bit pattern as the input.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float asfloat(int x)
+        public static sfloat asfloat(int x)
         {
-            IntFloatUnion u;
-            u.floatValue = 0;
-            u.intValue = x;
-
-            return u.floatValue;
+            return sfloat.FromRaw((uint)x);
         }
 
         /// <summary>Returns the bit pattern of an int2 as a float2.</summary>
@@ -317,11 +319,11 @@ namespace Fixed.Mathematics
         public static float4 asfloat(int4 x) { return float4(asfloat(x.x), asfloat(x.y), asfloat(x.z), asfloat(x.w)); }
 
 
-        /// <summary>Returns the bit pattern of a uint as a float.</summary>
+        /// <summary>Returns the bit pattern of a uint as a sfloat.</summary>
         /// <param name="x">The uint bits to copy.</param>
-        /// <returns>The float with the same bit pattern as the input.</returns>
+        /// <returns>The sfloat with the same bit pattern as the input.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float  asfloat(uint x) { return asfloat((int)x); }
+        public static sfloat  asfloat(uint x) { return asfloat((int)x); }
 
         /// <summary>Returns the bit pattern of a uint2 as a float2.</summary>
         /// <param name="x">The uint2 bits to copy.</param>
@@ -382,29 +384,29 @@ namespace Fixed.Mathematics
         public static double asdouble(ulong x) { return asdouble((long)x); }
 
 
-        /// <summary>Returns true if the input float is a finite floating point value, false otherwise.</summary>
-        /// <param name="x">The float value to test.</param>
-        /// <returns>True if the float is finite, false otherwise.</returns>
+        /// <summary>Returns true if the input sfloat is a finite floating point value, false otherwise.</summary>
+        /// <param name="x">The sfloat value to test.</param>
+        /// <returns>True if the sfloat is finite, false otherwise.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool isfinite(float x) { return abs(x) < float.PositiveInfinity; }
+        public static bool isfinite(sfloat x) { return x.IsFinite(); }
 
         /// <summary>Returns a bool2 indicating for each component of a float2 whether it is a finite floating point value.</summary>
         /// <param name="x">The float2 value to test.</param>
         /// <returns>A bool2 where it is true in a component if that component is finite, false otherwise.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool2 isfinite(float2 x) { return abs(x) < float.PositiveInfinity; }
+        public static bool2 isfinite(float2 x) { return new bool2(isfinite(x.x), isfinite(x.y)); }
 
         /// <summary>Returns a bool3 indicating for each component of a float3 whether it is a finite floating point value.</summary>
         /// <param name="x">The float3 value to test.</param>
         /// <returns>A bool3 where it is true in a component if that component is finite, false otherwise.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool3 isfinite(float3 x) { return abs(x) < float.PositiveInfinity; }
+        public static bool3 isfinite(float3 x) { return new bool3(isfinite(x.x), isfinite(x.y), isfinite(x.z)); }
 
         /// <summary>Returns a bool4 indicating for each component of a float4 whether it is a finite floating point value.</summary>
         /// <param name="x">The float4 value to test.</param>
         /// <returns>A bool4 where it is true in a component if that component is finite, false otherwise.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool4 isfinite(float4 x) { return abs(x) < float.PositiveInfinity; }
+        public static bool4 isfinite(float4 x) { return new bool4(isfinite(x.x), isfinite(x.y), isfinite(x.z), isfinite(x.w)); }
 
 
         /// <summary>Returns true if the input double is a finite floating point value, false otherwise.</summary>
@@ -432,29 +434,23 @@ namespace Fixed.Mathematics
         public static bool4 isfinite(double4 x) { return abs(x) < double.PositiveInfinity; }
 
 
-        /// <summary>Returns true if the input float is an infinite floating point value, false otherwise.</summary>
+        /// <summary>Returns true if the input sfloat is an infinite floating point value, false otherwise.</summary>
         /// <param name="x">Input value.</param>
         /// <returns>True if the input was an infinite value; false otherwise.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool isinf(float x) { return abs(x) == float.PositiveInfinity; }
+        public static bool isinf(sfloat x) { return !x.IsFinite(); }
 
         /// <summary>Returns a bool2 indicating for each component of a float2 whether it is an infinite floating point value.</summary>
-        /// <param name="x">Input value.</param>
-        /// <returns>True if the component was an infinite value; false otherwise.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool2 isinf(float2 x) { return abs(x) == float.PositiveInfinity; }
+        public static bool2 isinf(float2 x) { return new bool2(isinf(x.x), isinf(x.y)); }
 
         /// <summary>Returns a bool3 indicating for each component of a float3 whether it is an infinite floating point value.</summary>
-        /// <param name="x">Input value.</param>
-        /// <returns>True if the component was an infinite value; false otherwise.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool3 isinf(float3 x) { return abs(x) == float.PositiveInfinity; }
+        public static bool3 isinf(float3 x) { return new bool3(isinf(x.x), isinf(x.y), isinf(x.z)); }
 
         /// <summary>Returns a bool4 indicating for each component of a float4 whether it is an infinite floating point value.</summary>
-        /// <param name="x">Input value.</param>
-        /// <returns>True if the component was an infinite value; false otherwise.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool4 isinf(float4 x) { return abs(x) == float.PositiveInfinity; }
+        public static bool4 isinf(float4 x) { return new bool4(isinf(x.x), isinf(x.y), isinf(x.z), isinf(x.w)); }
 
         /// <summary>Returns true if the input double is an infinite floating point value, false otherwise.</summary>
         /// <param name="x">Input value.</param>
@@ -481,14 +477,14 @@ namespace Fixed.Mathematics
         public static bool4 isinf(double4 x) { return abs(x) == double.PositiveInfinity; }
 
 
-        /// <summary>Returns true if the input float is a NaN (not a number) floating point value, false otherwise.</summary>
+        /// <summary>Returns true if the input sfloat is a NaN (not a number) floating point value, false otherwise.</summary>
         /// <remarks>
         /// NaN has several representations and may vary across architectures. Use this function to check if you have a NaN.
         /// </remarks>
         /// <param name="x">Input value.</param>
         /// <returns>True if the value was NaN; false otherwise.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool isnan(float x) { return (asuint(x) & 0x7FFFFFFF) > 0x7F800000; }
+        public static bool isnan(sfloat x) { return (asuint(x) & 0x7FFFFFFF) > 0x7F800000; }
 
         /// <summary>Returns a bool2 indicating for each component of a float2 whether it is a NaN (not a number) floating point value.</summary>
         /// <remarks>
@@ -738,12 +734,12 @@ namespace Fixed.Mathematics
         public static ulong min(ulong x, ulong y) { return x < y ? x : y; }
 
 
-        /// <summary>Returns the minimum of two float values.</summary>
+        /// <summary>Returns the minimum of two sfloat values.</summary>
         /// <param name="x">The first input value.</param>
         /// <param name="y">The second input value.</param>
         /// <returns>The minimum of the two input values.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float min(float x, float y) { return float.IsNaN(y) || x < y ? x : y; }
+        public static sfloat min(sfloat x, sfloat y) { return y.IsNaN() || x < y ? x : y; }
 
         /// <summary>Returns the componentwise minimum of two float2 vectors.</summary>
         /// <param name="x">The first input value.</param>
@@ -870,12 +866,12 @@ namespace Fixed.Mathematics
         public static ulong max(ulong x, ulong y) { return x > y ? x : y; }
 
 
-        /// <summary>Returns the maximum of two float values.</summary>
+        /// <summary>Returns the maximum of two sfloat values.</summary>
         /// <param name="x">The first input value.</param>
         /// <param name="y">The second input value.</param>
         /// <returns>The maximum of the two input values.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float max(float x, float y) { return float.IsNaN(y) || x > y ? x : y; }
+        public static sfloat max(sfloat x, sfloat y) { return y.IsNaN() || x > y ? x : y; }
 
         /// <summary>Returns the componentwise maximum of two float2 vectors.</summary>
         /// <param name="x">The first input value.</param>
@@ -937,7 +933,7 @@ namespace Fixed.Mathematics
         /// <param name="s">The interpolation parameter. May be a value outside the interval [0, 1].</param>
         /// <returns>The interpolation from x to y.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float lerp(float x, float y, float s) { return x + s * (y - x); }
+        public static sfloat lerp(sfloat x, sfloat y, sfloat s) { return x + s * (y - x); }
 
         /// <summary>Returns the result of a componentwise linear interpolating from x to y using the interpolation parameter s.</summary>
         /// <remarks>
@@ -948,7 +944,7 @@ namespace Fixed.Mathematics
         /// <param name="s">The interpolation parameter. May be a value outside the interval [0, 1].</param>
         /// <returns>The componentwise interpolation from x to y.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float2 lerp(float2 x, float2 y, float s) { return x + s * (y - x); }
+        public static float2 lerp(float2 x, float2 y, sfloat s) { return x + s * (y - x); }
 
         /// <summary>Returns the result of a componentwise linear interpolating from x to y using the interpolation parameter s.</summary>
         /// <remarks>
@@ -959,7 +955,7 @@ namespace Fixed.Mathematics
         /// <param name="s">The interpolation parameter. May be a value outside the interval [0, 1].</param>
         /// <returns>The componentwise interpolation from x to y.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float3 lerp(float3 x, float3 y, float s) { return x + s * (y - x); }
+        public static float3 lerp(float3 x, float3 y, sfloat s) { return x + s * (y - x); }
 
         /// <summary>Returns the result of a componentwise linear interpolating from x to y using the interpolation parameter s.</summary>
         /// <remarks>
@@ -970,7 +966,7 @@ namespace Fixed.Mathematics
         /// <param name="s">The interpolation parameter. May be a value outside the interval [0, 1].</param>
         /// <returns>The componentwise interpolation from x to y.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float4 lerp(float4 x, float4 y, float s) { return x + s * (y - x); }
+        public static float4 lerp(float4 x, float4 y, sfloat s) { return x + s * (y - x); }
 
 
         /// <summary>Returns the result of a componentwise linear interpolating from x to y using the corresponding components of the interpolation parameter s.</summary>
@@ -1092,7 +1088,7 @@ namespace Fixed.Mathematics
         /// <param name="x">The value to normalize to the range.</param>
         /// <returns>The interpolation parameter of x with respect to the input range [a, b].</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float unlerp(float a, float b, float x) { return (x - a) / (b - a); }
+        public static sfloat unlerp(sfloat a, sfloat b, sfloat x) { return (x - a) / (b - a); }
 
         /// <summary>Returns the componentwise result of normalizing a floating point value x to a range [a, b]. The opposite of lerp. Equivalent to (x - a) / (b - a).</summary>
         /// <param name="a">The first endpoint of the range.</param>
@@ -1160,7 +1156,7 @@ namespace Fixed.Mathematics
         /// <param name="x">The value to remap from the source to destination range.</param>
         /// <returns>The remap of input x from the source range to the destination range.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float remap(float a, float b, float c, float d, float x) { return lerp(c, d, unlerp(a, b, x)); }
+        public static sfloat remap(sfloat a, sfloat b, sfloat c, sfloat d, sfloat x) { return lerp(c, d, unlerp(a, b, x)); }
 
         /// <summary>Returns the componentwise result of a non-clamping linear remapping of a value x from source range [a, b] to the destination range [c, d].</summary>
         /// <param name="a">The first endpoint of the source range [a,b].</param>
@@ -1318,7 +1314,7 @@ namespace Fixed.Mathematics
         public static ulong mad(ulong a, ulong b, ulong c) { return a * b + c; }
 
 
-        /// <summary>Returns the result of a multiply-add operation (a * b + c) on 3 float values.</summary>
+        /// <summary>Returns the result of a multiply-add operation (a * b + c) on 3 sfloat values.</summary>
         /// <remarks>
         /// When Burst compiled with fast math enabled on some architectures, this could be converted to a fused multiply add (FMA).
         /// FMA is more accurate due to rounding once at the end of the computation rather than twice that is required when
@@ -1329,7 +1325,7 @@ namespace Fixed.Mathematics
         /// <param name="c">Third value to add to the product of a and b.</param>
         /// <returns>The multiply-add of the inputs.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float mad(float a, float b, float c) { return a * b + c; }
+        public static sfloat mad(sfloat a, sfloat b, sfloat c) { return a * b + c; }
 
         /// <summary>Returns the result of a componentwise multiply-add operation (a * b + c) on 3 float2 vectors.</summary>
         /// <remarks>
@@ -1507,13 +1503,13 @@ namespace Fixed.Mathematics
         public static ulong clamp(ulong x, ulong a, ulong b) { return max(a, min(b, x)); }
 
 
-        /// <summary>Returns the result of clamping the value x into the interval [a, b], where x, a and b are float values.</summary>
+        /// <summary>Returns the result of clamping the value x into the interval [a, b], where x, a and b are sfloat values.</summary>
         /// <param name="x">Input value to be clamped.</param>
         /// <param name="a">Lower bound of the interval.</param>
         /// <param name="b">Upper bound of the interval.</param>
         /// <returns>The clamping of the input x into the interval [a, b].</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float clamp(float x, float a, float b) { return max(a, min(b, x)); }
+        public static sfloat clamp(sfloat x, sfloat a, sfloat b) { return max(a, min(b, x)); }
 
         /// <summary>Returns the result of a componentwise clamping of the value x into the interval [a, b], where x, a and b are float2 vectors.</summary>
         /// <param name="x">Input value to be clamped.</param>
@@ -1573,29 +1569,29 @@ namespace Fixed.Mathematics
         public static double4 clamp(double4 x, double4 a, double4 b) { return max(a, min(b, x)); }
 
 
-        /// <summary>Returns the result of clamping the float value x into the interval [0, 1].</summary>
+        /// <summary>Returns the result of clamping the sfloat value x into the interval [0, 1].</summary>
         /// <param name="x">Input value.</param>
         /// <returns>The clamping of the input into the interval [0, 1].</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float saturate(float x) { return clamp(x, 0.0f, 1.0f); }
+        public static sfloat saturate(sfloat x) { return clamp(x, sfloat.Zero, sfloat.One); }
 
         /// <summary>Returns the result of a componentwise clamping of the float2 vector x into the interval [0, 1].</summary>
         /// <param name="x">Input value.</param>
         /// <returns>The componentwise clamping of the input into the interval [0, 1].</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float2 saturate(float2 x) { return clamp(x, new float2(0.0f), new float2(1.0f)); }
+        public static float2 saturate(float2 x) { return clamp(x, new float2(sfloat.Zero), new float2(sfloat.One)); }
 
         /// <summary>Returns the result of a componentwise clamping of the float3 vector x into the interval [0, 1].</summary>
         /// <param name="x">Input value.</param>
         /// <returns>The componentwise clamping of the input into the interval [0, 1].</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float3 saturate(float3 x) { return clamp(x, new float3(0.0f), new float3(1.0f)); }
+        public static float3 saturate(float3 x) { return clamp(x, new float3(sfloat.Zero), new float3(sfloat.One)); }
 
         /// <summary>Returns the result of a componentwise clamping of the float4 vector x into the interval [0, 1].</summary>
         /// <param name="x">Input value.</param>
         /// <returns>The componentwise clamping of the input into the interval [0, 1].</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float4 saturate(float4 x) { return clamp(x, new float4(0.0f), new float4(1.0f)); }
+        public static float4 saturate(float4 x) { return clamp(x, new float4(sfloat.Zero), new float4(sfloat.One)); }
 
 
         /// <summary>Returns the result of clamping the double value x into the interval [0, 1].</summary>
@@ -1654,11 +1650,11 @@ namespace Fixed.Mathematics
         public static long abs(long x) { return max(-x, x); }
 
 
-        /// <summary>Returns the absolute value of a float value.</summary>
+        /// <summary>Returns the absolute value of a sfloat value.</summary>
         /// <param name="x">Input value.</param>
         /// <returns>The absolute value of the input.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float abs(float x) { return asfloat(asuint(x) & 0x7FFFFFFF); }
+        public static sfloat abs(sfloat x) { return asfloat(asuint(x) & 0x7FFFFFFF); }
 
         /// <summary>Returns the componentwise absolute value of a float2 vector.</summary>
         /// <param name="x">Input value.</param>
@@ -1762,33 +1758,33 @@ namespace Fixed.Mathematics
         public static uint dot(uint4 x, uint4 y) { return x.x * y.x + x.y * y.y + x.z * y.z + x.w * y.w; }
 
 
-        /// <summary>Returns the dot product of two float values. Equivalent to multiplication.</summary>
+        /// <summary>Returns the dot product of two sfloat values. Equivalent to multiplication.</summary>
         /// <param name="x">The first value.</param>
         /// <param name="y">The second value.</param>
         /// <returns>The dot product of two values.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float dot(float x, float y) { return x * y; }
+        public static sfloat dot(sfloat x, sfloat y) { return x * y; }
 
         /// <summary>Returns the dot product of two float2 vectors.</summary>
         /// <param name="x">The first vector.</param>
         /// <param name="y">The second vector.</param>
         /// <returns>The dot product of two vectors.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float dot(float2 x, float2 y) { return x.x * y.x + x.y * y.y; }
+        public static sfloat dot(float2 x, float2 y) { return x.x * y.x + x.y * y.y; }
 
         /// <summary>Returns the dot product of two float3 vectors.</summary>
         /// <param name="x">The first vector.</param>
         /// <param name="y">The second vector.</param>
         /// <returns>The dot product of two vectors.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float dot(float3 x, float3 y) { return x.x * y.x + x.y * y.y + x.z * y.z; }
+        public static sfloat dot(float3 x, float3 y) { return x.x * y.x + x.y * y.y + x.z * y.z; }
 
         /// <summary>Returns the dot product of two float4 vectors.</summary>
         /// <param name="x">The first vector.</param>
         /// <param name="y">The second vector.</param>
         /// <returns>The dot product of two vectors.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float dot(float4 x, float4 y) { return x.x * y.x + x.y * y.y + x.z * y.z + x.w * y.w; }
+        public static sfloat dot(float4 x, float4 y) { return x.x * y.x + x.y * y.y + x.z * y.z + x.w * y.w; }
 
 
         /// <summary>Returns the dot product of two double values. Equivalent to multiplication.</summary>
@@ -1820,11 +1816,11 @@ namespace Fixed.Mathematics
         public static double dot(double4 x, double4 y) { return x.x * y.x + x.y * y.y + x.z * y.z + x.w * y.w; }
 
 
-        /// <summary>Returns the tangent of a float value.</summary>
+        /// <summary>Returns the tangent of a sfloat value.</summary>
         /// <param name="x">Input value.</param>
         /// <returns>The tangent of the input.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float tan(float x) { return (float)System.Math.Tan(x); }
+        public static sfloat tan(sfloat x) { return libm.tanf(x); }
 
         /// <summary>Returns the componentwise tangent of a float2 vector.</summary>
         /// <param name="x">Input value.</param>
@@ -1868,31 +1864,31 @@ namespace Fixed.Mathematics
         /// <returns>The componentwise tangent of the input.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static double4 tan(double4 x) { return new double4(tan(x.x), tan(x.y), tan(x.z), tan(x.w)); }
-
-
-        /// <summary>Returns the hyperbolic tangent of a float value.</summary>
-        /// <param name="x">Input value.</param>
-        /// <returns>The hyperbolic tangent of the input.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float tanh(float x) { return (float)System.Math.Tanh(x); }
-
-        /// <summary>Returns the componentwise hyperbolic tangent of a float2 vector.</summary>
-        /// <param name="x">Input value.</param>
-        /// <returns>The componentwise hyperbolic tangent of the input.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float2 tanh(float2 x) { return new float2(tanh(x.x), tanh(x.y)); }
-
-        /// <summary>Returns the componentwise hyperbolic tangent of a float3 vector.</summary>
-        /// <param name="x">Input value.</param>
-        /// <returns>The componentwise hyperbolic tangent of the input.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float3 tanh(float3 x) { return new float3(tanh(x.x), tanh(x.y), tanh(x.z)); }
-
-        /// <summary>Returns the componentwise hyperbolic tangent of a float4 vector.</summary>
-        /// <param name="x">Input value.</param>
-        /// <returns>The componentwise hyperbolic tangent of the input.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float4 tanh(float4 x) { return new float4(tanh(x.x), tanh(x.y), tanh(x.z), tanh(x.w)); }
+        //
+        //
+        // /// <summary>Returns the hyperbolic tangent of a sfloat value.</summary>
+        // /// <param name="x">Input value.</param>
+        // /// <returns>The hyperbolic tangent of the input.</returns>
+        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // public static sfloat tanh(sfloat x) { return (sfloat)System.Math.Tanh(x); }
+        //
+        // /// <summary>Returns the componentwise hyperbolic tangent of a float2 vector.</summary>
+        // /// <param name="x">Input value.</param>
+        // /// <returns>The componentwise hyperbolic tangent of the input.</returns>
+        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // public static float2 tanh(float2 x) { return new float2(tanh(x.x), tanh(x.y)); }
+        //
+        // /// <summary>Returns the componentwise hyperbolic tangent of a float3 vector.</summary>
+        // /// <param name="x">Input value.</param>
+        // /// <returns>The componentwise hyperbolic tangent of the input.</returns>
+        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // public static float3 tanh(float3 x) { return new float3(tanh(x.x), tanh(x.y), tanh(x.z)); }
+        //
+        // /// <summary>Returns the componentwise hyperbolic tangent of a float4 vector.</summary>
+        // /// <param name="x">Input value.</param>
+        // /// <returns>The componentwise hyperbolic tangent of the input.</returns>
+        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // public static float4 tanh(float4 x) { return new float4(tanh(x.x), tanh(x.y), tanh(x.z), tanh(x.w)); }
 
 
         /// <summary>Returns the hyperbolic tangent of a double value.</summary>
@@ -1920,11 +1916,11 @@ namespace Fixed.Mathematics
         public static double4 tanh(double4 x) { return new double4(tanh(x.x), tanh(x.y), tanh(x.z), tanh(x.w)); }
 
 
-        /// <summary>Returns the arctangent of a float value.</summary>
+        /// <summary>Returns the arctangent of a sfloat value.</summary>
         /// <param name="x">A tangent value, usually the ratio y/x on the unit circle.</param>
         /// <returns>The arctangent of the input, in radians.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float atan(float x) { return (float)System.Math.Atan(x); }
+        public static sfloat atan(sfloat x) { return libm.atanf(x); }
 
         /// <summary>Returns the componentwise arctangent of a float2 vector.</summary>
         /// <param name="x">A tangent value, usually the ratio y/x on the unit circle.</param>
@@ -1970,12 +1966,12 @@ namespace Fixed.Mathematics
         public static double4 atan(double4 x) { return new double4(atan(x.x), atan(x.y), atan(x.z), atan(x.w)); }
 
 
-        /// <summary>Returns the 2-argument arctangent of a pair of float values.</summary>
+        /// <summary>Returns the 2-argument arctangent of a pair of sfloat values.</summary>
         /// <param name="y">Numerator of the ratio y/x, usually the y component on the unit circle.</param>
         /// <param name="x">Denominator of the ratio y/x, usually the x component on the unit circle.</param>
         /// <returns>The arctangent of the ratio y/x, in radians.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float atan2(float y, float x) { return (float)System.Math.Atan2(y, x); }
+        public static sfloat atan2(sfloat y, sfloat x) { return libm.atan2f(y, x); }
 
         /// <summary>Returns the componentwise 2-argument arctangent of a pair of floats2 vectors.</summary>
         /// <param name="y">Numerator of the ratio y/x, usually the y component on the unit circle.</param>
@@ -2028,11 +2024,11 @@ namespace Fixed.Mathematics
         public static double4 atan2(double4 y, double4 x) { return new double4(atan2(y.x, x.x), atan2(y.y, x.y), atan2(y.z, x.z), atan2(y.w, x.w)); }
 
 
-        /// <summary>Returns the cosine of a float value.</summary>
+        /// <summary>Returns the cosine of a sfloat value.</summary>
         /// <param name="x">Input value.</param>
         /// <returns>The cosine cosine of the input.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float cos(float x) { return (float)System.Math.Cos(x); }
+        public static sfloat cos(sfloat x) { return libm.cosf(x); }
 
         /// <summary>Returns the componentwise cosine of a float2 vector.</summary>
         /// <param name="x">Input value.</param>
@@ -2078,29 +2074,29 @@ namespace Fixed.Mathematics
         public static double4 cos(double4 x) { return new double4(cos(x.x), cos(x.y), cos(x.z), cos(x.w)); }
 
 
-        /// <summary>Returns the hyperbolic cosine of a float value.</summary>
-        /// <param name="x">Input value.</param>
-        /// <returns>The hyperbolic cosine of the input.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float cosh(float x) { return (float)System.Math.Cosh(x); }
-
-        /// <summary>Returns the componentwise hyperbolic cosine of a float2 vector.</summary>
-        /// <param name="x">Input value.</param>
-        /// <returns>The componentwise hyperbolic cosine of the input.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float2 cosh(float2 x) { return new float2(cosh(x.x), cosh(x.y)); }
-
-        /// <summary>Returns the componentwise hyperbolic cosine of a float3 vector.</summary>
-        /// <param name="x">Input value.</param>
-        /// <returns>The componentwise hyperbolic cosine of the input.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float3 cosh(float3 x) { return new float3(cosh(x.x), cosh(x.y), cosh(x.z)); }
-
-        /// <summary>Returns the componentwise hyperbolic cosine of a float4 vector.</summary>
-        /// <param name="x">Input value.</param>
-        /// <returns>The componentwise hyperbolic cosine of the input.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float4 cosh(float4 x) { return new float4(cosh(x.x), cosh(x.y), cosh(x.z), cosh(x.w)); }
+        // /// <summary>Returns the hyperbolic cosine of a sfloat value.</summary>
+        // /// <param name="x">Input value.</param>
+        // /// <returns>The hyperbolic cosine of the input.</returns>
+        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // public static sfloat cosh(sfloat x) { return (sfloat)System.Math.Cosh(x); }
+        //
+        // /// <summary>Returns the componentwise hyperbolic cosine of a float2 vector.</summary>
+        // /// <param name="x">Input value.</param>
+        // /// <returns>The componentwise hyperbolic cosine of the input.</returns>
+        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // public static float2 cosh(float2 x) { return new float2(cosh(x.x), cosh(x.y)); }
+        //
+        // /// <summary>Returns the componentwise hyperbolic cosine of a float3 vector.</summary>
+        // /// <param name="x">Input value.</param>
+        // /// <returns>The componentwise hyperbolic cosine of the input.</returns>
+        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // public static float3 cosh(float3 x) { return new float3(cosh(x.x), cosh(x.y), cosh(x.z)); }
+        //
+        // /// <summary>Returns the componentwise hyperbolic cosine of a float4 vector.</summary>
+        // /// <param name="x">Input value.</param>
+        // /// <returns>The componentwise hyperbolic cosine of the input.</returns>
+        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // public static float4 cosh(float4 x) { return new float4(cosh(x.x), cosh(x.y), cosh(x.z), cosh(x.w)); }
 
 
         /// <summary>Returns the hyperbolic cosine of a double value.</summary>
@@ -2128,11 +2124,11 @@ namespace Fixed.Mathematics
         public static double4 cosh(double4 x) { return new double4(cosh(x.x), cosh(x.y), cosh(x.z), cosh(x.w)); }
 
 
-        /// <summary>Returns the arccosine of a float value.</summary>
+        /// <summary>Returns the arccosine of a sfloat value.</summary>
         /// <param name="x">Input value.</param>
         /// <returns>The arccosine of the input.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float acos(float x) { return (float)System.Math.Acos((float)x); }
+        public static sfloat acos(sfloat x) { return libm.acosf(x); }
 
         /// <summary>Returns the componentwise arccosine of a float2 vector.</summary>
         /// <param name="x">Input value.</param>
@@ -2178,11 +2174,11 @@ namespace Fixed.Mathematics
         public static double4 acos(double4 x) { return new double4(acos(x.x), acos(x.y), acos(x.z), acos(x.w)); }
 
 
-        /// <summary>Returns the sine of a float value.</summary>
+        /// <summary>Returns the sine of a sfloat value.</summary>
         /// <param name="x">Input value.</param>
         /// <returns>The sine of the input.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float sin(float x) { return (float)System.Math.Sin((float)x); }
+        public static sfloat sin(sfloat x) { return libm.sinf(x); }
 
         /// <summary>Returns the componentwise sine of a float2 vector.</summary>
         /// <param name="x">Input value.</param>
@@ -2228,29 +2224,29 @@ namespace Fixed.Mathematics
         public static double4 sin(double4 x) { return new double4(sin(x.x), sin(x.y), sin(x.z), sin(x.w)); }
 
 
-        /// <summary>Returns the hyperbolic sine of a float value.</summary>
-        /// <param name="x">Input value.</param>
-        /// <returns>The hyperbolic sine of the input.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float sinh(float x) { return (float)System.Math.Sinh((float)x); }
-
-        /// <summary>Returns the componentwise hyperbolic sine of a float2 vector.</summary>
-        /// <param name="x">Input value.</param>
-        /// <returns>The componentwise hyperbolic sine of the input.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float2 sinh(float2 x) { return new float2(sinh(x.x), sinh(x.y)); }
-
-        /// <summary>Returns the componentwise hyperbolic sine of a float3 vector.</summary>
-        /// <param name="x">Input value.</param>
-        /// <returns>The componentwise hyperbolic sine of the input.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float3 sinh(float3 x) { return new float3(sinh(x.x), sinh(x.y), sinh(x.z)); }
-
-        /// <summary>Returns the componentwise hyperbolic sine of a float4 vector.</summary>
-        /// <param name="x">Input value.</param>
-        /// <returns>The componentwise hyperbolic sine of the input.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float4 sinh(float4 x) { return new float4(sinh(x.x), sinh(x.y), sinh(x.z), sinh(x.w)); }
+        // /// <summary>Returns the hyperbolic sine of a sfloat value.</summary>
+        // /// <param name="x">Input value.</param>
+        // /// <returns>The hyperbolic sine of the input.</returns>
+        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // public static sfloat sinh(sfloat x) { return (sfloat)System.Math.Sinh((sfloat)x); }
+        //
+        // /// <summary>Returns the componentwise hyperbolic sine of a float2 vector.</summary>
+        // /// <param name="x">Input value.</param>
+        // /// <returns>The componentwise hyperbolic sine of the input.</returns>
+        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // public static float2 sinh(float2 x) { return new float2(sinh(x.x), sinh(x.y)); }
+        //
+        // /// <summary>Returns the componentwise hyperbolic sine of a float3 vector.</summary>
+        // /// <param name="x">Input value.</param>
+        // /// <returns>The componentwise hyperbolic sine of the input.</returns>
+        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // public static float3 sinh(float3 x) { return new float3(sinh(x.x), sinh(x.y), sinh(x.z)); }
+        //
+        // /// <summary>Returns the componentwise hyperbolic sine of a float4 vector.</summary>
+        // /// <param name="x">Input value.</param>
+        // /// <returns>The componentwise hyperbolic sine of the input.</returns>
+        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // public static float4 sinh(float4 x) { return new float4(sinh(x.x), sinh(x.y), sinh(x.z), sinh(x.w)); }
 
 
         /// <summary>Returns the hyperbolic sine of a double value.</summary>
@@ -2278,11 +2274,11 @@ namespace Fixed.Mathematics
         public static double4 sinh(double4 x) { return new double4(sinh(x.x), sinh(x.y), sinh(x.z), sinh(x.w)); }
 
 
-        /// <summary>Returns the arcsine of a float value.</summary>
+        /// <summary>Returns the arcsine of a sfloat value.</summary>
         /// <param name="x">Input value.</param>
         /// <returns>The arcsine of the input.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float asin(float x) { return (float)System.Math.Asin((float)x); }
+        public static sfloat asin(sfloat x) { return libm.asinf(x); }
 
         /// <summary>Returns the componentwise arcsine of a float2 vector.</summary>
         /// <param name="x">Input value.</param>
@@ -2328,11 +2324,11 @@ namespace Fixed.Mathematics
         public static double4 asin(double4 x) { return new double4(asin(x.x), asin(x.y), asin(x.z), asin(x.w)); }
 
 
-        /// <summary>Returns the result of rounding a float value up to the nearest integral value less or equal to the original value.</summary>
+        /// <summary>Returns the result of rounding a sfloat value up to the nearest integral value less or equal to the original value.</summary>
         /// <param name="x">Input value.</param>
         /// <returns>The round down to nearest integral value of the input.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float floor(float x) { return (float)System.Math.Floor((float)x); }
+        public static sfloat floor(sfloat x) { return libm.floorf(x); }
 
         /// <summary>Returns the result of rounding each component of a float2 vector value down to the nearest value less or equal to the original value.</summary>
         /// <param name="x">Input value.</param>
@@ -2378,11 +2374,11 @@ namespace Fixed.Mathematics
         public static double4 floor(double4 x) { return new double4(floor(x.x), floor(x.y), floor(x.z), floor(x.w)); }
 
 
-        /// <summary>Returns the result of rounding a float value up to the nearest integral value greater or equal to the original value.</summary>
+        /// <summary>Returns the result of rounding a sfloat value up to the nearest integral value greater or equal to the original value.</summary>
         /// <param name="x">Input value.</param>
         /// <returns>The round up to nearest integral value of the input.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float ceil(float x) { return (float)System.Math.Ceiling((float)x); }
+        public static sfloat ceil(sfloat x) { return libm.ceilf(x); }
 
         /// <summary>Returns the result of rounding each component of a float2 vector value up to the nearest value greater or equal to the original value.</summary>
         /// <param name="x">Input value.</param>
@@ -2428,11 +2424,11 @@ namespace Fixed.Mathematics
         public static double4 ceil(double4 x) { return new double4(ceil(x.x), ceil(x.y), ceil(x.z), ceil(x.w)); }
 
 
-        /// <summary>Returns the result of rounding a float value to the nearest integral value.</summary>
+        /// <summary>Returns the result of rounding a sfloat value to the nearest integral value.</summary>
         /// <param name="x">Input value.</param>
         /// <returns>The round to nearest integral value of the input.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float round(float x) { return (float)System.Math.Round((float)x); }
+        public static sfloat round(sfloat x) { return libm.roundf(x); }
 
         /// <summary>Returns the result of rounding each component of a float2 vector value to the nearest integral value.</summary>
         /// <param name="x">Input value.</param>
@@ -2478,11 +2474,11 @@ namespace Fixed.Mathematics
         public static double4 round(double4 x) { return new double4(round(x.x), round(x.y), round(x.z), round(x.w)); }
 
 
-        /// <summary>Returns the result of truncating a float value to an integral float value.</summary>
+        /// <summary>Returns the result of truncating a sfloat value to an integral sfloat value.</summary>
         /// <param name="x">Input value.</param>
         /// <returns>The truncation of the input.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float trunc(float x) { return (float)System.Math.Truncate((float)x); }
+        public static sfloat trunc(sfloat x) { return libm.truncf(x); }
 
         /// <summary>Returns the result of a componentwise truncation of a float2 value to an integral float2 value.</summary>
         /// <param name="x">Input value.</param>
@@ -2528,11 +2524,11 @@ namespace Fixed.Mathematics
         public static double4 trunc(double4 x) { return new double4(trunc(x.x), trunc(x.y), trunc(x.z), trunc(x.w)); }
 
 
-        /// <summary>Returns the fractional part of a float value.</summary>
+        /// <summary>Returns the fractional part of a sfloat value.</summary>
         /// <param name="x">Input value.</param>
         /// <returns>The fractional part of the input.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float frac(float x) { return x - floor(x); }
+        public static sfloat frac(sfloat x) { return x - floor(x); }
 
         /// <summary>Returns the componentwise fractional parts of a float2 vector.</summary>
         /// <param name="x">Input value.</param>
@@ -2578,29 +2574,29 @@ namespace Fixed.Mathematics
         public static double4 frac(double4 x) { return x - floor(x); }
 
 
-        /// <summary>Returns the reciprocal a float value.</summary>
+        /// <summary>Returns the reciprocal a sfloat value.</summary>
         /// <param name="x">Input value.</param>
         /// <returns>The reciprocal of the input.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float rcp(float x) { return 1.0f / x; }
+        public static sfloat rcp(sfloat x) { return sfloat.One / x; }
 
         /// <summary>Returns the componentwise reciprocal a float2 vector.</summary>
         /// <param name="x">Input value.</param>
         /// <returns>The componentwise reciprocal of the input.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float2 rcp(float2 x) { return 1.0f / x; }
+        public static float2 rcp(float2 x) { return sfloat.One / x; }
 
         /// <summary>Returns the componentwise reciprocal a float3 vector.</summary>
         /// <param name="x">Input value.</param>
         /// <returns>The componentwise reciprocal of the input.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float3 rcp(float3 x) { return 1.0f / x; }
+        public static float3 rcp(float3 x) { return sfloat.One / x; }
 
         /// <summary>Returns the componentwise reciprocal a float4 vector.</summary>
         /// <param name="x">Input value.</param>
         /// <returns>The componentwise reciprocal of the input.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float4 rcp(float4 x) { return 1.0f / x; }
+        public static float4 rcp(float4 x) { return sfloat.One / x; }
 
 
         /// <summary>Returns the reciprocal a double value.</summary>
@@ -2627,25 +2623,25 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static double4 rcp(double4 x) { return 1.0 / x; }
 
-        /// <summary>Returns the sign of a float value. -1.0f if it is less than zero, 0.0f if it is zero and 1.0f if it greater than zero.</summary>
+        /// <summary>Returns the sign of a sfloat value. -sfloat.One if it is less than zero, sfloat.Zero if it is zero and sfloat.One if it greater than zero.</summary>
         /// <param name="x">Input value.</param>
         /// <returns>The sign of the input.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float sign(float x) { return (x > 0.0f ? 1.0f : 0.0f) - (x < 0.0f ? 1.0f : 0.0f); }
+        public static sfloat sign(sfloat x) { return x > sfloat.Zero ? sfloat.One : x < sfloat.Zero ? -sfloat.One : sfloat.Zero; }
 
-        /// <summary>Returns the componentwise sign of a float2 value. 1.0f for positive components, 0.0f for zero components and -1.0f for negative components.</summary>
+        /// <summary>Returns the componentwise sign of a float2 value. sfloat.One for positive components, sfloat.Zero for zero components and -sfloat.One for negative components.</summary>
         /// <param name="x">Input value.</param>
         /// <returns>The componentwise sign of the input.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float2 sign(float2 x) { return new float2(sign(x.x), sign(x.y)); }
 
-        /// <summary>Returns the componentwise sign of a float3 value. 1.0f for positive components, 0.0f for zero components and -1.0f for negative components.</summary>
+        /// <summary>Returns the componentwise sign of a float3 value. sfloat.One for positive components, sfloat.Zero for zero components and -sfloat.One for negative components.</summary>
         /// <param name="x">Input value.</param>
         /// <returns>The componentwise sign of the input.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float3 sign(float3 x) { return new float3(sign(x.x), sign(x.y), sign(x.z)); }
 
-        /// <summary>Returns the componentwise sign of a float4 value. 1.0f for positive components, 0.0f for zero components and -1.0f for negative components.</summary>
+        /// <summary>Returns the componentwise sign of a float4 value. sfloat.One for positive components, sfloat.Zero for zero components and -sfloat.One for negative components.</summary>
         /// <param name="x">Input value.</param>
         /// <returns>The componentwise sign of the input.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -2682,7 +2678,7 @@ namespace Fixed.Mathematics
         /// <param name="y">The exponent power.</param>
         /// <returns>The result of raising x to the power y.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float pow(float x, float y) { return (float)System.Math.Pow((float)x, (float)y); }
+        public static sfloat pow(sfloat x, sfloat y) { return libm.powf(x, y); }
 
         /// <summary>Returns the componentwise result of raising x to the power y.</summary>
         /// <param name="x">The exponent base.</param>
@@ -2739,7 +2735,7 @@ namespace Fixed.Mathematics
         /// <param name="x">Input value.</param>
         /// <returns>The base-e exponential of the input.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float exp(float x) { return (float)System.Math.Exp((float)x); }
+        public static sfloat exp(sfloat x) { return libm.expf(x); }
 
         /// <summary>Returns the componentwise base-e exponential of x.</summary>
         /// <param name="x">Input value.</param>
@@ -2789,7 +2785,7 @@ namespace Fixed.Mathematics
         /// <param name="x">Input value.</param>
         /// <returns>The base-2 exponential of the input.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float exp2(float x) { return (float)System.Math.Exp((float)x * 0.69314718f); }
+        public static sfloat exp2(sfloat x) { return libm.expf(x) * sfloat.FromRaw(0x3f317218); }
 
         /// <summary>Returns the componentwise base-2 exponential of x.</summary>
         /// <param name="x">Input value.</param>
@@ -2839,7 +2835,7 @@ namespace Fixed.Mathematics
         /// <param name="x">Input value.</param>
         /// <returns>The base-10 exponential of the input.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float exp10(float x) { return (float)System.Math.Exp((float)x * 2.30258509f); }
+        public static sfloat exp10(sfloat x) { return libm.expf(x) * sfloat.FromRaw(0x40135d8e); }
 
         /// <summary>Returns the componentwise base-10 exponential of x.</summary>
         /// <param name="x">Input value.</param>
@@ -2885,11 +2881,11 @@ namespace Fixed.Mathematics
         public static double4 exp10(double4 x) { return new double4(exp10(x.x), exp10(x.y), exp10(x.z), exp10(x.w)); }
 
 
-        /// <summary>Returns the natural logarithm of a float value.</summary>
+        /// <summary>Returns the natural logarithm of a sfloat value.</summary>
         /// <param name="x">Input value.</param>
         /// <returns>The natural logarithm of the input.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float log(float x) { return (float)System.Math.Log((float)x); }
+        public static sfloat log(sfloat x) { return libm.logf(x); }
 
         /// <summary>Returns the componentwise natural logarithm of a float2 vector.</summary>
         /// <param name="x">Input value.</param>
@@ -2935,11 +2931,11 @@ namespace Fixed.Mathematics
         public static double4 log(double4 x) { return new double4(log(x.x), log(x.y), log(x.z), log(x.w)); }
 
 
-        /// <summary>Returns the base-2 logarithm of a float value.</summary>
+        /// <summary>Returns the base-2 logarithm of a sfloat value.</summary>
         /// <param name="x">Input value.</param>
         /// <returns>The base-2 logarithm of the input.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float log2(float x) { return (float)System.Math.Log((float)x, 2.0f); }
+        public static sfloat log2(sfloat x) { return libm.log2f(x); }
 
         /// <summary>Returns the componentwise base-2 logarithm of a float2 vector.</summary>
         /// <param name="x">Input value.</param>
@@ -2984,11 +2980,11 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static double4 log2(double4 x) { return new double4(log2(x.x), log2(x.y), log2(x.z), log2(x.w)); }
 
-        /// <summary>Returns the base-10 logarithm of a float value.</summary>
+        /// <summary>Returns the base-10 logarithm of a sfloat value.</summary>
         /// <param name="x">Input value.</param>
         /// <returns>The base-10 logarithm of the input.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float log10(float x) { return (float)System.Math.Log10((float)x); }
+        public static sfloat log10(sfloat x) { return libm.logf(x) * LOG10E; }
 
         /// <summary>Returns the componentwise base-10 logarithm of a float2 vector.</summary>
         /// <param name="x">Input value.</param>
@@ -3039,7 +3035,7 @@ namespace Fixed.Mathematics
         /// <param name="y">The divisor in x/y.</param>
         /// <returns>The remainder of x/y.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float fmod(float x, float y) { return x % y; }
+        public static sfloat fmod(sfloat x, sfloat y) { return x % y; }
 
         /// <summary>Returns the componentwise floating point remainder of x/y.</summary>
         /// <param name="x">The dividend in x/y.</param>
@@ -3092,12 +3088,12 @@ namespace Fixed.Mathematics
         public static double4 fmod(double4 x, double4 y) { return new double4(x.x % y.x, x.y % y.y, x.z % y.z, x.w % y.w); }
 
 
-        /// <summary>Splits a float value into an integral part i and a fractional part that gets returned. Both parts take the sign of the input.</summary>
+        /// <summary>Splits a sfloat value into an integral part i and a fractional part that gets returned. Both parts take the sign of the input.</summary>
         /// <param name="x">Value to split into integral and fractional part.</param>
         /// <param name="i">Output value containing integral part of x.</param>
         /// <returns>The fractional part of x.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float modf(float x, out float i) { i = trunc(x); return x - i; }
+        public static sfloat modf(sfloat x, out sfloat i) { i = trunc(x); return x - i; }
 
         /// <summary>
         /// Performs a componentwise split of a float2 vector into an integral part i and a fractional part that gets returned.
@@ -3168,11 +3164,11 @@ namespace Fixed.Mathematics
         public static double4 modf(double4 x, out double4 i) { i = trunc(x); return x - i; }
 
 
-        /// <summary>Returns the square root of a float value.</summary>
+        /// <summary>Returns the square root of a sfloat value.</summary>
         /// <param name="x">Value to use when computing square root.</param>
         /// <returns>The square root.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float sqrt(float x) { return (float)System.Math.Sqrt((float)x); }
+        public static sfloat sqrt(sfloat x) { return libm.sqrtf(x); }
 
         /// <summary>Returns the componentwise square root of a float2 vector.</summary>
         /// <param name="x">Value to use when computing square root.</param>
@@ -3218,29 +3214,29 @@ namespace Fixed.Mathematics
         public static double4 sqrt(double4 x) { return new double4(sqrt(x.x), sqrt(x.y), sqrt(x.z), sqrt(x.w)); }
 
 
-        /// <summary>Returns the reciprocal square root of a float value.</summary>
+        /// <summary>Returns the reciprocal square root of a sfloat value.</summary>
         /// <param name="x">Value to use when computing reciprocal square root.</param>
         /// <returns>The reciprocal square root.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float rsqrt(float x) { return 1.0f / sqrt(x); }
+        public static sfloat rsqrt(sfloat x) { return sfloat.One / sqrt(x); }
 
         /// <summary>Returns the componentwise reciprocal square root of a float2 vector.</summary>
         /// <param name="x">Value to use when computing reciprocal square root.</param>
         /// <returns>The componentwise reciprocal square root.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float2 rsqrt(float2 x) { return 1.0f / sqrt(x); }
+        public static float2 rsqrt(float2 x) { return sfloat.One / sqrt(x); }
 
         /// <summary>Returns the componentwise reciprocal square root of a float3 vector.</summary>
         /// <param name="x">Value to use when computing reciprocal square root.</param>
         /// <returns>The componentwise reciprocal square root.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float3 rsqrt(float3 x) { return 1.0f / sqrt(x); }
+        public static float3 rsqrt(float3 x) { return sfloat.One / sqrt(x); }
 
         /// <summary>Returns the componentwise reciprocal square root of a float4 vector</summary>
         /// <param name="x">Value to use when computing reciprocal square root.</param>
         /// <returns>The componentwise reciprocal square root.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float4 rsqrt(float4 x) { return 1.0f / sqrt(x); }
+        public static float4 rsqrt(float4 x) { return sfloat.One / sqrt(x); }
 
 
         /// <summary>Returns the reciprocal square root of a double value.</summary>
@@ -3316,7 +3312,7 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public float2 normalizesafe(float2 x, float2 defaultvalue = new float2())
         {
-            float len = math.dot(x, x);
+            sfloat len = math.dot(x, x);
             return math.select(defaultvalue, x * math.rsqrt(len), len > FLT_MIN_NORMAL);
         }
 
@@ -3330,7 +3326,7 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public float3 normalizesafe(float3 x, float3 defaultvalue = new float3())
         {
-            float len = math.dot(x, x);
+            sfloat len = math.dot(x, x);
             return math.select(defaultvalue, x * math.rsqrt(len), len > FLT_MIN_NORMAL);
         }
 
@@ -3344,7 +3340,7 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public float4 normalizesafe(float4 x, float4 defaultvalue = new float4())
         {
-            float len = math.dot(x, x);
+            sfloat len = math.dot(x, x);
             return math.select(defaultvalue, x * math.rsqrt(len), len > FLT_MIN_NORMAL);
         }
 
@@ -3360,7 +3356,7 @@ namespace Fixed.Mathematics
         static public double2 normalizesafe(double2 x, double2 defaultvalue = new double2())
         {
             double len = math.dot(x, x);
-            return math.select(defaultvalue, x * math.rsqrt(len), len > FLT_MIN_NORMAL);
+            return math.select(defaultvalue, x * math.rsqrt(len), len > DBL_MIN_NORMAL);
         }
 
         /// <summary>
@@ -3374,7 +3370,7 @@ namespace Fixed.Mathematics
         static public double3 normalizesafe(double3 x, double3 defaultvalue = new double3())
         {
             double len = math.dot(x, x);
-            return math.select(defaultvalue, x * math.rsqrt(len), len > FLT_MIN_NORMAL);
+            return math.select(defaultvalue, x * math.rsqrt(len), len > DBL_MIN_NORMAL);
         }
 
         /// <summary>
@@ -3388,33 +3384,33 @@ namespace Fixed.Mathematics
         static public double4 normalizesafe(double4 x, double4 defaultvalue = new double4())
         {
             double len = math.dot(x, x);
-            return math.select(defaultvalue, x * math.rsqrt(len), len > FLT_MIN_NORMAL);
+            return math.select(defaultvalue, x * math.rsqrt(len), len > DBL_MIN_NORMAL);
         }
 
 
-        /// <summary>Returns the length of a float value. Equivalent to the absolute value.</summary>
+        /// <summary>Returns the length of a sfloat value. Equivalent to the absolute value.</summary>
         /// <param name="x">Value to use when computing length.</param>
         /// <returns>Length of x.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float length(float x) { return abs(x); }
+        public static sfloat length(sfloat x) { return abs(x); }
 
         /// <summary>Returns the length of a float2 vector.</summary>
         /// <param name="x">Vector to use when computing length.</param>
         /// <returns>Length of vector x.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float length(float2 x) { return sqrt(dot(x, x)); }
+        public static sfloat length(float2 x) { return sqrt(dot(x, x)); }
 
         /// <summary>Returns the length of a float3 vector.</summary>
         /// <param name="x">Vector to use when computing length.</param>
         /// <returns>Length of vector x.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float length(float3 x) { return sqrt(dot(x, x)); }
+        public static sfloat length(float3 x) { return sqrt(dot(x, x)); }
 
         /// <summary>Returns the length of a float4 vector.</summary>
         /// <param name="x">Vector to use when computing length.</param>
         /// <returns>Length of vector x.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float length(float4 x) { return sqrt(dot(x, x)); }
+        public static sfloat length(float4 x) { return sqrt(dot(x, x)); }
 
 
         /// <summary>Returns the length of a double value. Equivalent to the absolute value.</summary>
@@ -3442,29 +3438,29 @@ namespace Fixed.Mathematics
         public static double length(double4 x) { return sqrt(dot(x, x)); }
 
 
-        /// <summary>Returns the squared length of a float value. Equivalent to squaring the value.</summary>
+        /// <summary>Returns the squared length of a sfloat value. Equivalent to squaring the value.</summary>
         /// <param name="x">Value to use when computing squared length.</param>
         /// <returns>Squared length of x.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float lengthsq(float x) { return x*x; }
+        public static sfloat lengthsq(sfloat x) { return x*x; }
 
         /// <summary>Returns the squared length of a float2 vector.</summary>
         /// <param name="x">Vector to use when computing squared length.</param>
         /// <returns>Squared length of vector x.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float lengthsq(float2 x) { return dot(x, x); }
+        public static sfloat lengthsq(float2 x) { return dot(x, x); }
 
         /// <summary>Returns the squared length of a float3 vector.</summary>
         /// <param name="x">Vector to use when computing squared length.</param>
         /// <returns>Squared length of vector x.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float lengthsq(float3 x) { return dot(x, x); }
+        public static sfloat lengthsq(float3 x) { return dot(x, x); }
 
         /// <summary>Returns the squared length of a float4 vector.</summary>
         /// <param name="x">Vector to use when computing squared length.</param>
         /// <returns>Squared length of vector x.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float lengthsq(float4 x) { return dot(x, x); }
+        public static sfloat lengthsq(float4 x) { return dot(x, x); }
 
 
         /// <summary>Returns the squared length of a double value. Equivalent to squaring the value.</summary>
@@ -3492,33 +3488,33 @@ namespace Fixed.Mathematics
         public static double lengthsq(double4 x) { return dot(x, x); }
 
 
-        /// <summary>Returns the distance between two float values.</summary>
+        /// <summary>Returns the distance between two sfloat values.</summary>
         /// <param name="x">First value to use in distance computation.</param>
         /// <param name="y">Second value to use in distance computation.</param>
         /// <returns>The distance between x and y.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float distance(float x, float y) { return abs(y - x); }
+        public static sfloat distance(sfloat x, sfloat y) { return abs(y - x); }
 
         /// <summary>Returns the distance between two float2 vectors.</summary>
         /// <param name="x">First vector to use in distance computation.</param>
         /// <param name="y">Second vector to use in distance computation.</param>
         /// <returns>The distance between x and y.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float distance(float2 x, float2 y) { return length(y - x); }
+        public static sfloat distance(float2 x, float2 y) { return length(y - x); }
 
         /// <summary>Returns the distance between two float3 vectors.</summary>
         /// <param name="x">First vector to use in distance computation.</param>
         /// <param name="y">Second vector to use in distance computation.</param>
         /// <returns>The distance between x and y.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float distance(float3 x, float3 y) { return length(y - x); }
+        public static sfloat distance(float3 x, float3 y) { return length(y - x); }
 
         /// <summary>Returns the distance between two float4 vectors.</summary>
         /// <param name="x">First vector to use in distance computation.</param>
         /// <param name="y">Second vector to use in distance computation.</param>
         /// <returns>The distance between x and y.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float distance(float4 x, float4 y) { return length(y - x); }
+        public static sfloat distance(float4 x, float4 y) { return length(y - x); }
 
 
         /// <summary>Returns the distance between two double values.</summary>
@@ -3550,33 +3546,33 @@ namespace Fixed.Mathematics
         public static double distance(double4 x, double4 y) { return length(y - x); }
 
 
-        /// <summary>Returns the squared distance between two float values.</summary>
+        /// <summary>Returns the squared distance between two sfloat values.</summary>
         /// <param name="x">First value to use in distance computation.</param>
         /// <param name="y">Second value to use in distance computation.</param>
         /// <returns>The squared distance between x and y.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float distancesq(float x, float y) { return (y - x) * (y - x); }
+        public static sfloat distancesq(sfloat x, sfloat y) { return (y - x) * (y - x); }
 
         /// <summary>Returns the squared distance between two float2 vectors.</summary>
         /// <param name="x">First vector to use in distance computation.</param>
         /// <param name="y">Second vector to use in distance computation.</param>
         /// <returns>The squared distance between x and y.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float distancesq(float2 x, float2 y) { return lengthsq(y - x); }
+        public static sfloat distancesq(float2 x, float2 y) { return lengthsq(y - x); }
 
         /// <summary>Returns the squared distance between two float3 vectors.</summary>
         /// <param name="x">First vector to use in distance computation.</param>
         /// <param name="y">Second vector to use in distance computation.</param>
         /// <returns>The squared distance between x and y.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float distancesq(float3 x, float3 y) { return lengthsq(y - x); }
+        public static sfloat distancesq(float3 x, float3 y) { return lengthsq(y - x); }
 
         /// <summary>Returns the squared distance between two float4 vectors.</summary>
         /// <param name="x">First vector to use in distance computation.</param>
         /// <param name="y">Second vector to use in distance computation.</param>
         /// <returns>The squared distance between x and y.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float distancesq(float4 x, float4 y) { return lengthsq(y - x); }
+        public static sfloat distancesq(float4 x, float4 y) { return lengthsq(y - x); }
 
 
         /// <summary>Returns the squared distance between two double values.</summary>
@@ -3623,19 +3619,19 @@ namespace Fixed.Mathematics
         public static double3 cross(double3 x, double3 y) { return (x * y.yzx - x.yzx * y).yzx; }
 
 
-        /// <summary>Returns a smooth Hermite interpolation between 0.0f and 1.0f when x is in [a, b].</summary>
+        /// <summary>Returns a smooth Hermite interpolation between sfloat.Zero and sfloat.One when x is in [a, b].</summary>
         /// <param name="a">The minimum range of the x parameter.</param>
         /// <param name="b">The maximum range of the x parameter.</param>
         /// <param name="x">The value to be interpolated.</param>
         /// <returns>Returns a value camped to the range [0, 1].</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float smoothstep(float a, float b, float x)
+        public static sfloat smoothstep(sfloat a, sfloat b, sfloat x)
         {
             var t = saturate((x - a) / (b - a));
-            return t * t * (3.0f - (2.0f * t));
+            return t * t * ((sfloat)3.0f - ((sfloat)2.0f * t));
         }
 
-        /// <summary>Returns a componentwise smooth Hermite interpolation between 0.0f and 1.0f when x is in [a, b].</summary>
+        /// <summary>Returns a componentwise smooth Hermite interpolation between sfloat.Zero and sfloat.One when x is in [a, b].</summary>
         /// <param name="a">The minimum range of the x parameter.</param>
         /// <param name="b">The maximum range of the x parameter.</param>
         /// <param name="x">The value to be interpolated.</param>
@@ -3644,10 +3640,10 @@ namespace Fixed.Mathematics
         public static float2 smoothstep(float2 a, float2 b, float2 x)
         {
             var t = saturate((x - a) / (b - a));
-            return t * t * (3.0f - (2.0f * t));
+            return t * t * ((sfloat)3.0f - ((sfloat)2.0f * t));
         }
 
-        /// <summary>Returns a componentwise smooth Hermite interpolation between 0.0f and 1.0f when x is in [a, b].</summary>
+        /// <summary>Returns a componentwise smooth Hermite interpolation between sfloat.Zero and sfloat.One when x is in [a, b].</summary>
         /// <param name="a">The minimum range of the x parameter.</param>
         /// <param name="b">The maximum range of the x parameter.</param>
         /// <param name="x">The value to be interpolated.</param>
@@ -3656,10 +3652,10 @@ namespace Fixed.Mathematics
         public static float3 smoothstep(float3 a, float3 b, float3 x)
         {
             var t = saturate((x - a) / (b - a));
-            return t * t * (3.0f - (2.0f * t));
+            return t * t * ((sfloat)3.0f - ((sfloat)2.0f * t));
         }
 
-        /// <summary>Returns a componentwise smooth Hermite interpolation between 0.0f and 1.0f when x is in [a, b].</summary>
+        /// <summary>Returns a componentwise smooth Hermite interpolation between sfloat.Zero and sfloat.One when x is in [a, b].</summary>
         /// <param name="a">The minimum range of the x parameter.</param>
         /// <param name="b">The maximum range of the x parameter.</param>
         /// <param name="x">The value to be interpolated.</param>
@@ -3668,7 +3664,7 @@ namespace Fixed.Mathematics
         public static float4 smoothstep(float4 a, float4 b, float4 x)
         {
             var t = saturate((x - a) / (b - a));
-            return t * t * (3.0f - (2.0f * t));
+            return t * t * ((sfloat)3.0f - ((sfloat)2.0f * t));
         }
 
 
@@ -3782,19 +3778,19 @@ namespace Fixed.Mathematics
         /// <param name="x">Vector of values to compare.</param>
         /// <returns>True if any the components of x are non-zero, false otherwise.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool any(float2 x) { return x.x != 0.0f || x.y != 0.0f; }
+        public static bool any(float2 x) { return x.x != sfloat.Zero || x.y != sfloat.Zero; }
 
         /// <summary>Returns true if any component of the input float3 vector is non-zero, false otherwise.</summary>
         /// <param name="x">Vector of values to compare.</param>
         /// <returns>True if any the components of x are non-zero, false otherwise.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool any(float3 x) { return x.x != 0.0f || x.y != 0.0f || x.z != 0.0f; }
+        public static bool any(float3 x) { return x.x != sfloat.Zero || x.y != sfloat.Zero || x.z != sfloat.Zero; }
 
         /// <summary>Returns true if any component of the input float4 vector is non-zero, false otherwise.</summary>
         /// <param name="x">Vector of values to compare.</param>
         /// <returns>True if any the components of x are non-zero, false otherwise.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool any(float4 x) { return x.x != 0.0f || x.y != 0.0f || x.z != 0.0f || x.w != 0.0f; }
+        public static bool any(float4 x) { return x.x != sfloat.Zero || x.y != sfloat.Zero || x.z != sfloat.Zero || x.w != sfloat.Zero; }
 
 
         /// <summary>Returns true if any component of the input double2 vector is non-zero, false otherwise.</summary>
@@ -3877,19 +3873,19 @@ namespace Fixed.Mathematics
         /// <param name="x">Vector of values to compare.</param>
         /// <returns>True if all the components of x are non-zero, false otherwise.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool all(float2 x) { return x.x != 0.0f && x.y != 0.0f; }
+        public static bool all(float2 x) { return x.x != sfloat.Zero && x.y != sfloat.Zero; }
 
         /// <summary>Returns true if all components of the input float3 vector are non-zero, false otherwise.</summary>
         /// <param name="x">Vector of values to compare.</param>
         /// <returns>True if all the components of x are non-zero, false otherwise.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool all(float3 x) { return x.x != 0.0f && x.y != 0.0f && x.z != 0.0f; }
+        public static bool all(float3 x) { return x.x != sfloat.Zero && x.y != sfloat.Zero && x.z != sfloat.Zero; }
 
         /// <summary>Returns true if all components of the input float4 vector are non-zero, false otherwise.</summary>
         /// <param name="x">Vector of values to compare.</param>
         /// <returns>True if all the components of x are non-zero, false otherwise.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool all(float4 x) { return x.x != 0.0f && x.y != 0.0f && x.z != 0.0f && x.w != 0.0f; }
+        public static bool all(float4 x) { return x.x != sfloat.Zero && x.y != sfloat.Zero && x.z != sfloat.Zero && x.w != sfloat.Zero; }
 
 
         /// <summary>Returns true if all components of the input double2 vector are non-zero, false otherwise.</summary>
@@ -4068,7 +4064,7 @@ namespace Fixed.Mathematics
         /// <param name="c">Bool value to choose between a and b.</param>
         /// <returns>The selection between a and b according to bool c.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float select(float a, float b, bool c)    { return c ? b : a; }
+        public static sfloat select(sfloat a, sfloat b, bool c)    { return c ? b : a; }
 
         /// <summary>Returns b if c is true, a otherwise.</summary>
         /// <param name="a">Value to use if c is false.</param>
@@ -4195,57 +4191,57 @@ namespace Fixed.Mathematics
         public static double4 select(double4 a, double4 b, bool4 c) { return new double4(c.x ? b.x : a.x, c.y ? b.y : a.y, c.z ? b.z : a.z, c.w ? b.w : a.w); }
 
 
-        /// <summary>Returns the result of a step function where the result is 1.0f when x &gt;= y and 0.0f otherwise.</summary>
+        /// <summary>Returns the result of a step function where the result is sfloat.One when x &gt;= y and sfloat.Zero otherwise.</summary>
         /// <param name="y">Value to be used as a threshold for returning 1.</param>
         /// <param name="x">Value to compare against threshold y.</param>
         /// <returns>1 if the comparison x &gt;= y is true, otherwise 0.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float step(float y, float x) { return select(0.0f, 1.0f, x >= y); }
+        public static sfloat step(sfloat y, sfloat x) { return select(sfloat.Zero, sfloat.One, x >= y); }
 
-        /// <summary>Returns the result of a componentwise step function where each component is 1.0f when x &gt;= y and 0.0f otherwise.</summary>
+        /// <summary>Returns the result of a componentwise step function where each component is sfloat.One when x &gt;= y and sfloat.Zero otherwise.</summary>
         /// <param name="y">Vector of values to be used as a threshold for returning 1.</param>
         /// <param name="x">Vector of values to compare against threshold y.</param>
         /// <returns>1 if the componentwise comparison x &gt;= y is true, otherwise 0.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float2 step(float2 y, float2 x) { return select(float2(0.0f), float2(1.0f), x >= y); }
+        public static float2 step(float2 y, float2 x) { return select(float2(sfloat.Zero), float2(sfloat.One), x >= y); }
 
-        /// <summary>Returns the result of a componentwise step function where each component is 1.0f when x &gt;= y and 0.0f otherwise.</summary>
+        /// <summary>Returns the result of a componentwise step function where each component is sfloat.One when x &gt;= y and sfloat.Zero otherwise.</summary>
         /// <param name="y">Vector of values to be used as a threshold for returning 1.</param>
         /// <param name="x">Vector of values to compare against threshold y.</param>
         /// <returns>1 if the componentwise comparison x &gt;= y is true, otherwise 0.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float3 step(float3 y, float3 x) { return select(float3(0.0f), float3(1.0f), x >= y); }
+        public static float3 step(float3 y, float3 x) { return select(float3(sfloat.Zero), float3(sfloat.One), x >= y); }
 
-        /// <summary>Returns the result of a componentwise step function where each component is 1.0f when x &gt;= y and 0.0f otherwise.</summary>
+        /// <summary>Returns the result of a componentwise step function where each component is sfloat.One when x &gt;= y and sfloat.Zero otherwise.</summary>
         /// <param name="y">Vector of values to be used as a threshold for returning 1.</param>
         /// <param name="x">Vector of values to compare against threshold y.</param>
         /// <returns>1 if the componentwise comparison x &gt;= y is true, otherwise 0.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float4 step(float4 y, float4 x) { return select(float4(0.0f), float4(1.0f), x >= y); }
+        public static float4 step(float4 y, float4 x) { return select(float4(sfloat.Zero), float4(sfloat.One), x >= y); }
 
 
-        /// <summary>Returns the result of a step function where the result is 1.0f when x &gt;= y and 0.0f otherwise.</summary>
+        /// <summary>Returns the result of a step function where the result is sfloat.One when x &gt;= y and sfloat.Zero otherwise.</summary>
         /// <param name="y">Values to be used as a threshold for returning 1.</param>
         /// <param name="x">Values to compare against threshold y.</param>
         /// <returns>1 if the comparison x &gt;= y is true, otherwise 0.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static double step(double y, double x) { return select(0.0, 1.0, x >= y); }
 
-        /// <summary>Returns the result of a componentwise step function where each component is 1.0f when x &gt;= y and 0.0f otherwise.</summary>
+        /// <summary>Returns the result of a componentwise step function where each component is sfloat.One when x &gt;= y and sfloat.Zero otherwise.</summary>
         /// <param name="y">Vector of values to be used as a threshold for returning 1.</param>
         /// <param name="x">Vector of values to compare against threshold y.</param>
         /// <returns>1 if the componentwise comparison x &gt;= y is true, otherwise 0.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static double2 step(double2 y, double2 x) { return select(double2(0.0), double2(1.0), x >= y); }
 
-        /// <summary>Returns the result of a componentwise step function where each component is 1.0f when x &gt;= y and 0.0f otherwise.</summary>
+        /// <summary>Returns the result of a componentwise step function where each component is sfloat.One when x &gt;= y and sfloat.Zero otherwise.</summary>
         /// <param name="y">Vector of values to be used as a threshold for returning 1.</param>
         /// <param name="x">Vector of values to compare against threshold y.</param>
         /// <returns>1 if the componentwise comparison x &gt;= y is true, otherwise 0.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static double3 step(double3 y, double3 x) { return select(double3(0.0), double3(1.0), x >= y); }
 
-        /// <summary>Returns the result of a componentwise step function where each component is 1.0f when x &gt;= y and 0.0f otherwise.</summary>
+        /// <summary>Returns the result of a componentwise step function where each component is sfloat.One when x &gt;= y and sfloat.Zero otherwise.</summary>
         /// <param name="y">Vector of values to be used as a threshold for returning 1.</param>
         /// <param name="x">Vector of values to compare against threshold y.</param>
         /// <returns>1 if the componentwise comparison x &gt;= y is true, otherwise 0.</returns>
@@ -4258,21 +4254,21 @@ namespace Fixed.Mathematics
         /// <param name="n">Normal vector.</param>
         /// <returns>Reflection vector.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float2 reflect(float2 i, float2 n) { return i - 2f * n * dot(i, n); }
+        public static float2 reflect(float2 i, float2 n) { return i - (sfloat)2f * n * dot(i, n); }
 
         /// <summary>Given an incident vector i and a normal vector n, returns the reflection vector r = i - 2.0f * dot(i, n) * n.</summary>
         /// <param name="i">Incident vector.</param>
         /// <param name="n">Normal vector.</param>
         /// <returns>Reflection vector.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float3 reflect(float3 i, float3 n) { return i - 2f * n * dot(i, n); }
+        public static float3 reflect(float3 i, float3 n) { return i - (sfloat)2f * n * dot(i, n); }
 
         /// <summary>Given an incident vector i and a normal vector n, returns the reflection vector r = i - 2.0f * dot(i, n) * n.</summary>
         /// <param name="i">Incident vector.</param>
         /// <param name="n">Normal vector.</param>
         /// <returns>Reflection vector.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float4 reflect(float4 i, float4 n) { return i - 2f * n * dot(i, n); }
+        public static float4 reflect(float4 i, float4 n) { return i - (sfloat)2f * n * dot(i, n); }
 
 
         /// <summary>Given an incident vector i and a normal vector n, returns the reflection vector r = i - 2.0 * dot(i, n) * n.</summary>
@@ -4303,11 +4299,11 @@ namespace Fixed.Mathematics
         /// <param name="eta">Index of refraction.</param>
         /// <returns>Refraction vector.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float2 refract(float2 i, float2 n, float eta)
+        public static float2 refract(float2 i, float2 n, sfloat eta)
         {
-            float ni = dot(n, i);
-            float k = 1.0f - eta * eta * (1.0f - ni * ni);
-            return select(0.0f, eta * i - (eta * ni + sqrt(k)) * n, k >= 0);
+            sfloat ni = dot(n, i);
+            sfloat k = sfloat.One - eta * eta * (sfloat.One - ni * ni);
+            return select(sfloat.Zero, eta * i - (eta * ni + sqrt(k)) * n, k >= sfloat.Zero);
         }
 
         /// <summary>Returns the refraction vector given the incident vector i, the normal vector n and the refraction index eta.</summary>
@@ -4316,11 +4312,11 @@ namespace Fixed.Mathematics
         /// <param name="eta">Index of refraction.</param>
         /// <returns>Refraction vector.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float3 refract(float3 i, float3 n, float eta)
+        public static float3 refract(float3 i, float3 n, sfloat eta)
         {
-            float ni = dot(n, i);
-            float k = 1.0f - eta * eta * (1.0f - ni * ni);
-            return select(0.0f, eta * i - (eta * ni + sqrt(k)) * n, k >= 0);
+            sfloat ni = dot(n, i);
+            sfloat k = sfloat.One - eta * eta * (sfloat.One - ni * ni);
+            return select(sfloat.Zero, eta * i - (eta * ni + sqrt(k)) * n, k >= sfloat.Zero);
         }
 
         /// <summary>Returns the refraction vector given the incident vector i, the normal vector n and the refraction index eta.</summary>
@@ -4329,11 +4325,11 @@ namespace Fixed.Mathematics
         /// <param name="eta">Index of refraction.</param>
         /// <returns>Refraction vector.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float4 refract(float4 i, float4 n, float eta)
+        public static float4 refract(float4 i, float4 n, sfloat eta)
         {
-            float ni = dot(n, i);
-            float k = 1.0f - eta * eta * (1.0f - ni * ni);
-            return select(0.0f, eta * i - (eta * ni + sqrt(k)) * n, k >= 0);
+            sfloat ni = dot(n, i);
+            sfloat k = sfloat.One - eta * eta * (sfloat.One - ni * ni);
+            return select(sfloat.Zero, eta * i - (eta * ni + sqrt(k)) * n, k >= sfloat.Zero);
         }
 
 
@@ -4347,7 +4343,7 @@ namespace Fixed.Mathematics
         {
             double ni = dot(n, i);
             double k = 1.0 - eta * eta * (1.0 - ni * ni);
-            return select(0.0f, eta * i - (eta * ni + sqrt(k)) * n, k >= 0);
+            return select(sfloat.Zero, eta * i - (eta * ni + sqrt(k)) * n, k >= 0);
         }
 
         /// <summary>Returns the refraction vector given the incident vector i, the normal vector n and the refraction index eta.</summary>
@@ -4360,7 +4356,7 @@ namespace Fixed.Mathematics
         {
             double ni = dot(n, i);
             double k = 1.0 - eta * eta * (1.0 - ni * ni);
-            return select(0.0f, eta * i - (eta * ni + sqrt(k)) * n, k >= 0);
+            return select(sfloat.Zero, eta * i - (eta * ni + sqrt(k)) * n, k >= 0);
         }
 
         /// <summary>Returns the refraction vector given the incident vector i, the normal vector n and the refraction index eta.</summary>
@@ -4373,7 +4369,7 @@ namespace Fixed.Mathematics
         {
             double ni = dot(n, i);
             double k = 1.0 - eta * eta * (1.0 - ni * ni);
-            return select(0.0f, eta * i - (eta * ni + sqrt(k)) * n, k >= 0);
+            return select(sfloat.Zero, eta * i - (eta * ni + sqrt(k)) * n, k >= 0);
         }
 
         /// <summary>
@@ -4616,7 +4612,7 @@ namespace Fixed.Mathematics
         /// <param name="ng">Second vector in direction comparison.</param>
         /// <returns>-n if i and ng point in the same direction; otherwise return n unchanged.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float2 faceforward(float2 n, float2 i, float2 ng) { return select(n, -n, dot(ng, i) >= 0.0f); }
+        public static float2 faceforward(float2 n, float2 i, float2 ng) { return select(n, -n, dot(ng, i) >= sfloat.Zero); }
 
         /// <summary>Conditionally flips a vector n if two vectors i and ng are pointing in the same direction. Returns n if dot(i, ng) &lt; 0, -n otherwise.</summary>
         /// <param name="n">Vector to conditionally flip.</param>
@@ -4624,7 +4620,7 @@ namespace Fixed.Mathematics
         /// <param name="ng">Second vector in direction comparison.</param>
         /// <returns>-n if i and ng point in the same direction; otherwise return n unchanged.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float3 faceforward(float3 n, float3 i, float3 ng) { return select(n, -n, dot(ng, i) >= 0.0f); }
+        public static float3 faceforward(float3 n, float3 i, float3 ng) { return select(n, -n, dot(ng, i) >= sfloat.Zero); }
 
         /// <summary>Conditionally flips a vector n if two vectors i and ng are pointing in the same direction. Returns n if dot(i, ng) &lt; 0, -n otherwise.</summary>
         /// <param name="n">Vector to conditionally flip.</param>
@@ -4632,7 +4628,7 @@ namespace Fixed.Mathematics
         /// <param name="ng">Second vector in direction comparison.</param>
         /// <returns>-n if i and ng point in the same direction; otherwise return n unchanged.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float4 faceforward(float4 n, float4 i, float4 ng) { return select(n, -n, dot(ng, i) >= 0.0f); }
+        public static float4 faceforward(float4 n, float4 i, float4 ng) { return select(n, -n, dot(ng, i) >= sfloat.Zero); }
 
 
         /// <summary>Conditionally flips a vector n if two vectors i and ng are pointing in the same direction. Returns n if dot(i, ng) &lt; 0, -n otherwise.</summary>
@@ -4641,7 +4637,7 @@ namespace Fixed.Mathematics
         /// <param name="ng">Second vector in direction comparison.</param>
         /// <returns>-n if i and ng point in the same direction; otherwise return n unchanged.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static double2 faceforward(double2 n, double2 i, double2 ng) { return select(n, -n, dot(ng, i) >= 0.0f); }
+        public static double2 faceforward(double2 n, double2 i, double2 ng) { return select(n, -n, dot(ng, i) >= 0.0); }
 
         /// <summary>Conditionally flips a vector n if two vectors i and ng are pointing in the same direction. Returns n if dot(i, ng) &lt; 0, -n otherwise.</summary>
         /// <param name="n">Vector to conditionally flip.</param>
@@ -4649,7 +4645,7 @@ namespace Fixed.Mathematics
         /// <param name="ng">Second vector in direction comparison.</param>
         /// <returns>-n if i and ng point in the same direction; otherwise return n unchanged.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static double3 faceforward(double3 n, double3 i, double3 ng) { return select(n, -n, dot(ng, i) >= 0.0f); }
+        public static double3 faceforward(double3 n, double3 i, double3 ng) { return select(n, -n, dot(ng, i) >= 0.0); }
 
         /// <summary>Conditionally flips a vector n if two vectors i and ng are pointing in the same direction. Returns n if dot(i, ng) &lt; 0, -n otherwise.</summary>
         /// <param name="n">Vector to conditionally flip.</param>
@@ -4657,16 +4653,16 @@ namespace Fixed.Mathematics
         /// <param name="ng">Second vector in direction comparison.</param>
         /// <returns>-n if i and ng point in the same direction; otherwise return n unchanged.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static double4 faceforward(double4 n, double4 i, double4 ng) { return select(n, -n, dot(ng, i) >= 0.0f); }
+        public static double4 faceforward(double4 n, double4 i, double4 ng) { return select(n, -n, dot(ng, i) >= 0.0); }
 
 
-        /// <summary>Returns the sine and cosine of the input float value x through the out parameters s and c.</summary>
+        /// <summary>Returns the sine and cosine of the input sfloat value x through the out parameters s and c.</summary>
         /// <remarks>When Burst compiled, his method is faster than calling sin() and cos() separately.</remarks>
         /// <param name="x">Input angle in radians.</param>
         /// <param name="s">Output sine of the input.</param>
         /// <param name="c">Output cosine of the input.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void sincos(float x, out float s, out float c) { s = sin(x); c = cos(x); }
+        public static void sincos(sfloat x, out sfloat s, out sfloat c) { s = sin(x); c = cos(x); }
 
         /// <summary>Returns the componentwise sine and cosine of the input float2 vector x through the out parameters s and c.</summary>
         /// <remarks>When Burst compiled, his method is faster than calling sin() and cos() separately.</remarks>
@@ -5669,32 +5665,34 @@ namespace Fixed.Mathematics
             return new int4(floorlog2(x.x), floorlog2(x.y), floorlog2(x.z), floorlog2(x.w));
         }
 
-        /// <summary>Returns the result of converting a float value from degrees to radians.</summary>
+        private const uint DEG2RAD = 0x3c8efa35;
+        private const uint RAD2DEG = 0x42652ee1;
+        /// <summary>Returns the result of converting a sfloat value from degrees to radians.</summary>
         /// <param name="x">Angle in degrees.</param>
         /// <returns>Angle converted to radians.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float radians(float x) { return x * 0.0174532925f; }
+        public static sfloat radians(sfloat x) { return x * sfloat.FromRaw(DEG2RAD); }
 
         /// <summary>Returns the result of a componentwise conversion of a float2 vector from degrees to radians.</summary>
         /// <param name="x">Vector containing angles in degrees.</param>
         /// <returns>Vector containing angles converted to radians.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float2 radians(float2 x) { return x * 0.0174532925f; }
+        public static float2 radians(float2 x) { return x * sfloat.FromRaw(DEG2RAD); }
 
         /// <summary>Returns the result of a componentwise conversion of a float3 vector from degrees to radians.</summary>
         /// <param name="x">Vector containing angles in degrees.</param>
         /// <returns>Vector containing angles converted to radians.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float3 radians(float3 x) { return x * 0.0174532925f; }
+        public static float3 radians(float3 x) { return x * sfloat.FromRaw(DEG2RAD); }
 
         /// <summary>Returns the result of a componentwise conversion of a float4 vector from degrees to radians.</summary>
         /// <param name="x">Vector containing angles in degrees.</param>
         /// <returns>Vector containing angles converted to radians.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float4 radians(float4 x) { return x * 0.0174532925f; }
+        public static float4 radians(float4 x) { return x * sfloat.FromRaw(DEG2RAD); }
 
 
-        /// <summary>Returns the result of converting a float value from degrees to radians.</summary>
+        /// <summary>Returns the result of converting a sfloat value from degrees to radians.</summary>
         /// <param name="x">Angle in degrees.</param>
         /// <returns>Angle converted to radians.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -5723,25 +5721,25 @@ namespace Fixed.Mathematics
         /// <param name="x">Angle in radians.</param>
         /// <returns>Angle converted to degrees.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float degrees(float x) { return x * 57.295779513f; }
+        public static sfloat degrees(sfloat x) { return x * sfloat.FromRaw(RAD2DEG); }
 
         /// <summary>Returns the result of a componentwise conversion of a double2 vector from radians to degrees.</summary>
         /// <param name="x">Vector containing angles in radians.</param>
         /// <returns>Vector containing angles converted to degrees.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float2 degrees(float2 x) { return x * 57.295779513f; }
+        public static float2 degrees(float2 x) { return x * sfloat.FromRaw(RAD2DEG); }
 
         /// <summary>Returns the result of a componentwise conversion of a double3 vector from radians to degrees.</summary>
         /// <param name="x">Vector containing angles in radians.</param>
         /// <returns>Vector containing angles converted to degrees.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float3 degrees(float3 x) { return x * 57.295779513f; }
+        public static float3 degrees(float3 x) { return x * sfloat.FromRaw(RAD2DEG); }
 
         /// <summary>Returns the result of a componentwise conversion of a double4 vector from radians to degrees.</summary>
         /// <param name="x">Vector containing angles in radians.</param>
         /// <returns>Vector containing angles converted to degrees.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float4 degrees(float4 x) { return x * 57.295779513f; }
+        public static float4 degrees(float4 x) { return x * sfloat.FromRaw(RAD2DEG); }
 
 
         /// <summary>Returns the result of converting a double value from radians to degrees.</summary>
@@ -5811,19 +5809,19 @@ namespace Fixed.Mathematics
         /// <param name="x">The vector to use when computing the minimum component.</param>
         /// <returns>The value of the minimum component of the vector.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float cmin(float2 x) { return min(x.x, x.y); }
+        public static sfloat cmin(float2 x) { return min(x.x, x.y); }
 
         /// <summary>Returns the minimum component of a float3 vector.</summary>
         /// <param name="x">The vector to use when computing the minimum component.</param>
         /// <returns>The value of the minimum component of the vector.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float cmin(float3 x) { return min(min(x.x, x.y), x.z); }
+        public static sfloat cmin(float3 x) { return min(min(x.x, x.y), x.z); }
 
         /// <summary>Returns the minimum component of a float4 vector.</summary>
         /// <param name="x">The vector to use when computing the minimum component.</param>
         /// <returns>The value of the minimum component of the vector.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float cmin(float4 x) { return min(min(x.x, x.y), min(x.z, x.w)); }
+        public static sfloat cmin(float4 x) { return min(min(x.x, x.y), min(x.z, x.w)); }
 
 
         /// <summary>Returns the minimum component of a double2 vector.</summary>
@@ -5887,19 +5885,19 @@ namespace Fixed.Mathematics
         /// <param name="x">The vector to use when computing the maximum component.</param>
         /// <returns>The value of the maximum component of the vector.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float cmax(float2 x) { return max(x.x, x.y); }
+        public static sfloat cmax(float2 x) { return max(x.x, x.y); }
 
         /// <summary>Returns the maximum component of a float3 vector.</summary>
         /// <param name="x">The vector to use when computing the maximum component.</param>
         /// <returns>The value of the maximum component of the vector.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float cmax(float3 x) { return max(max(x.x, x.y), x.z); }
+        public static sfloat cmax(float3 x) { return max(max(x.x, x.y), x.z); }
 
         /// <summary>Returns the maximum component of a float4 vector.</summary>
         /// <param name="x">The vector to use when computing the maximum component.</param>
         /// <returns>The value of the maximum component of the vector.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float cmax(float4 x) { return max(max(x.x, x.y), max(x.z, x.w)); }
+        public static sfloat cmax(float4 x) { return max(max(x.x, x.y), max(x.z, x.w)); }
 
 
         /// <summary>Returns the maximum component of a double2 vector.</summary>
@@ -5963,19 +5961,19 @@ namespace Fixed.Mathematics
         /// <param name="x">The vector to use when computing the horizontal sum.</param>
         /// <returns>The horizontal sum of of components of the vector.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float csum(float2 x) { return x.x + x.y; }
+        public static sfloat csum(float2 x) { return x.x + x.y; }
 
         /// <summary>Returns the horizontal sum of components of a float3 vector.</summary>
         /// <param name="x">The vector to use when computing the horizontal sum.</param>
         /// <returns>The horizontal sum of of components of the vector.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float csum(float3 x) { return x.x + x.y + x.z; }
+        public static sfloat csum(float3 x) { return x.x + x.y + x.z; }
 
         /// <summary>Returns the horizontal sum of components of a float4 vector.</summary>
         /// <param name="x">The vector to use when computing the horizontal sum.</param>
         /// <returns>The horizontal sum of of components of the vector.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float csum(float4 x) { return (x.x + x.y) + (x.z + x.w); }
+        public static sfloat csum(float4 x) { return (x.x + x.y) + (x.z + x.w); }
 
 
         /// <summary>Returns the horizontal sum of components of a double2 vector.</summary>
@@ -6060,138 +6058,138 @@ namespace Fixed.Mathematics
         /// <param name="mask">Mask indicating which components are enabled.</param>
         /// <returns>Index to element after the last one stored.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe int compress(float* output, int index, float4 val, bool4 mask)
+        public static unsafe int compress(sfloat* output, int index, float4 val, bool4 mask)
         {
             return compress((int*)output, index, *(int4*)&val, mask);
         }
 
-        /// <summary>Returns the floating point representation of a half-precision floating point value.</summary>
-        /// <param name="x">The half precision float.</param>
-        /// <returns>The single precision float representation of the half precision float.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float f16tof32(uint x)
-        {
-            const uint shifted_exp = (0x7c00 << 13);
-            uint uf = (x & 0x7fff) << 13;
-            uint e = uf & shifted_exp;
-            uf += (127 - 15) << 23;
-            uf += select(0, (128u - 16u) << 23, e == shifted_exp);
-            uf = select(uf, asuint(asfloat(uf + (1 << 23)) - 6.10351563e-05f), e == 0);
-            uf |= (x & 0x8000) << 16;
-            return asfloat(uf);
-        }
-
-        /// <summary>Returns the floating point representation of a half-precision floating point vector.</summary>
-        /// <param name="x">The half precision float vector.</param>
-        /// <returns>The single precision float vector representation of the half precision float vector.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float2 f16tof32(uint2 x)
-        {
-            const uint shifted_exp = (0x7c00 << 13);
-            uint2 uf = (x & 0x7fff) << 13;
-            uint2 e = uf & shifted_exp;
-            uf += (127 - 15) << 23;
-            uf += select(0, (128u - 16u) << 23, e == shifted_exp);
-            uf = select(uf, asuint(asfloat(uf + (1 << 23)) - 6.10351563e-05f), e == 0);
-            uf |= (x & 0x8000) << 16;
-            return asfloat(uf);
-        }
-
-        /// <summary>Returns the floating point representation of a half-precision floating point vector.</summary>
-        /// <param name="x">The half precision float vector.</param>
-        /// <returns>The single precision float vector representation of the half precision float vector.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float3 f16tof32(uint3 x)
-        {
-            const uint shifted_exp = (0x7c00 << 13);
-            uint3 uf = (x & 0x7fff) << 13;
-            uint3 e = uf & shifted_exp;
-            uf += (127 - 15) << 23;
-            uf += select(0, (128u - 16u) << 23, e == shifted_exp);
-            uf = select(uf, asuint(asfloat(uf + (1 << 23)) - 6.10351563e-05f), e == 0);
-            uf |= (x & 0x8000) << 16;
-            return asfloat(uf);
-        }
-
-        /// <summary>Returns the floating point representation of a half-precision floating point vector.</summary>
-        /// <param name="x">The half precision float vector.</param>
-        /// <returns>The single precision float vector representation of the half precision float vector.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float4 f16tof32(uint4 x)
-        {
-            const uint shifted_exp = (0x7c00 << 13);
-            uint4 uf = (x & 0x7fff) << 13;
-            uint4 e = uf & shifted_exp;
-            uf += (127 - 15) << 23;
-            uf += select(0, (128u - 16u) << 23, e == shifted_exp);
-            uf = select(uf, asuint(asfloat(uf + (1 << 23)) - 6.10351563e-05f), e == 0);
-            uf |= (x & 0x8000) << 16;
-            return asfloat(uf);
-        }
-
-        /// <summary>Returns the result converting a float value to its nearest half-precision floating point representation.</summary>
-        /// <param name="x">The single precision float.</param>
-        /// <returns>The half precision float representation of the single precision float.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static uint f32tof16(float x)
-        {
-            const int infinity_32 = 255 << 23;
-            const uint msk = 0x7FFFF000u;
-
-            uint ux = asuint(x);
-            uint uux = ux & msk;
-            uint h = (uint)(asuint(min(asfloat(uux) * 1.92592994e-34f, 260042752.0f)) + 0x1000) >> 13;   // Clamp to signed infinity if overflowed
-            h = select(h, select(0x7c00u, 0x7e00u, (int)uux > infinity_32), (int)uux >= infinity_32);   // NaN->qNaN and Inf->Inf
-            return h | (ux & ~msk) >> 16;
-        }
-
-        /// <summary>Returns the result of a componentwise conversion of a float2 vector to its nearest half-precision floating point representation.</summary>
-        /// <param name="x">The single precision float vector.</param>
-        /// <returns>The half precision float vector representation of the single precision float vector.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static uint2 f32tof16(float2 x)
-        {
-            const int infinity_32 = 255 << 23;
-            const uint msk = 0x7FFFF000u;
-
-            uint2 ux = asuint(x);
-            uint2 uux = ux & msk;
-            uint2 h = (uint2)(asint(min(asfloat(uux) * 1.92592994e-34f, 260042752.0f)) + 0x1000) >> 13;   // Clamp to signed infinity if overflowed
-            h = select(h, select(0x7c00u, 0x7e00u, (int2)uux > infinity_32), (int2)uux >= infinity_32);   // NaN->qNaN and Inf->Inf
-            return h | (ux & ~msk) >> 16;
-        }
-
-        /// <summary>Returns the result of a componentwise conversion of a float3 vector to its nearest half-precision floating point representation.</summary>
-        /// <param name="x">The single precision float vector.</param>
-        /// <returns>The half precision float vector representation of the single precision float vector.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static uint3 f32tof16(float3 x)
-        {
-            const int infinity_32 = 255 << 23;
-            const uint msk = 0x7FFFF000u;
-
-            uint3 ux = asuint(x);
-            uint3 uux = ux & msk;
-            uint3 h = (uint3)(asint(min(asfloat(uux) * 1.92592994e-34f, 260042752.0f)) + 0x1000) >> 13;   // Clamp to signed infinity if overflowed
-            h = select(h, select(0x7c00u, 0x7e00u, (int3)uux > infinity_32), (int3)uux >= infinity_32);   // NaN->qNaN and Inf->Inf
-            return h | (ux & ~msk) >> 16;
-        }
-
-        /// <summary>Returns the result of a componentwise conversion of a float4 vector to its nearest half-precision floating point representation.</summary>
-        /// <param name="x">The single precision float vector.</param>
-        /// <returns>The half precision float vector representation of the single precision float vector.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static uint4 f32tof16(float4 x)
-        {
-            const int infinity_32 = 255 << 23;
-            const uint msk = 0x7FFFF000u;
-
-            uint4 ux = asuint(x);
-            uint4 uux = ux & msk;
-            uint4 h = (uint4)(asint(min(asfloat(uux) * 1.92592994e-34f, 260042752.0f)) + 0x1000) >> 13;   // Clamp to signed infinity if overflowed
-            h = select(h, select(0x7c00u, 0x7e00u, (int4)uux > infinity_32), (int4)uux >= infinity_32);   // NaN->qNaN and Inf->Inf
-            return h | (ux & ~msk) >> 16;
-        }
+        // /// <summary>Returns the floating point representation of a half-precision floating point value.</summary>
+        // /// <param name="x">The half precision sfloat.</param>
+        // /// <returns>The single precision sfloat representation of the half precision sfloat.</returns>
+        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // public static sfloat f16tof32(uint x)
+        // {
+        //     const uint shifted_exp = (0x7c00 << 13);
+        //     uint uf = (x & 0x7fff) << 13;
+        //     uint e = uf & shifted_exp;
+        //     uf += (127 - 15) << 23;
+        //     uf += select(0, (128u - 16u) << 23, e == shifted_exp);
+        //     uf = select(uf, asuint(asfloat(uf + (1 << 23)) - 6.10351563e-05f), e == 0);
+        //     uf |= (x & 0x8000) << 16;
+        //     return asfloat(uf);
+        // }
+        //
+        // /// <summary>Returns the floating point representation of a half-precision floating point vector.</summary>
+        // /// <param name="x">The half precision sfloat vector.</param>
+        // /// <returns>The single precision sfloat vector representation of the half precision sfloat vector.</returns>
+        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // public static float2 f16tof32(uint2 x)
+        // {
+        //     const uint shifted_exp = (0x7c00 << 13);
+        //     uint2 uf = (x & 0x7fff) << 13;
+        //     uint2 e = uf & shifted_exp;
+        //     uf += (127 - 15) << 23;
+        //     uf += select(0, (128u - 16u) << 23, e == shifted_exp);
+        //     uf = select(uf, asuint(asfloat(uf + (1 << 23)) - 6.10351563e-05f), e == 0);
+        //     uf |= (x & 0x8000) << 16;
+        //     return asfloat(uf);
+        // }
+        //
+        // /// <summary>Returns the floating point representation of a half-precision floating point vector.</summary>
+        // /// <param name="x">The half precision sfloat vector.</param>
+        // /// <returns>The single precision sfloat vector representation of the half precision sfloat vector.</returns>
+        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // public static float3 f16tof32(uint3 x)
+        // {
+        //     const uint shifted_exp = (0x7c00 << 13);
+        //     uint3 uf = (x & 0x7fff) << 13;
+        //     uint3 e = uf & shifted_exp;
+        //     uf += (127 - 15) << 23;
+        //     uf += select(0, (128u - 16u) << 23, e == shifted_exp);
+        //     uf = select(uf, asuint(asfloat(uf + (1 << 23)) - 6.10351563e-05f), e == 0);
+        //     uf |= (x & 0x8000) << 16;
+        //     return asfloat(uf);
+        // }
+        //
+        // /// <summary>Returns the floating point representation of a half-precision floating point vector.</summary>
+        // /// <param name="x">The half precision sfloat vector.</param>
+        // /// <returns>The single precision sfloat vector representation of the half precision sfloat vector.</returns>
+        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // public static float4 f16tof32(uint4 x)
+        // {
+        //     const uint shifted_exp = (0x7c00 << 13);
+        //     uint4 uf = (x & 0x7fff) << 13;
+        //     uint4 e = uf & shifted_exp;
+        //     uf += (127 - 15) << 23;
+        //     uf += select(0, (128u - 16u) << 23, e == shifted_exp);
+        //     uf = select(uf, asuint(asfloat(uf + (1 << 23)) - 6.10351563e-05f), e == 0);
+        //     uf |= (x & 0x8000) << 16;
+        //     return asfloat(uf);
+        // }
+        //
+        // /// <summary>Returns the result converting a sfloat value to its nearest half-precision floating point representation.</summary>
+        // /// <param name="x">The single precision sfloat.</param>
+        // /// <returns>The half precision sfloat representation of the single precision sfloat.</returns>
+        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // public static uint f32tof16(sfloat x)
+        // {
+        //     const int infinity_32 = 255 << 23;
+        //     const uint msk = 0x7FFFF000u;
+        //
+        //     uint ux = asuint(x);
+        //     uint uux = ux & msk;
+        //     uint h = (uint)(asuint(min(asfloat(uux) * 1.92592994e-34f, 260042752.0f)) + 0x1000) >> 13;   // Clamp to signed infinity if overflowed
+        //     h = select(h, select(0x7c00u, 0x7e00u, (int)uux > infinity_32), (int)uux >= infinity_32);   // NaN->qNaN and Inf->Inf
+        //     return h | (ux & ~msk) >> 16;
+        // }
+        //
+        // /// <summary>Returns the result of a componentwise conversion of a float2 vector to its nearest half-precision floating point representation.</summary>
+        // /// <param name="x">The single precision sfloat vector.</param>
+        // /// <returns>The half precision sfloat vector representation of the single precision sfloat vector.</returns>
+        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // public static uint2 f32tof16(float2 x)
+        // {
+        //     const int infinity_32 = 255 << 23;
+        //     const uint msk = 0x7FFFF000u;
+        //
+        //     uint2 ux = asuint(x);
+        //     uint2 uux = ux & msk;
+        //     uint2 h = (uint2)(asint(min(asfloat(uux) * 1.92592994e-34f, 260042752.0f)) + 0x1000) >> 13;   // Clamp to signed infinity if overflowed
+        //     h = select(h, select(0x7c00u, 0x7e00u, (int2)uux > infinity_32), (int2)uux >= infinity_32);   // NaN->qNaN and Inf->Inf
+        //     return h | (ux & ~msk) >> 16;
+        // }
+        //
+        // /// <summary>Returns the result of a componentwise conversion of a float3 vector to its nearest half-precision floating point representation.</summary>
+        // /// <param name="x">The single precision sfloat vector.</param>
+        // /// <returns>The half precision sfloat vector representation of the single precision sfloat vector.</returns>
+        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // public static uint3 f32tof16(float3 x)
+        // {
+        //     const int infinity_32 = 255 << 23;
+        //     const uint msk = 0x7FFFF000u;
+        //
+        //     uint3 ux = asuint(x);
+        //     uint3 uux = ux & msk;
+        //     uint3 h = (uint3)(asint(min(asfloat(uux) * 1.92592994e-34f, 260042752.0f)) + 0x1000) >> 13;   // Clamp to signed infinity if overflowed
+        //     h = select(h, select(0x7c00u, 0x7e00u, (int3)uux > infinity_32), (int3)uux >= infinity_32);   // NaN->qNaN and Inf->Inf
+        //     return h | (ux & ~msk) >> 16;
+        // }
+        //
+        // /// <summary>Returns the result of a componentwise conversion of a float4 vector to its nearest half-precision floating point representation.</summary>
+        // /// <param name="x">The single precision sfloat vector.</param>
+        // /// <returns>The half precision sfloat vector representation of the single precision sfloat vector.</returns>
+        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // public static uint4 f32tof16(float4 x)
+        // {
+        //     const int infinity_32 = 255 << 23;
+        //     const uint msk = 0x7FFFF000u;
+        //
+        //     uint4 ux = asuint(x);
+        //     uint4 uux = ux & msk;
+        //     uint4 h = (uint4)(asint(min(asfloat(uux) * 1.92592994e-34f, 260042752.0f)) + 0x1000) >> 13;   // Clamp to signed infinity if overflowed
+        //     h = select(h, select(0x7c00u, 0x7e00u, (int4)uux > infinity_32), (int4)uux >= infinity_32);   // NaN->qNaN and Inf->Inf
+        //     return h | (ux & ~msk) >> 16;
+        // }
 
 
         /// <summary>Returns a uint hash from a block of memory using the xxhash32 algorithm. Can only be used in an unsafe context.</summary>
@@ -6258,7 +6256,7 @@ namespace Fixed.Mathematics
         /// <remarks>Matches [https://docs.unity3d.com/ScriptReference/Vector3-up.html](https://docs.unity3d.com/ScriptReference/Vector3-up.html)</remarks>
         /// <returns>The up axis.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float3 up() { return new float3(0.0f, 1.0f, 0.0f); }  // for compatibility
+        public static float3 up() { return new float3(sfloat.Zero, sfloat.One, sfloat.Zero); }  // for compatibility
 
         /// <summary>
         /// Unity's down axis (0, -1, 0).
@@ -6266,7 +6264,7 @@ namespace Fixed.Mathematics
         /// <remarks>Matches [https://docs.unity3d.com/ScriptReference/Vector3-down.html](https://docs.unity3d.com/ScriptReference/Vector3-down.html)</remarks>
         /// <returns>The down axis.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float3 down() { return new float3(0.0f, -1.0f, 0.0f); }
+        public static float3 down() { return new float3(sfloat.Zero, -sfloat.One, sfloat.Zero); }
 
         /// <summary>
         /// Unity's forward axis (0, 0, 1).
@@ -6274,7 +6272,7 @@ namespace Fixed.Mathematics
         /// <remarks>Matches [https://docs.unity3d.com/ScriptReference/Vector3-forward.html](https://docs.unity3d.com/ScriptReference/Vector3-forward.html)</remarks>
         /// <returns>The forward axis.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float3 forward() { return new float3(0.0f, 0.0f, 1.0f); }
+        public static float3 forward() { return new float3(sfloat.Zero, sfloat.Zero, sfloat.One); }
 
         /// <summary>
         /// Unity's back axis (0, 0, -1).
@@ -6282,7 +6280,7 @@ namespace Fixed.Mathematics
         /// <remarks>Matches [https://docs.unity3d.com/ScriptReference/Vector3-back.html](https://docs.unity3d.com/ScriptReference/Vector3-back.html)</remarks>
         /// <returns>The back axis.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float3 back() { return new float3(0.0f, 0.0f, -1.0f); }
+        public static float3 back() { return new float3(sfloat.Zero, sfloat.Zero, -sfloat.One); }
 
         /// <summary>
         /// Unity's left axis (-1, 0, 0).
@@ -6290,7 +6288,7 @@ namespace Fixed.Mathematics
         /// <remarks>Matches [https://docs.unity3d.com/ScriptReference/Vector3-left.html](https://docs.unity3d.com/ScriptReference/Vector3-left.html)</remarks>
         /// <returns>The left axis.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float3 left() { return new float3(-1.0f, 0.0f, 0.0f); }
+        public static float3 left() { return new float3(-sfloat.One, sfloat.Zero, sfloat.Zero); }
 
         /// <summary>
         /// Unity's right axis (1, 0, 0).
@@ -6298,7 +6296,7 @@ namespace Fixed.Mathematics
         /// <remarks>Matches [https://docs.unity3d.com/ScriptReference/Vector3-right.html](https://docs.unity3d.com/ScriptReference/Vector3-right.html)</remarks>
         /// <returns>The right axis.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float3 right() { return new float3(1.0f, 0.0f, 0.0f); }
+        public static float3 right() { return new float3(sfloat.One, sfloat.Zero, sfloat.Zero); }
 
 
         // Internal
@@ -6376,7 +6374,7 @@ namespace Fixed.Mathematics
             [FieldOffset(0)]
             public int intValue;
             [FieldOffset(0)]
-            public float floatValue;
+            public sfloat floatValue;
         }
 
         [StructLayout(LayoutKind.Explicit)]
