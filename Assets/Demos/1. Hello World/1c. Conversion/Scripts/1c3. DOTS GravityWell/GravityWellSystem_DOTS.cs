@@ -44,7 +44,7 @@ public partial class GravityWellSystem_DOTS : SystemBase
 
         // Create local 'up' and 'deltaTime' variables so they are accessible inside the ForEach lambda
         var up = math.up();
-        var deltaTime = Time.DeltaTime;
+        var deltaTime = (sfloat)Time.DeltaTime;
 
         // For each dynamic body apply the forces for all the gravity wells
         Entities
@@ -64,7 +64,7 @@ public partial class GravityWellSystem_DOTS : SystemBase
                         velocity.ApplyExplosionForce(
                             mass, collider, position, rotation,
                             -gravityWell.Strength, gravityWell.Position, gravityWell.Radius,
-                            deltaTime, up);
+                            deltaTime, up, sfloat.Zero);
                     }
                 }).ScheduleParallel();
     }

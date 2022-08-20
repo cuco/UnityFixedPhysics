@@ -282,7 +282,7 @@ namespace Fixed.Physics.Extensions
 
                 // Get the body and mouse points in world space
                 float3 pointBodyWs = Mul(worldFromBody, springData.PointOnBody);
-                float3 pointSpringWs = Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, springData.MouseDepth));
+                float3 pointSpringWs = Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, (float)springData.MouseDepth));
 
                 // Calculate the required change in velocity
                 float3 pointBodyLs = Mul(Inverse(bodyFromMotion), springData.PointOnBody);
@@ -303,9 +303,9 @@ namespace Fixed.Physics.Extensions
                 {
                     float3 arm = pointBodyWs - worldFromMotion.Translation;
                     var skew = new float3x3(
-                        new float3(0.0f, arm.z, -arm.y),
-                        new float3(-arm.z, 0.0f, arm.x),
-                        new float3(arm.y, -arm.x, 0.0f)
+                        new float3(sfloat.Zero, arm.z, -arm.y),
+                        new float3(-arm.z, sfloat.Zero, arm.x),
+                        new float3(arm.y, -arm.x, sfloat.Zero)
                     );
 
                     // world space inertia = worldFromMotion * inertiaInMotionSpace * motionFromWorld
@@ -317,9 +317,9 @@ namespace Fixed.Physics.Extensions
                     invInertiaWs = math.mul(invInertiaWs, math.transpose(worldFromMotion.Rotation));
 
                     float3x3 invEffMassMatrix = math.mul(math.mul(skew, invInertiaWs), skew);
-                    invEffMassMatrix.c0 = new float3(massComponent.InverseMass, 0.0f, 0.0f) - invEffMassMatrix.c0;
-                    invEffMassMatrix.c1 = new float3(0.0f, massComponent.InverseMass, 0.0f) - invEffMassMatrix.c1;
-                    invEffMassMatrix.c2 = new float3(0.0f, 0.0f, massComponent.InverseMass) - invEffMassMatrix.c2;
+                    invEffMassMatrix.c0 = new float3(massComponent.InverseMass, sfloat.Zero, sfloat.Zero) - invEffMassMatrix.c0;
+                    invEffMassMatrix.c1 = new float3(sfloat.Zero, massComponent.InverseMass, sfloat.Zero) - invEffMassMatrix.c1;
+                    invEffMassMatrix.c2 = new float3(sfloat.Zero, sfloat.Zero, massComponent.InverseMass) - invEffMassMatrix.c2;
 
                     effectiveMassMatrix = math.inverse(invEffMassMatrix);
                 }
@@ -328,9 +328,9 @@ namespace Fixed.Physics.Extensions
                 float3 impulse = math.mul(effectiveMassMatrix, deltaVelocity);
 
                 // Clip the impulse
-                const float maxAcceleration = 250.0f;
-                float maxImpulse = math.rcp(massComponent.InverseMass) * Time.DeltaTime * maxAcceleration;
-                impulse *= math.min(1.0f, math.sqrt((maxImpulse * maxImpulse) / math.lengthsq(impulse)));
+                sfloat maxAcceleration = (sfloat)250.0f;
+                sfloat maxImpulse = math.rcp(massComponent.InverseMass) * (sfloat)Time.DeltaTime * maxAcceleration;
+                impulse *= math.min(sfloat.One, math.sqrt((maxImpulse * maxImpulse) / math.lengthsq(impulse)));
 
                 // Apply the impulse
                 {

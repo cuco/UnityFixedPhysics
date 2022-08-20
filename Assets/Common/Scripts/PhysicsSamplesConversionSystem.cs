@@ -14,11 +14,12 @@ namespace Fixed.Physics.Authoring
     {
         protected override void OnUpdate()
         {
-            Entities.ForEach((SetPhysicsMassBehaviour behaviour) => { behaviour.Convert(GetPrimaryEntity(behaviour), DstEntityManager, this); });
-            Entities.ForEach((ChangeSphereColliderRadiusAuthoring behaviour) => { behaviour.Convert(GetPrimaryEntity(behaviour), DstEntityManager, this); });
-            Entities.ForEach((ChangeColliderTypeAuthoring behaviour) => { behaviour.Convert(GetPrimaryEntity(behaviour), DstEntityManager, this); });
-            Entities.ForEach((ChangeMotionTypeAuthoring behaviour) => { behaviour.Convert(GetPrimaryEntity(behaviour), DstEntityManager, this); });
-            Entities.ForEach((DriveGhostBodyAuthoring behaviour) => { behaviour.Convert(GetPrimaryEntity(behaviour), DstEntityManager, this); });
+            //TODO
+            // Entities.ForEach((SetPhysicsMassBehaviour behaviour) => { behaviour.Convert(GetPrimaryEntity(behaviour), DstEntityManager, this); });
+            // Entities.ForEach((ChangeSphereColliderRadiusAuthoring behaviour) => { behaviour.Convert(GetPrimaryEntity(behaviour), DstEntityManager, this); });
+            // Entities.ForEach((ChangeColliderTypeAuthoring behaviour) => { behaviour.Convert(GetPrimaryEntity(behaviour), DstEntityManager, this); });
+            // Entities.ForEach((ChangeMotionTypeAuthoring behaviour) => { behaviour.Convert(GetPrimaryEntity(behaviour), DstEntityManager, this); });
+            // Entities.ForEach((DriveGhostBodyAuthoring behaviour) => { behaviour.Convert(GetPrimaryEntity(behaviour), DstEntityManager, this); });
         }
     }
 }

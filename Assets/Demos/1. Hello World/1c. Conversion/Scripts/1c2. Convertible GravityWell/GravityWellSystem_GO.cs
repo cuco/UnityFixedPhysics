@@ -21,7 +21,7 @@ public class GravityWellSystem_GO : MonoBehaviour
             foreach (var gravityWell in gravityWells)
             {
                 var gravityWellPosition = gravityWell.gameObject.transform.position;
-                dynamicBody.AddExplosionForce(-gravityWell.Strength, gravityWellPosition, gravityWell.Radius);
+                dynamicBody.AddExplosionForce(-(float)gravityWell.Strength, gravityWellPosition, (float)gravityWell.Radius);
             }
         }
 
@@ -60,7 +60,7 @@ public partial class GravityWellSystem_GO_ECS : SystemBase
 
         // Create local 'up' and 'deltaTime' variables so they are accessible inside the ForEach lambda
         var up = math.up();
-        var deltaTime = Time.DeltaTime;
+        var deltaTime = (sfloat)Time.DeltaTime;
 
         // Pull all the Gravity Well component data into a contiguous array
         using (var gravityWells = GravityWellQuery.ToComponentDataArray<GravityWellComponent_GO_ECS>(Allocator.TempJob))
@@ -80,7 +80,7 @@ public partial class GravityWellSystem_GO_ECS : SystemBase
                             velocity.ApplyExplosionForce(
                                 mass, collider, position, rotation,
                                 -gravityWell.Strength, gravityWell.Position, gravityWell.Radius,
-                                deltaTime, up);
+                                deltaTime, up, sfloat.Zero);
                         }
                     }).Run();
         }

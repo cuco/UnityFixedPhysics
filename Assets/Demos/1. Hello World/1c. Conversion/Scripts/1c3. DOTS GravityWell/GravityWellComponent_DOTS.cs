@@ -8,7 +8,7 @@ using Fixed.Mathematics;
 //
 public struct GravityWellComponent_DOTS : IComponentData
 {
-    public float Strength;
-    public float Radius;
+    public sfloat Strength;
+    public sfloat Radius;
     public float3 Position;
 }

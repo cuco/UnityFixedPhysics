@@ -267,7 +267,7 @@ namespace Fixed.Physics.Extensions
             var rayInput = new RaycastInput
             {
                 Start = unityRay.origin,
-                End = unityRay.origin + unityRay.direction * MousePickSystem.k_MaxDistance,
+                End = (float3)unityRay.origin + (float3)unityRay.direction * MousePickSystem.k_MaxDistance,
                 Filter = CollisionFilter.Default,
             };
 

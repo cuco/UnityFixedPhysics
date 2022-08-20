@@ -133,7 +133,7 @@ namespace Fixed.Physics.Extensions
                     sphere = SphereCollider.Create(new SphereGeometry
                     {
                         Center = float3.zero,
-                        Radius = sphereRadius
+                        Radius = (sfloat)sphereRadius
                     }, Request.CollisionFilter);
                 }
 
@@ -144,8 +144,10 @@ namespace Fixed.Physics.Extensions
                         float xFrac = 2.0f * ((xCoord / (float)Request.ImageResolution) - 0.5f);
                         float yFrac = 2.0f * ((yCoord / (float)Request.ImageResolution) - 0.5f);
 
-                        float3 targetImagePlane = Request.ImageCenter + Request.Up * Request.PlaneHalfExtents * yFrac + Request.Right * Request.PlaneHalfExtents * xFrac;
-                        float3 rayDir = Request.RayLength * (Request.PinHole - targetImagePlane);
+                        float3 targetImagePlane = Request.ImageCenter + Request.Up * (sfloat)
+                            (Request.PlaneHalfExtents * yFrac) + Request.Right * (sfloat) (Request.PlaneHalfExtents *
+                                                                           xFrac);
+                        float3 rayDir = (sfloat)Request.RayLength * (Request.PinHole - targetImagePlane);
 
                         RaycastHit hit;
                         bool hasHit;
@@ -198,13 +200,13 @@ namespace Fixed.Physics.Extensions
 
                             if (Request.Shadows)
                             {
-                                float3 hitPos = Request.PinHole + rayDir * hit.Fraction + hit.SurfaceNormal * 0.001f;
+                                float3 hitPos = Request.PinHole + rayDir * hit.Fraction + hit.SurfaceNormal * (sfloat)0.001f;
                                 bool shadowHit;
 
                                 if (Request.CastSphere)
                                 {
-                                    var start = hitPos + hit.SurfaceNormal * sphereRadius;
-                                    var input = new ColliderCastInput(sphere, start, start + (Request.LightDir * Request.RayLength));
+                                    var start = hitPos + hit.SurfaceNormal * (sfloat)sphereRadius;
+                                    var input = new ColliderCastInput(sphere, start, start + (Request.LightDir * (sfloat)Request.RayLength));
                                     shadowHit = World.CastCollider(input);
                                 }
                                 else
@@ -212,7 +214,7 @@ namespace Fixed.Physics.Extensions
                                     var rayCastInput = new RaycastInput
                                     {
                                         Start = hitPos,
-                                        End = hitPos + (Request.LightDir * Request.RayLength),
+                                        End = hitPos + (Request.LightDir * (sfloat)Request.RayLength),
                                         Filter = Request.CollisionFilter
                                     };
                                     shadowHit = World.CastRay(rayCastInput);
@@ -225,7 +227,7 @@ namespace Fixed.Physics.Extensions
                             }
                         }
 
-                        float lighting = math.min(1.0f, math.max(Request.AmbientLight, Vector3.Dot(hit.SurfaceNormal, Request.LightDir)));
+                        float lighting = Mathf.Min(1.0f, Mathf.Max(Request.AmbientLight, Vector3.Dot(hit.SurfaceNormal, Request.LightDir)));
 
                         Results.Write(xCoord);
                         Results.Write(yCoord);

@@ -4,8 +4,8 @@ using UnityEngine;
 
 public class GravityWellComponent_GO : MonoBehaviour, IConvertGameObjectToEntity
 {
-    public float Strength = 100.0f;
-    public float Radius = 10.0f;
+    public sfloat Strength = (sfloat)100.0f;
+    public sfloat Radius = (sfloat)10.0f;
 
     #region ECS
     public void Convert(Entity entity, EntityManager dstManager, GameObjectConversionSystem conversionSystem)
@@ -24,8 +24,8 @@ public class GravityWellComponent_GO : MonoBehaviour, IConvertGameObjectToEntity
 #region ECS
 public struct GravityWellComponent_GO_ECS : IComponentData
 {
-    public float Strength;
-    public float Radius;
+    public sfloat Strength;
+    public sfloat Radius;
     // Include position of gravity well so all data accessible in one location
     public float3 Position;
 }

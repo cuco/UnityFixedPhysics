@@ -25,7 +25,7 @@ public partial class RotateSystem_GO_ECS : SystemBase
     protected override void OnUpdate()
     {
         // Create local deltaTime so it is accessible inside the ForEach lambda
-        var deltaTime = Time.DeltaTime;
+        var deltaTime = (sfloat)Time.DeltaTime;
 
         Entities
             .WithBurst()

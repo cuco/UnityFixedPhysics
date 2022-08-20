@@ -3,8 +3,8 @@ using UnityEngine;
 
 public class GravityWellComponentAuthoring_DOTS : MonoBehaviour, IConvertGameObjectToEntity
 {
-    public float Strength = 100.0f;
-    public float Radius = 10.0f;
+    public sfloat Strength = (sfloat)100.0f;
+    public sfloat Radius = (sfloat)10.0f;
 
     public void Convert(Entity entity, EntityManager dstManager, GameObjectConversionSystem conversionSystem)
     {
