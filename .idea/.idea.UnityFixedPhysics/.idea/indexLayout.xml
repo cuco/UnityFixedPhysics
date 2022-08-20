@@ -77,7 +77,6 @@
       <Path>Logs</Path>
       <Path>Temp</Path>
       <Path>UserSettings</Path>
-      <Path>com.fixed.physics@0.51.0-preview.32</Path>
       <Path>obj</Path>
     </explicitExcludes>
   </component>
