@@ -1,0 +1,44 @@
+{
+    "name": "Fixed.Physics.Samples",
+    "rootNamespace": "",
+    "references": [
+        "Unity.Burst",
+        "Unity.Entities",
+        "Unity.Entities.Editor",
+        "Unity.Entities.Hybrid",
+        "Fixed.Mathematics",
+        "Unity.Mathematics.Extensions",
+        "Unity.Mathematics.Extensions.Hybrid",
+        "Fixed.Transforms",
+        "Unity.InputSystem",
+        "Unity.Collections",
+        "Unity.Rendering.Hybrid",
+        "Fixed.Physics",
+        "Fixed.Physics.Editor",
+        "Fixed.Physics.Hybrid",
+        "Havok.Physics",
+        "Havok.Physics.Editor",
+        "Havok.Physics.Hybrid",
+        "Fixed.Sfloat"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [
+        {
+            "name": "com.havok.physics",
+            "expression": "0.0.0",
+            "define": "HAVOK_PHYSICS_EXISTS"
+        },
+        {
+            "name": "com.unity.inputsystem",
+            "expression": "0.0.0",
+            "define": "UNITY_INPUT_SYSTEM_EXISTS"
+        }
+    ],
+    "noEngineReferences": false
+}
