@@ -36,7 +36,8 @@ namespace Fixed.Physics.Authoring
     [Serializable]
     public struct PhysicsMaterialCoefficient
     {
-        [SoftRange(0f, 1f, TextFieldMax = float.MaxValue)]
+        //[SoftRange(0f, 1f, TextFieldMax = float.MaxValue)]
+        //0-1
         public sfloat Value;
         public Material.CombinePolicy CombineMode;
     }
