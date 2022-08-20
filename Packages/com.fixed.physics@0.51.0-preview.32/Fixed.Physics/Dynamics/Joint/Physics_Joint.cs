@@ -71,7 +71,7 @@ namespace Fixed.Physics
         /// </summary>
         /// <param name="springFrequency"></param>
         /// <param name="springDamping"></param>
-        public static Constraint BallAndSocket(sfloat springFrequency /* = DefaultSpringFrequency*/, sfloat springDamping /* = DefaultSpringDamping*/ )
+        public static Constraint BallAndSocket(sfloat springFrequency /* = DefaultSpringFrequency*/, sfloat springDamping /* = DefaultSpringDamping*/)
         {
             return new Constraint
             {

@@ -18,7 +18,7 @@ namespace Fixed.Physics.Authoring
         [BurstCompile]
         protected struct DisplayJointsJob : IJob
         {
-            const sfloat k_Scale = 0.5f;
+            static readonly sfloat k_Scale = (sfloat)0.5f;
 
             public DebugStream.Context OutputStream;
             [ReadOnly] public NativeArray<RigidBody> Bodies;
@@ -56,6 +56,9 @@ namespace Fixed.Physics.Authoring
                     float3 pivotA = worldFromJointA.Translation;
                     float3 pivotB = worldFromJointB.Translation;
 
+                    //TODO
+                    sfloat ep = (sfloat)1e-5;
+
                     for (var i = 0; i < joint.Constraints.Length; i++)
                     {
                         Constraint constraint = joint.Constraints[i];
@@ -87,13 +90,14 @@ namespace Fixed.Physics.Authoring
                                         rangeOrigin = pivotB + direction * dot;
                                         rangeDirection = diff - direction * dot;
                                         rangeDistance = math.length(rangeDirection);
-                                        rangeDirection = math.select(rangeDirection / rangeDistance, float3.zero, rangeDistance < 1e-5);
+                                        //TODO
+                                        rangeDirection = math.select(rangeDirection / rangeDistance, float3.zero, rangeDistance < ep);
                                         break;
                                     case 3:
                                         OutputStream.Point(pivotB, k_Scale, colorB);
                                         rangeOrigin = pivotB;
                                         rangeDistance = math.length(diff);
-                                        rangeDirection = math.select(diff / rangeDistance, float3.zero, rangeDistance < 1e-5);
+                                        rangeDirection = math.select(diff / rangeDistance, float3.zero, rangeDistance < ep);
                                         break;
                                     default:
                                         SafetyChecks.ThrowNotImplementedException();
@@ -115,7 +119,7 @@ namespace Fixed.Physics.Authoring
                                 {
                                     OutputStream.Line(rangeA, rangeMax, colorError);
                                 }
-                                if (math.length(rangeA - pivotA) > 1e-5f)
+                                if (math.length(rangeA - pivotA) > ep)
                                 {
                                     OutputStream.Line(rangeA, pivotA, colorError);
                                 }
@@ -160,7 +164,7 @@ namespace Fixed.Physics.Authoring
                                         float3 axisB = worldFromJointB.Rotation[axisIndex];
 
                                         // Draw the cones in B
-                                        if (constraint.Min == 0.0f)
+                                        if (constraint.Min == sfloat.Zero)
                                         {
                                             OutputStream.Line(pivotB, pivotB + axisB * k_Scale, colorB);
                                         }

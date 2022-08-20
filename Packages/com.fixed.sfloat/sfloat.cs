@@ -28,12 +28,14 @@ using System.Runtime.CompilerServices;
 
 // Internal representation is identical to IEEE binary32 floating point numbers
 [DebuggerDisplay("{ToStringInv()}")]
+[Serializable]
 public struct sfloat : IEquatable<sfloat>, IComparable<sfloat>, IComparable, IFormattable
 {
     /// <summary>
     /// Raw byte representation of an sfloat number
+    /// for serializable
     /// </summary>
-    private readonly uint rawValue;
+    public uint rawValue;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private sfloat(uint raw)

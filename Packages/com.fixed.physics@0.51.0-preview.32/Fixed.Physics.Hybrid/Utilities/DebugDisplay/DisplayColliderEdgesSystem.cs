@@ -93,7 +93,7 @@ namespace Fixed.Physics.Authoring
                         break;
                     case ColliderType.Sphere:
                         // No edges on sphere but nice to see center
-                        float3 offset = new float3(hull.ConvexRadius * 0.5f);
+                        float3 offset = new float3(hull.ConvexRadius * (sfloat)0.5f);
                         for (int i = 0; i < 3; i++)
                         {
                             offset[i] = -offset[i];
@@ -110,12 +110,14 @@ namespace Fixed.Physics.Authoring
                     ConvexHull.Face face = hull.Faces[vertexEdge.FaceIndex];
                     GetDebugDrawEdge(ref hull, face, vertexEdge.EdgeIndex, out float3 from, out float3 to);
 
-                    float3 r3 = new float3(0.01f, 0f, 0f);
+                    //TODO
+                    float3 r3 = new float3((sfloat)0.01f, sfloat.Zero, sfloat.Zero);
                     WorldLine(from - r3, from + r3, ColorIndex.Red);
                     WorldLine(from - r3.yzx, from + r3.yzx, ColorIndex.Red);
                     WorldLine(from - r3.zxy, from + r3.zxy, ColorIndex.Red);
 
-                    float3 direction = (to - from) * 0.25f;
+
+                    float3 direction = (to - from) * (sfloat)0.25f;
                     WorldLine(from, from + direction, ColorIndex.Red);
                 }
             }

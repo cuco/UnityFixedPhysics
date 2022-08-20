@@ -30,7 +30,6 @@ namespace Fixed.Physics
 
             public static readonly sfloat Tau = (sfloat)2.0f * math.PI;
             public static readonly sfloat OneOverTau = (sfloat)sfloat.One / Tau;
-
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

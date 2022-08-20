@@ -449,17 +449,17 @@ namespace Fixed.DebugDisplay
             if (DataSeries1.Length > 0)
                 Unmanaged.Instance.Data.m_GraphBuffer.SetGraph(x, y, w, h, new GraphBuffer.Sample
                 {
-                    data = DataSeries0, ColorIndex = ColorIndex.Foreground(Color), xMin = (sfloat)(frame - 1 - w * 8), xMax = (sfloat) (frame - 1),
+                    data = DataSeries0, ColorIndex = ColorIndex.Foreground(Color), xMin = (sfloat)(frame - 1 - w * 8), xMax = (sfloat)(frame - 1),
                     yMin = YMin, yMax = YMax
                 }, new GraphBuffer.Sample
                     {
-                        data = DataSeries1, ColorIndex = ColorIndex.Background(Color), xMin = (sfloat) (frame - 1 - w * 8), xMax = (sfloat) (frame - 1),
+                        data = DataSeries1, ColorIndex = ColorIndex.Background(Color), xMin = (sfloat)(frame - 1 - w * 8), xMax = (sfloat)(frame - 1),
                         yMin = YMin, yMax = YMax
                     }, unit.m_Next);
             else
                 Unmanaged.Instance.Data.m_GraphBuffer.SetGraph(x, y, w, h, new GraphBuffer.Sample
                 {
-                    data = DataSeries0, ColorIndex = ColorIndex.Foreground(Color), xMin = (sfloat) (frame - 1 - w * 8), xMax = (sfloat) (frame - 1),
+                    data = DataSeries0, ColorIndex = ColorIndex.Foreground(Color), xMin = (sfloat)(frame - 1 - w * 8), xMax = (sfloat)(frame - 1),
                     yMin = YMin, yMax = YMax
                 }, unit.m_Next);
         }

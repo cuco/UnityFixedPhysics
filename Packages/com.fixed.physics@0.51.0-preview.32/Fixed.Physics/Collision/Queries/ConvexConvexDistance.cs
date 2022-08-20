@@ -480,7 +480,8 @@ namespace Fixed.Physics
                             stopThreshold *= sfloat.FromRaw(0x3fa66666);
                         else
                             break;
-                    } while (++iteration < maxIterations);
+                    }
+                    while (++iteration < maxIterations);
 
                     // There could be multiple triangles in the closest plane, pick the one that has the closest point to the origin on its face
                     foreach (int triangleIndex in hull.Triangles.Indices)

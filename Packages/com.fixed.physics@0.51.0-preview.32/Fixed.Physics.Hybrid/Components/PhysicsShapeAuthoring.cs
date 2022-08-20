@@ -58,18 +58,18 @@ namespace Fixed.Physics.Authoring
         float3 m_PrimitiveCenter;
 
         [SerializeField]
-        float3 m_PrimitiveSize = new float3(1f, 1f, 1f);
+        float3 m_PrimitiveSize = new float3(sfloat.One, sfloat.One, sfloat.One);
 
         [SerializeField]
         EulerAngles m_PrimitiveOrientation = EulerAngles.Default;
 
         [SerializeField]
         [ExpandChildren]
-        CylindricalProperties m_Capsule = new CylindricalProperties { Height = 1f, Radius = 0.5f, Axis = 2 };
+        CylindricalProperties m_Capsule = new CylindricalProperties { Height = sfloat.One, Radius = (sfloat)0.5f, Axis = 2 };
 
         [SerializeField]
         [ExpandChildren]
-        CylindricalProperties m_Cylinder = new CylindricalProperties { Height = 1f, Radius = 0.5f, Axis = 2 };
+        CylindricalProperties m_Cylinder = new CylindricalProperties { Height = sfloat.One, Radius = (sfloat)0.5f, Axis = 2 };
 
         [SerializeField]
         [Tooltip("How many sides the convex cylinder shape should have.")]
@@ -77,7 +77,7 @@ namespace Fixed.Physics.Authoring
         int m_CylinderSideCount = 20;
 
         [SerializeField]
-        sfloat m_SphereRadius = 0.5f;
+        sfloat m_SphereRadius = (sfloat)0.5f;
 
         public ConvexHullGenerationParameters ConvexHullGenerationParameters => m_ConvexHullGenerationParameters;
 
@@ -87,7 +87,7 @@ namespace Fixed.Physics.Authoring
             "A value of 0 will include all points with any weight assigned to this shape's hierarchy."
          )]
         [Range(0f, 1f)]
-        sfloat m_MinimumSkinnedVertexWeight = 0.1f;
+        sfloat m_MinimumSkinnedVertexWeight = (sfloat)0.1f;
 
         [SerializeField]
         [ExpandChildren]
@@ -180,9 +180,9 @@ namespace Fixed.Physics.Authoring
         )
         {
             center = m_PrimitiveCenter;
-            var lookVector = math.mul(m_PrimitiveOrientation, new float3 { [props.Axis] = 1f });
+            var lookVector = math.mul(m_PrimitiveOrientation, new float3 { [props.Axis] = sfloat.One });
             // use previous axis so forward will prefer up
-            var upVector = math.mul(m_PrimitiveOrientation, new float3 { [k_NextAxis[k_NextAxis[props.Axis]]] = 1f });
+            var upVector = math.mul(m_PrimitiveOrientation, new float3 { [k_NextAxis[k_NextAxis[props.Axis]]] = sfloat.One });
             orientation = m_PrimitiveOrientation;
             if (rebuildOrientation && props.Axis != 2)
                 orientation.SetValue(quaternion.LookRotation(lookVector, upVector));
@@ -264,7 +264,7 @@ namespace Fixed.Physics.Authoring
             size = new float2(m_PrimitiveSize[ax2], m_PrimitiveSize[look]);
 
             var up = k_NextAxis[ax2] == look ? k_NextAxis[look] : k_NextAxis[ax2];
-            var offset = quaternion.LookRotation(new float3 { [look] = 1f }, new float3 { [up] = 1f });
+            var offset = quaternion.LookRotation(new float3 { [look] = sfloat.One }, new float3 { [up] = sfloat.One });
 
             orientation.SetValue(math.mul(m_PrimitiveOrientation, offset));
         }
@@ -400,18 +400,18 @@ namespace Fixed.Physics.Authoring
                     var includedIndices = new NativeList<int>(mesh.vertexCount, Allocator.Temp);
                     foreach (var weightCount in bonesPerVertex)
                     {
-                        var totalWeight = 0f;
+                        var totalWeight = sfloat.Zero;
                         for (var i = 0; i < weightCount; ++i)
                         {
                             var weight = weights[weightsOffset + i];
                             if (s_BoneIDs.Contains(weight.boneIndex))
-                                totalWeight += weight.weight;
+                                totalWeight += (sfloat)weight.weight;
                         }
 
                         if (totalWeight > shape.m_MinimumSkinnedVertexWeight)
                         {
                             if (pointCloud.IsCreated)
-                                pointCloud.Add(math.mul(shapeFromSkin, new float4(s_Vertices[vertexIndex], 1f)).xyz);
+                                pointCloud.Add(math.mul(shapeFromSkin, new float4(s_Vertices[vertexIndex], sfloat.One)).xyz);
                             includedIndices.Add(vertexIndex);
                         }
 
@@ -424,7 +424,7 @@ namespace Fixed.Physics.Authoring
 
                     var blendShapeWeights = new NativeArray<sfloat>(mesh.blendShapeCount, Allocator.Temp);
                     for (var i = 0; i < blendShapeWeights.Length; ++i)
-                        blendShapeWeights[i] = skin.GetBlendShapeWeight(i);
+                        blendShapeWeights[i] = (sfloat)skin.GetBlendShapeWeight(i);
 
                     var data = HashableShapeInputs.FromSkinnedMesh(
                         mesh, shapeFromSkin, includedIndices, allIncludedIndices, blendShapeWeights, allBlendShapeWeights
@@ -511,7 +511,7 @@ namespace Fixed.Physics.Authoring
                     if (vertices.Capacity < vertices.Length + tmpVertices.Length)
                         vertices.Capacity = vertices.Length + tmpVertices.Length;
                     foreach (var v in tmpVertices)
-                        vertices.Add(math.mul(childToShape, new float4(v, 1f)).xyz);
+                        vertices.Add(math.mul(childToShape, new float4(v, sfloat.One)).xyz);
                 }
 
                 if (triangles.IsCreated)
@@ -566,7 +566,7 @@ namespace Fixed.Physics.Authoring
         void Sync(ref CylindricalProperties props)
         {
             props.Height = m_PrimitiveSize[props.Axis];
-            props.Radius = 0.5f * math.max(
+            props.Radius = (sfloat)0.5f * math.max(
                 m_PrimitiveSize[k_NextAxis[props.Axis]],
                 m_PrimitiveSize[k_NextAxis[k_NextAxis[props.Axis]]]
             );
@@ -592,7 +592,7 @@ namespace Fixed.Physics.Authoring
 
         void SyncSphereProperties()
         {
-            m_SphereRadius = 0.5f * math.cmax(m_PrimitiveSize);
+            m_SphereRadius = (sfloat)0.5f * math.cmax(m_PrimitiveSize);
         }
 
         public void SetBox(BoxGeometry geometry)
@@ -621,9 +621,9 @@ namespace Fixed.Physics.Authoring
             m_PrimitiveCenter = geometry.Center;
             m_PrimitiveOrientation = geometry.OrientationEuler;
 
-            var radius = math.max(0f, geometry.Radius);
-            var height = math.max(0f, geometry.Height);
-            m_PrimitiveSize = new float3(radius * 2f, radius * 2f, height);
+            var radius = math.max(sfloat.Zero, geometry.Radius);
+            var height = math.max(sfloat.Zero, geometry.Height);
+            m_PrimitiveSize = new float3(radius * (sfloat)2f, radius * (sfloat)2f, height);
 
             SyncCapsuleProperties();
             SyncCylinderProperties();
@@ -644,9 +644,9 @@ namespace Fixed.Physics.Authoring
             m_PrimitiveOrientation = orientation;
             m_CylinderSideCount = geometry.SideCount;
 
-            geometry.Radius = math.max(0f, geometry.Radius);
-            geometry.Height = math.max(0f, geometry.Height);
-            m_PrimitiveSize = new float3(geometry.Radius * 2f, geometry.Radius * 2f, geometry.Height);
+            geometry.Radius = math.max(sfloat.Zero, geometry.Radius);
+            geometry.Height = math.max(sfloat.Zero, geometry.Height);
+            m_PrimitiveSize = new float3(geometry.Radius * (sfloat)2f, geometry.Radius * (sfloat)2f, geometry.Height);
 
             m_ConvexHullGenerationParameters.BevelRadius = geometry.BevelRadius;
 
@@ -672,8 +672,8 @@ namespace Fixed.Physics.Authoring
             m_ShapeType = ShapeType.Sphere;
             m_PrimitiveCenter = geometry.Center;
 
-            var radius = math.max(0f, geometry.Radius);
-            m_PrimitiveSize = new float3(2f * radius, 2f * radius, 2f * radius);
+            var radius = math.max(sfloat.Zero, geometry.Radius);
+            m_PrimitiveSize = new float3((sfloat)2f * radius, (sfloat)2f * radius, (sfloat)2f * radius);
 
             m_PrimitiveOrientation = orientation;
 
@@ -694,7 +694,7 @@ namespace Fixed.Physics.Authoring
             m_ShapeType = ShapeType.Plane;
             m_PrimitiveCenter = center;
             m_PrimitiveOrientation = orientation;
-            m_PrimitiveSize = new float3(size.x, 0f, size.y);
+            m_PrimitiveSize = new float3(size.x, sfloat.Zero, size.y);
 
             SyncCapsuleProperties();
             SyncCylinderProperties();
@@ -713,7 +713,7 @@ namespace Fixed.Physics.Authoring
         {
             m_ShapeType = ShapeType.ConvexHull;
             m_CustomMesh = customMesh;
-            hullGenerationParameters.OnValidate();
+            hullGenerationParameters.OnValidate((sfloat)(180));
             m_ConvexHullGenerationParameters = hullGenerationParameters;
         }
 
@@ -752,8 +752,8 @@ namespace Fixed.Physics.Authoring
 
         static void Validate(ref CylindricalProperties props)
         {
-            props.Height = math.max(0f, props.Height);
-            props.Radius = math.max(0f, props.Radius);
+            props.Height = math.max(sfloat.Zero, props.Height);
+            props.Radius = math.max(sfloat.Zero, props.Radius);
         }
 
         void OnValidate()
@@ -792,7 +792,7 @@ namespace Fixed.Physics.Authoring
             SyncSphereProperties();
             m_CylinderSideCount =
                 math.clamp(m_CylinderSideCount, CylinderGeometry.MinSideCount, CylinderGeometry.MaxSideCount);
-            m_ConvexHullGenerationParameters.OnValidate();
+            m_ConvexHullGenerationParameters.OnValidate((sfloat)(180));
 
             PhysicsMaterialProperties.OnValidate(ref m_Material, true);
         }
@@ -811,7 +811,7 @@ namespace Fixed.Physics.Authoring
             using (var aabb = new NativeArray<Aabb>(1, Allocator.TempJob))
             {
                 new PhysicsShapeExtensions.GetAabbJob { Points = points, Aabb = aabb }.Run();
-                HashableShapeInputs.GetQuantizedTransformations(localToShapeQuantized, aabb[0], out localToShapeQuantized);
+                HashableShapeInputs.GetQuantizedTransformations(localToShapeQuantized, aabb[0], out localToShapeQuantized, HashableShapeInputs.k_DefaultLinearPrecision);
             }
             using (var bakedPoints = new NativeArray<float3>(points.Length, Allocator.TempJob, NativeArrayOptions.UninitializedMemory))
             {
@@ -834,7 +834,7 @@ namespace Fixed.Physics.Authoring
             public float4x4 LocalToShape;
             public NativeArray<float3> Output;
 
-            public void Execute(int index) => Output[index] = math.mul(LocalToShape, new float4(Points[index], 1f)).xyz;
+            public void Execute(int index) => Output[index] = math.mul(LocalToShape, new float4(Points[index], sfloat.One)).xyz;
         }
 
         /// <summary>
@@ -846,7 +846,7 @@ namespace Fixed.Physics.Authoring
         /// <param name="minimumSkinnedVertexWeight">
         /// The minimum total weight that a vertex in a skinned mesh must have assigned to this object and/or any of its influencing children.
         /// </param>
-        public void FitToEnabledRenderMeshes(sfloat minimumSkinnedVertexWeight = 0f)
+        public void FitToEnabledRenderMeshes(sfloat minimumSkinnedVertexWeight /* = 0f*/)
         {
             var shapeType = m_ShapeType;
             m_MinimumSkinnedVertexWeight = minimumSkinnedVertexWeight;

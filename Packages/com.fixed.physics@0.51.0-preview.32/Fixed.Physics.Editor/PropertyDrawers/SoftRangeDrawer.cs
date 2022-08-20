@@ -16,7 +16,7 @@ namespace Fixed.Physics.Editor
         {
             var attr = attribute as SoftRangeAttribute;
             EditorGUIControls.SoftSlider(
-                position, label, property, attr.SliderMin, attr.SliderMax, attr.TextFieldMin, attr.TextFieldMax
+                position, label, property, (float)attr.SliderMin, (float)attr.SliderMax, attr.TextFieldMin, attr.TextFieldMax
             );
         }
     }

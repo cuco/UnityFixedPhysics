@@ -159,6 +159,9 @@ namespace Fixed.Physics.Editor
         [NonSerialized]
         FitToRenderMeshesDropDown m_DropDown;
 
+        //TODO
+        static readonly sfloat k_HashFloatTolerance = (sfloat)0.01f;
+
         protected override void OnEnable()
         {
             base.OnEnable();
@@ -250,8 +253,8 @@ namespace Fixed.Physics.Editor
                         return math.hash(
                             new uint3(
                                 (uint)shape.ShapeType,
-                                currentConvexProperties.GetStableHash(hashedConvexParameters),
-                                currentPoints.GetStableHash(hashedPoints)
+                                currentConvexProperties.GetStableHash(hashedConvexParameters, k_HashFloatTolerance),
+                                currentPoints.GetStableHash(hashedPoints, k_HashFloatTolerance)
                             )
                         );
 
@@ -262,7 +265,7 @@ namespace Fixed.Physics.Editor
                         return math.hash(
                             new uint3(
                                 (uint)shape.ShapeType,
-                                currentPoints.GetStableHash(hashedPoints),
+                                currentPoints.GetStableHash(hashedPoints, k_HashFloatTolerance),
                                 math.hash(triangles.GetUnsafePtr(), UnsafeUtility.SizeOf<int3>() * triangles.Length)
                             )
                         );
@@ -635,7 +638,7 @@ namespace Fixed.Physics.Editor
             m_ShapeSuggestions.Clear();
             foreach (PhysicsShapeAuthoring shape in targets)
             {
-                const float k_Epsilon = HashableShapeInputs.k_DefaultLinearPrecision;
+                sfloat k_Epsilon = HashableShapeInputs.k_DefaultLinearPrecision;
                 switch (shape.ShapeType)
                 {
                     case ShapeType.Box:
@@ -644,24 +647,24 @@ namespace Fixed.Physics.Editor
                         var min = math.cmin(box.Size);
                         if (min < k_Epsilon)
                             m_ShapeSuggestions.Add(Styles.BoxPlaneSuggestion);
-                        else if (math.abs(box.BevelRadius - min * 0.5f) < k_Epsilon)
+                        else if (math.abs(box.BevelRadius - min * (sfloat)0.5f) < k_Epsilon)
                         {
                             if (math.abs(max - min) < k_Epsilon)
                                 m_ShapeSuggestions.Add(Styles.BoxSphereSuggestion);
-                            else if (math.abs(math.lengthsq(box.Size - new float3(min)) - math.pow(max - min, 2f)) < k_Epsilon)
+                            else if (math.abs(math.lengthsq(box.Size - new float3(min)) - math.pow(max - min, (sfloat)2f)) < k_Epsilon)
                                 m_ShapeSuggestions.Add(Styles.BoxCapsuleSuggestion);
                         }
                         break;
                     case ShapeType.Capsule:
                         var capsule = shape.GetBakedCapsuleProperties();
-                        if (math.abs(capsule.Height - 2f * capsule.Radius) < k_Epsilon)
+                        if (math.abs(capsule.Height - (sfloat)2f * capsule.Radius) < k_Epsilon)
                             m_ShapeSuggestions.Add(Styles.CapsuleSphereSuggestion);
                         break;
                     case ShapeType.Cylinder:
                         var cylinder = shape.GetBakedCylinderProperties();
                         if (math.abs(cylinder.BevelRadius - cylinder.Radius) < k_Epsilon)
                         {
-                            m_ShapeSuggestions.Add(math.abs(cylinder.Height - 2f * cylinder.Radius) < k_Epsilon
+                            m_ShapeSuggestions.Add(math.abs(cylinder.Height - (sfloat)2f * cylinder.Radius) < k_Epsilon
                                 ? Styles.CylinderSphereSuggestion
                                 : Styles.CylinderCapsuleSuggestion);
                         }
@@ -798,7 +801,7 @@ namespace Fixed.Physics.Editor
                 window.m_UndoGroup = Undo.GetCurrentGroup();
                 window.m_MinimumSkinnedVertexWeight = minimumSkinnedVertexWeight;
                 var size = new Vector2(
-                    math.max(buttonRect.width, Styles.WindowWidth),
+                    Mathf.Max(buttonRect.width, Styles.WindowWidth),
                     (EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing) * 3f
                 );
                 window.maxSize = window.minSize = size;
@@ -865,7 +868,7 @@ namespace Fixed.Physics.Editor
                     using (var so = new SerializedObject(shape))
                     {
                         shape.FitToEnabledRenderMeshes(
-                            so.FindProperty(m_MinimumSkinnedVertexWeight.propertyPath).floatValue
+                            (sfloat)so.FindProperty(m_MinimumSkinnedVertexWeight.propertyPath).floatValue
                         );
                         EditorUtility.SetDirty(shape);
                     }
@@ -1012,82 +1015,82 @@ namespace Fixed.Physics.Editor
                 {
                     case ShapeType.Box:
                         var boxGeometry = shape.GetBakedBoxProperties();
-                        s_Box.bevelRadius = boxGeometry.BevelRadius;
+                        s_Box.bevelRadius = (float)boxGeometry.BevelRadius;
                         s_Box.center = float3.zero;
                         s_Box.size = boxGeometry.Size;
                         EditorGUI.BeginChangeCheck();
                         {
-                            using (new Handles.DrawingScope(math.mul(Handles.matrix, float4x4.TRS(boxGeometry.Center, boxGeometry.Orientation, 1f))))
+                            using (new Handles.DrawingScope(math.mul(Handles.matrix, float4x4.TRS(boxGeometry.Center, boxGeometry.Orientation, sfloat.One))))
                                 s_Box.DrawHandle();
                         }
                         if (EditorGUI.EndChangeCheck())
                         {
                             Undo.RecordObject(shape, Styles.GenericUndoMessage);
-                            shape.SetBakedBoxSize(s_Box.size, s_Box.bevelRadius);
+                            shape.SetBakedBoxSize(s_Box.size, (sfloat)s_Box.bevelRadius);
                         }
                         break;
                     case ShapeType.Capsule:
                         s_Capsule.center = float3.zero;
                         var capsuleGeometry = shape.GetBakedCapsuleProperties();
-                        s_Capsule.height = capsuleGeometry.Height;
-                        s_Capsule.radius = capsuleGeometry.Radius;
+                        s_Capsule.height = (float)capsuleGeometry.Height;
+                        s_Capsule.radius = (float)capsuleGeometry.Radius;
                         EditorGUI.BeginChangeCheck();
                         {
-                            using (new Handles.DrawingScope(math.mul(Handles.matrix, float4x4.TRS(capsuleGeometry.Center, capsuleGeometry.Orientation, 1f))))
+                            using (new Handles.DrawingScope(math.mul(Handles.matrix, float4x4.TRS(capsuleGeometry.Center, capsuleGeometry.Orientation, sfloat.One))))
                                 s_Capsule.DrawHandle();
                         }
                         if (EditorGUI.EndChangeCheck())
                         {
                             Undo.RecordObject(shape, Styles.GenericUndoMessage);
-                            shape.SetBakedCapsuleSize(s_Capsule.height, s_Capsule.radius);
+                            shape.SetBakedCapsuleSize((sfloat)s_Capsule.height, (sfloat)s_Capsule.radius);
                         }
                         break;
                     case ShapeType.Sphere:
                         var sphereGeometry = shape.GetBakedSphereProperties(out EulerAngles orientation);
                         s_Sphere.center = float3.zero;
-                        s_Sphere.radius = sphereGeometry.Radius;
+                        s_Sphere.radius = (float)sphereGeometry.Radius;
                         EditorGUI.BeginChangeCheck();
                         {
-                            using (new Handles.DrawingScope(math.mul(Handles.matrix, float4x4.TRS(sphereGeometry.Center, orientation, 1f))))
+                            using (new Handles.DrawingScope(math.mul(Handles.matrix, float4x4.TRS(sphereGeometry.Center, orientation, sfloat.One))))
                                 s_Sphere.DrawHandle();
                         }
                         if (EditorGUI.EndChangeCheck())
                         {
                             Undo.RecordObject(shape, Styles.GenericUndoMessage);
-                            shape.SetBakedSphereRadius(s_Sphere.radius);
+                            shape.SetBakedSphereRadius((sfloat)s_Sphere.radius);
                         }
                         break;
                     case ShapeType.Cylinder:
                         var cylinderGeometry = shape.GetBakedCylinderProperties();
                         s_Cylinder.center = float3.zero;
-                        s_Cylinder.height = cylinderGeometry.Height;
-                        s_Cylinder.radius = cylinderGeometry.Radius;
+                        s_Cylinder.height = (float)cylinderGeometry.Height;
+                        s_Cylinder.radius = (float)cylinderGeometry.Radius;
                         s_Cylinder.sideCount = cylinderGeometry.SideCount;
-                        s_Cylinder.bevelRadius = cylinderGeometry.BevelRadius;
+                        s_Cylinder.bevelRadius = (float)cylinderGeometry.BevelRadius;
                         EditorGUI.BeginChangeCheck();
                         {
-                            using (new Handles.DrawingScope(math.mul(Handles.matrix, float4x4.TRS(cylinderGeometry.Center, cylinderGeometry.Orientation, 1f))))
+                            using (new Handles.DrawingScope(math.mul(Handles.matrix, float4x4.TRS(cylinderGeometry.Center, cylinderGeometry.Orientation, sfloat.One))))
                                 s_Cylinder.DrawHandle();
                         }
                         if (EditorGUI.EndChangeCheck())
                         {
                             Undo.RecordObject(shape, Styles.GenericUndoMessage);
-                            shape.SetBakedCylinderSize(s_Cylinder.height, s_Cylinder.radius, s_Cylinder.bevelRadius);
+                            shape.SetBakedCylinderSize((sfloat)s_Cylinder.height, (sfloat)s_Cylinder.radius, (sfloat)s_Cylinder.bevelRadius);
                         }
                         break;
                     case ShapeType.Plane:
                         shape.GetPlaneProperties(out var center, out var size2, out orientation);
                         s_Plane.center = float3.zero;
-                        s_Plane.size = new float3(size2.x, 0f, size2.y);
+                        s_Plane.size = new float3(size2.x, sfloat.Zero, size2.y);
                         EditorGUI.BeginChangeCheck();
                         {
-                            var m = math.mul(shape.transform.localToWorldMatrix, float4x4.TRS(center, orientation, 1f));
+                            var m = math.mul(shape.transform.localToWorldMatrix, float4x4.TRS(center, orientation, sfloat.One));
                             using (new Handles.DrawingScope(m))
                                 s_Plane.DrawHandle();
-                            var right = math.mul(m, new float4 { x = 1f }).xyz;
-                            var forward = math.mul(m, new float4 { z = 1f }).xyz;
+                            var right = math.mul(m, new float4 { x = sfloat.One }).xyz;
+                            var forward = math.mul(m, new float4 { z = sfloat.One }).xyz;
                             var normal = math.cross(math.normalizesafe(forward), math.normalizesafe(right))
-                                * 0.5f * math.lerp(math.length(right) * size2.x, math.length(forward) * size2.y, 0.5f);
+                                * (sfloat)0.5f * math.lerp(math.length(right) * size2.x, math.length(forward) * size2.y, (sfloat)0.5f);
 
                             using (new Handles.DrawingScope(float4x4.identity))
                                 Handles.DrawLine(m.c3.xyz, m.c3.xyz + normal);
@@ -1127,9 +1130,9 @@ namespace Fixed.Physics.Editor
 
         static Bounds TransformBounds(Bounds localBounds, float4x4 matrix)
         {
-            var center = new float4(localBounds.center, 1);
+            var center = new float4(localBounds.center, sfloat.One);
             Bounds bounds = new Bounds(math.mul(matrix, center).xyz, Vector3.zero);
-            var extent = new float4(localBounds.extents, 0);
+            var extent = new float4(localBounds.extents, sfloat.Zero);
             for (int i = 0; i < 8; ++i)
             {
                 extent.x = (i & 1) == 0 ? -extent.x : extent.x;
@@ -1153,29 +1156,29 @@ namespace Fixed.Physics.Editor
                 case ShapeType.Box:
                     var boxGeometry = shape.GetBakedBoxProperties();
                     bounds = new Bounds(float3.zero, boxGeometry.Size);
-                    bounds = TransformBounds(bounds, float4x4.TRS(boxGeometry.Center, boxGeometry.Orientation, 1f));
+                    bounds = TransformBounds(bounds, float4x4.TRS(boxGeometry.Center, boxGeometry.Orientation, sfloat.One));
                     break;
                 case ShapeType.Capsule:
                     var capsuleGeometry = shape.GetBakedCapsuleProperties();
-                    var cd = capsuleGeometry.Radius * 2;
+                    var cd = capsuleGeometry.Radius * (sfloat)2.0f;
                     bounds = new Bounds(float3.zero, new float3(cd, cd, capsuleGeometry.Height));
-                    bounds = TransformBounds(bounds, float4x4.TRS(capsuleGeometry.Center, capsuleGeometry.Orientation, 1f));
+                    bounds = TransformBounds(bounds, float4x4.TRS(capsuleGeometry.Center, capsuleGeometry.Orientation, sfloat.One));
                     break;
                 case ShapeType.Sphere:
                     var sphereGeometry = shape.GetBakedSphereProperties(out var orientation);
-                    var sd = sphereGeometry.Radius * 2;
+                    var sd = sphereGeometry.Radius * (sfloat)2.0f;
                     bounds = new Bounds(sphereGeometry.Center, new float3(sd, sd, sd));
                     break;
                 case ShapeType.Cylinder:
                     var cylinderGeometry = shape.GetBakedCylinderProperties();
-                    var cyld = cylinderGeometry.Radius * 2;
+                    var cyld = cylinderGeometry.Radius * (sfloat)2.0f;
                     bounds = new Bounds(float3.zero, new float3(cyld, cyld, cylinderGeometry.Height));
-                    bounds = TransformBounds(bounds, float4x4.TRS(cylinderGeometry.Center, cylinderGeometry.Orientation, 1f));
+                    bounds = TransformBounds(bounds, float4x4.TRS(cylinderGeometry.Center, cylinderGeometry.Orientation, sfloat.One));
                     break;
                 case ShapeType.Plane:
                     shape.GetPlaneProperties(out var center, out var size2, out orientation);
-                    bounds = new Bounds(float3.zero, new float3(size2.x, 0, size2.y));
-                    bounds = TransformBounds(bounds, float4x4.TRS(center, orientation, 1f));
+                    bounds = new Bounds(float3.zero, new float3(size2.x, sfloat.Zero, size2.y));
+                    bounds = TransformBounds(bounds, float4x4.TRS(center, orientation, sfloat.One));
                     break;
                 case ShapeType.ConvexHull:
                 case ShapeType.Mesh:

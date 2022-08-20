@@ -67,7 +67,7 @@ namespace Fixed.Physics.Authoring
                             Linear = body.LinearDamping,
                             Angular = body.AngularDamping
                         });
-                        if (body.GravityFactor != 1)
+                        if (body.GravityFactor != sfloat.One)
                         {
                             DstEntityManager.AddOrSetComponent(entity, new PhysicsGravityFactor
                             {
@@ -79,7 +79,7 @@ namespace Fixed.Physics.Authoring
                     {
                         DstEntityManager.AddOrSetComponent(entity, new PhysicsGravityFactor
                         {
-                            Value = 0
+                            Value = sfloat.Zero
                         });
                     }
 

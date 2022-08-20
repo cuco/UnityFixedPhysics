@@ -79,7 +79,7 @@ namespace Fixed.Physics
         private Aabb m_IntegerSpaceAabb;
         private uint m_NextUid;
 
-        private static sfloat k_PlaneEps = sfloat.FromRaw(0x38d1b717);  // Maximum distance any vertex in a face can be from the plane
+        private static readonly sfloat k_PlaneEps = sfloat.FromRaw(0x38d1b717);  // Maximum distance any vertex in a face can be from the plane
 
         /// <summary>
         /// Convex hull vertex.

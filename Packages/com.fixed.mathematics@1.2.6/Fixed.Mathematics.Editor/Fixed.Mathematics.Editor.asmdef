@@ -1,7 +1,8 @@
 {
     "name": "Fixed.Mathematics.Editor",
     "references": [
-        "Fixed.Mathematics"
+        "Fixed.Mathematics",
+        "Fixed.Sfloat"
     ],
     "optionalUnityReferences": [],
     "includePlatforms": [

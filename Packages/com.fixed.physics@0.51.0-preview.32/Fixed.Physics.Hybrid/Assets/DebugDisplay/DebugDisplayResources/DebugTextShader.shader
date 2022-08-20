@@ -91,7 +91,7 @@ CGPROGRAM
 		{
 			float4 pos        : SV_POSITION;
 			float2 screenPos  : TEXCOORD0;
-			sfloat  instanceID : TEXCOORD1;
+			float  instanceID : TEXCOORD1;
 		};
 
 		v2f vert(uint vid : SV_VertexID)

@@ -65,25 +65,26 @@ namespace Fixed.Physics.Authoring
         [Tooltip("Specifies how this body's motion in its graphics representation should be smoothed when the rendering framerate is greater than the fixed step rate used by physics.")]
         BodySmoothing m_Smoothing = BodySmoothing.None;
 
-        const float k_MinimumMass = 0.001f;
+        //TODO
+        static readonly sfloat k_MinimumMass = (sfloat)0.001f;
 
-        public float Mass
+        public sfloat Mass
         {
-            get => m_MotionType == BodyMotionType.Dynamic ? m_Mass : float.PositiveInfinity;
+            get => m_MotionType == BodyMotionType.Dynamic ? m_Mass : sfloat.PositiveInfinity;
             set => m_Mass = math.max(k_MinimumMass, value);
         }
         [SerializeField]
-        float m_Mass = 1.0f;
+        sfloat m_Mass = sfloat.One;
 
-        public sfloat LinearDamping { get => m_LinearDamping; set => m_LinearDamping = math.max(0f, value); }
+        public sfloat LinearDamping { get => m_LinearDamping; set => m_LinearDamping = math.max(sfloat.Zero, value); }
         [SerializeField]
         [Tooltip("This is applied to a body's linear velocity reducing it over time.")]
-        sfloat m_LinearDamping = 0.01f;
+        sfloat m_LinearDamping = (sfloat)0.01f;
 
-        public sfloat AngularDamping { get => m_AngularDamping; set => m_AngularDamping = math.max(0f, value); }
+        public sfloat AngularDamping { get => m_AngularDamping; set => m_AngularDamping = math.max(sfloat.Zero, value); }
         [SerializeField]
         [Tooltip("This is applied to a body's angular velocity reducing it over time.")]
-        sfloat m_AngularDamping = 0.05f;
+        sfloat m_AngularDamping = (sfloat)0.05f;
 
         public float3 InitialLinearVelocity { get => m_InitialLinearVelocity; set => m_InitialLinearVelocity = value; }
         [SerializeField]
@@ -97,12 +98,12 @@ namespace Fixed.Physics.Authoring
 
         public sfloat GravityFactor
         {
-            get => m_MotionType == BodyMotionType.Dynamic ? m_GravityFactor : 0f;
+            get => m_MotionType == BodyMotionType.Dynamic ? m_GravityFactor : sfloat.Zero;
             set => m_GravityFactor = value;
         }
         [SerializeField]
         [Tooltip("Scales the amount of gravity to apply to this body.")]
-        sfloat m_GravityFactor = 1f;
+        sfloat m_GravityFactor = sfloat.One;
 
         public bool OverrideDefaultMassDistribution
         {
@@ -142,7 +143,7 @@ namespace Fixed.Physics.Authoring
 
         [SerializeField]
         // Default value to solid unit sphere : https://en.wikipedia.org/wiki/List_of_moments_of_inertia
-        float3 m_InertiaTensor = new float3(2f / 5f);
+        float3 m_InertiaTensor = new float3((sfloat)2f / (sfloat)5f);
 
         public uint WorldIndex { get => m_WorldIndex; set => m_WorldIndex = value; }
         [SerializeField]
@@ -161,8 +162,8 @@ namespace Fixed.Physics.Authoring
         void OnValidate()
         {
             m_Mass = math.max(k_MinimumMass, m_Mass);
-            m_LinearDamping = math.max(m_LinearDamping, 0f);
-            m_AngularDamping = math.max(m_AngularDamping, 0f);
+            m_LinearDamping = math.max(m_LinearDamping, sfloat.Zero);
+            m_AngularDamping = math.max(m_AngularDamping, sfloat.Zero);
         }
     }
 }

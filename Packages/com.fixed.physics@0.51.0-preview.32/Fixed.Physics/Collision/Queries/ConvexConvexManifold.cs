@@ -16,7 +16,7 @@ namespace Fixed.Physics
             public float3 Normal;
 
             public const int k_MaxNumContacts = 32;
-            private fixed uint /* float */  m_ContactPositions[k_MaxNumContacts * 3];
+            private fixed uint /* float */ m_ContactPositions[k_MaxNumContacts * 3];
             private fixed uint /* float */ m_Distances[k_MaxNumContacts];
 
             // Create a single point manifold from a distance query result
@@ -40,12 +40,12 @@ namespace Fixed.Physics
                     int offset = contactIndex * 3;
                     var contact = new ContactPoint();
 
-                    fixed (uint* positions = m_ContactPositions)
+                    fixed(uint* positions = m_ContactPositions)
                     {
                         contact.Position = *(float3*)(positions + offset);
                     }
 
-                    fixed (uint* distances = m_Distances)
+                    fixed(uint* distances = m_Distances)
                     {
                         contact.Distance = sfloat.FromRaw(distances[contactIndex]);
                     }
@@ -57,12 +57,12 @@ namespace Fixed.Physics
                     Assert.IsTrue(contactIndex >= 0 && contactIndex < k_MaxNumContacts);
 
                     int offset = contactIndex * 3;
-                    fixed (uint* positions = m_ContactPositions)
+                    fixed(uint* positions = m_ContactPositions)
                     {
                         *(float3*)(positions + offset) = value.Position;
                     }
 
-                    fixed (uint* distances = m_Distances)
+                    fixed(uint* distances = m_Distances)
                     {
                         distances[contactIndex] = value.Distance.RawValue;
                     }

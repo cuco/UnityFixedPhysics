@@ -37,7 +37,7 @@ namespace Fixed.Physics.Authoring
             manager.AddOrSetComponent(entity, new Translation { Value = rigidBodyTransform.pos });
             manager.AddOrSetComponent(entity, new Rotation { Value = rigidBodyTransform.rot });
 
-            if (math.lengthsq((float3)worldTransform.lossyScale - new float3(1f)) > 0f)
+            if (math.lengthsq((float3)worldTransform.lossyScale - new float3(sfloat.One)) > sfloat.Zero)
             {
                 // bake in composite scale
                 var compositeScale = math.mul(

@@ -26,17 +26,17 @@ Shader "GraphShader" {
 
 		float4 scales; // glyph scale in world (x,y) and on texture (z,w)
 
-		StructuredBuffer<sfloat> sampleBuffer;
+		StructuredBuffer<float> sampleBuffer;
 
 		struct GraphInstanceDataSample
 		{
 			uint color;       // color of the sample
 			uint firstIndex;  // first sample index in range to display
 			uint indexMask;   // AND sample index with this to make it wrap around
-			sfloat indexMul;   // multiply the pixel.x by this,
-			sfloat indexAdd;   // and then by this to get the sample index.
-			sfloat sampleMul;  // multiply the sample by this,
-			sfloat sampleAdd;  // and then add this to get the pixel.y
+			float indexMul;   // multiply the pixel.x by this,
+			float indexAdd;   // and then by this to get the sample index.
+			float sampleMul;  // multiply the sample by this,
+			float sampleAdd;  // and then add this to get the pixel.y
 		};
 
 		struct GraphInstanceData
@@ -58,7 +58,7 @@ Shader "GraphShader" {
 		struct v2f
 		{
 			float4 pos        : SV_POSITION;
-			sfloat  instanceID : TEXCOORD0;
+			float  instanceID : TEXCOORD0;
 		};
 
 		v2f vert(uint vid : SV_VertexID)
@@ -118,7 +118,7 @@ Shader "GraphShader" {
 				for (int sx = 0; sx < subsamples.x; ++sx)
 				{
 					int xsub = (sx - subsamples.x / 2);
-					sfloat x = xy.x + xsub * step.x;
+					float x = xy.x + xsub * step.x;
 
 					x = x * instanceBuffer[instID].data[j].indexMul
 					      + instanceBuffer[instID].data[j].indexAdd;
@@ -136,16 +136,16 @@ Shader "GraphShader" {
 
 					// read four values from sample buffer
 
-					sfloat p0 = sampleBuffer[s0];
-					sfloat p1 = sampleBuffer[s1];
-					sfloat p2 = sampleBuffer[s2];
-					sfloat p3 = sampleBuffer[s3];
+					float p0 = sampleBuffer[s0];
+					float p1 = sampleBuffer[s1];
+					float p2 = sampleBuffer[s2];
+					float p3 = sampleBuffer[s3];
 
-					sfloat t = x - floor(x);
-					sfloat t2 = t * t;
-					sfloat t3 = t * t * t;
+					float t = x - floor(x);
+					float t2 = t * t;
+					float t3 = t * t * t;
 
-					sfloat y = p1 + (p2 - p1) * t;
+					float y = p1 + (p2 - p1) * t;
 					//				 	  (-1 / 2.0 * p0 + 3 / 2.0 * p1 - 3 / 2.0 * p2 + 1 / 2.0 * p3) * x3
 					//					+ (           p0 - 5 / 2.0 * p1 +     2.0 * p2 - 1 / 2.0 * p3) * x2
 					//					+ (-1 / 2.0 * p0 +                1 / 2.0 * p2               ) * x
@@ -156,13 +156,13 @@ Shader "GraphShader" {
 					for (int sy = 0; sy < subsamples.y; ++sy)
 					{
 						int ysub = (sy - subsamples.y / 2); // + (ybits & 1);
-						sfloat side = y - (xy.y + ysub * step.y);
+						float side = y - (xy.y + ysub * step.y);
 						count += side > 0 ? 1 : -1;
 
 						ybits >>= 1;
 					}
 				}
-				sfloat alpha = 1 - abs(count) / (sfloat)totalSubsamples;
+				float alpha = 1 - abs(count) / (float)totalSubsamples;
 //				alpha = 1 - alpha * alpha;
   			    color = color * (1-alpha) + Palette(instanceBuffer[instID].data[j].color) * alpha;
 			}

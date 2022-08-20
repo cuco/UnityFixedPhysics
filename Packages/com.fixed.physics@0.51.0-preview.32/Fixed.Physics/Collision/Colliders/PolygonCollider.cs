@@ -17,8 +17,8 @@ namespace Fixed.Physics
 
         // Convex hull data
         // Todo: would be nice to use the actual types here but C# only likes fixed arrays of builtin types
-        private unsafe fixed byte m_Vertices[sizeof(sfloat) * 3 * 4];     // float3[4]
-        private unsafe fixed byte m_FacePlanes[sizeof(sfloat) * 4 * 2];   // Plane[2]
+        private unsafe fixed byte m_Vertices[sizeof(uint) * 3 * 4];     // float3[4]
+        private unsafe fixed byte m_FacePlanes[sizeof(uint) * 4 * 2];   // Plane[2]
         private unsafe fixed byte m_Faces[4 * 2];                        // ConvexHull.Face[2]
         private unsafe fixed byte m_FaceVertexIndices[sizeof(byte) * 8]; // byte[8]
 

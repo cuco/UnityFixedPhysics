@@ -131,7 +131,9 @@ namespace Fixed.Physics.Extensions
         {
             Min = joint[PhysicsJoint.k_RagdollPerpendicularRangeIndex].Min,
             Max = joint[PhysicsJoint.k_RagdollPerpendicularRangeIndex].Max
-            } - new float2(sfloat.FromRaw(0x3fc90fdb));
+        }
+
+        -new float2(sfloat.FromRaw(0x3fc90fdb));
 
         /// <summary>
         /// Applies the specified range of motion to a ragdoll perpendicular cone <see cref="PhysicsJoint"/> created using <see cref="PhysicsJoint.CreateRagdoll"/>.

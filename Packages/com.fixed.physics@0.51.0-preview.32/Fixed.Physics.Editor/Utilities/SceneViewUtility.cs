@@ -118,7 +118,7 @@ namespace Fixed.Physics.Editor
                 var color = GUI.color;
                 var progress = s_GetProgress?.Invoke() ?? 0f;
                 GUI.color *=
-                    new Color(1f, 1f, 1f, math.max(k_NotificationFadeCurve.Evaluate(math.abs(t) / duration), progress));
+                    new Color(1f, 1f, 1f, Mathf.Max(k_NotificationFadeCurve.Evaluate((float)Mathf.Abs(t) / duration), progress));
                 var rect = new Rect { size = Camera.current.pixelRect.size / EditorGUIUtility.pixelsPerPoint };
                 using (new GUILayout.AreaScope(rect))
                 using (new GUILayout.HorizontalScope())

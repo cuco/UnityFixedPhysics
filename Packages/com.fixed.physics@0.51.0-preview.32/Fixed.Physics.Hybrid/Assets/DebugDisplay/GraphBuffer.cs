@@ -94,7 +94,7 @@ namespace Fixed.DebugDisplay
 
             m_Instance[index] = new Instance
             {
-                screenPosition = new float2((sfloat) (x * Cell.kPixelsWide), (sfloat) (y * Cell.kPixelsTall)),
+                screenPosition = new float2((sfloat)(x * Cell.kPixelsWide), (sfloat)(y * Cell.kPixelsTall)),
                 cellSize = new float2((sfloat)w, (sfloat)h),
                 frameColor = ColorIndex.White.value,
                 samples = 1,
@@ -128,7 +128,7 @@ namespace Fixed.DebugDisplay
 
             m_Instance[index] = new Instance
             {
-                screenPosition = new float2((sfloat) (x * Cell.kPixelsWide), (sfloat) (y * Cell.kPixelsTall)),
+                screenPosition = new float2((sfloat)(x * Cell.kPixelsWide), (sfloat)(y * Cell.kPixelsTall)),
                 cellSize = new float2((sfloat)w, (sfloat)h),
                 frameColor = ColorIndex.White.value,
                 samples = 2,

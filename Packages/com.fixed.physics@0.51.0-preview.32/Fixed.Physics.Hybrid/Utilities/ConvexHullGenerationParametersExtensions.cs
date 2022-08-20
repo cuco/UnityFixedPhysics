@@ -7,7 +7,8 @@ namespace Fixed.Physics.Authoring
     public static class ConvexHullGenerationParametersExtensions
     {
         // recommended simplification tolerance is at least 1 centimeter
-        internal const sfloat k_MinRecommendedSimplificationTolerance = 0.01f;
+        //TODO 0.01f
+        internal static readonly sfloat k_MinRecommendedSimplificationTolerance = sfloat.One / (sfloat)100;
 
         internal static void InitializeToRecommendedAuthoringValues(
             ref this ConvexHullGenerationParameters generationParameters, NativeArray<float3> points
@@ -28,11 +29,11 @@ namespace Fixed.Physics.Authoring
             // TODO: initialize other properties based on input points?
         }
 
-        internal static void OnValidate(ref this ConvexHullGenerationParameters generationParameters, sfloat maxAngle = 180f)
+        internal static void OnValidate(ref this ConvexHullGenerationParameters generationParameters, sfloat maxAngle /* = 180f*/)
         {
-            generationParameters.SimplificationTolerance = math.max(0f, generationParameters.SimplificationTolerance);
-            generationParameters.BevelRadius = math.max(0f, generationParameters.BevelRadius);
-            generationParameters.MinimumAngle = math.clamp(generationParameters.MinimumAngle, 0f, maxAngle);
+            generationParameters.SimplificationTolerance = math.max(sfloat.Zero, generationParameters.SimplificationTolerance);
+            generationParameters.BevelRadius = math.max(sfloat.Zero, generationParameters.BevelRadius);
+            generationParameters.MinimumAngle = math.clamp(generationParameters.MinimumAngle, sfloat.Zero, maxAngle);
         }
 
         public static ConvexHullGenerationParameters ToAuthoring(this ConvexHullGenerationParameters generationParameters)

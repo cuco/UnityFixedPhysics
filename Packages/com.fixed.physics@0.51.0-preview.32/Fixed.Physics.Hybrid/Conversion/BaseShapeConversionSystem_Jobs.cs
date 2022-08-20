@@ -24,16 +24,16 @@ namespace Fixed.Physics.Authoring
 
             static Aabb RotatedBoxAabb(float3 center, float3 size, quaternion orientation)
             {
-                var extents = 0.5f * size;
+                var extents = (sfloat)0.5f * size;
                 var aabb = new Aabb { Min = sfloat.MaxValue, Max = sfloat.MinValue };
-                aabb.Include(center + math.mul(orientation, math.mul(extents, new float3(-1f, -1f, -1f)))); // 000
-                aabb.Include(center + math.mul(orientation, math.mul(extents, new float3(-1f, -1f,  1f)))); // 001
-                aabb.Include(center + math.mul(orientation, math.mul(extents, new float3(-1f,  1f, -1f)))); // 010
-                aabb.Include(center + math.mul(orientation, math.mul(extents, new float3(-1f,  1f,  1f)))); // 011
-                aabb.Include(center + math.mul(orientation, math.mul(extents, new float3(1f, -1f, -1f))));  // 100
-                aabb.Include(center + math.mul(orientation, math.mul(extents, new float3(1f, -1f,  1f))));  // 101
-                aabb.Include(center + math.mul(orientation, math.mul(extents, new float3(1f,  1f, -1f))));  // 110
-                aabb.Include(center + math.mul(orientation, math.mul(extents, new float3(1f,  1f,  1f))));  // 111
+                aabb.Include(center + math.mul(orientation, math.mul(extents, new float3(sfloat.MinusOne, sfloat.MinusOne, sfloat.MinusOne)))); // 000
+                aabb.Include(center + math.mul(orientation, math.mul(extents, new float3(sfloat.MinusOne, sfloat.MinusOne,  sfloat.One)))); // 001
+                aabb.Include(center + math.mul(orientation, math.mul(extents, new float3(sfloat.MinusOne,  sfloat.One, sfloat.MinusOne)))); // 010
+                aabb.Include(center + math.mul(orientation, math.mul(extents, new float3(sfloat.MinusOne,  sfloat.One,  sfloat.One)))); // 011
+                aabb.Include(center + math.mul(orientation, math.mul(extents, new float3(sfloat.One, sfloat.MinusOne, sfloat.MinusOne))));  // 100
+                aabb.Include(center + math.mul(orientation, math.mul(extents, new float3(sfloat.One, sfloat.MinusOne,  sfloat.One))));  // 101
+                aabb.Include(center + math.mul(orientation, math.mul(extents, new float3(sfloat.One,  sfloat.One, sfloat.MinusOne))));  // 110
+                aabb.Include(center + math.mul(orientation, math.mul(extents, new float3(sfloat.One,  sfloat.One,  sfloat.One))));  // 111
                 return aabb;
             }
 
@@ -41,8 +41,8 @@ namespace Fixed.Physics.Authoring
             {
                 var cylinder = new Aabb
                 {
-                    Min = center + new float3(2f * radius, -height, 2f * radius),
-                    Max = center + new float3(2f * radius, height, 2f * radius)
+                    Min = center + new float3((sfloat)2f * radius, -height, (sfloat)2f * radius),
+                    Max = center + new float3((sfloat)2f * radius, height, (sfloat)2f * radius)
                 };
                 return RotatedBoxAabb(cylinder.Center, cylinder.Extents, orientation);
             }
@@ -68,7 +68,7 @@ namespace Fixed.Physics.Authoring
                         var p = shapeData.BoxProperties;
                         bytes.Append(ref p);
                         var aabb = RotatedBoxAabb(p.Center, p.Size, shapeData.BoxProperties.Orientation);
-                        HashableShapeInputs.GetQuantizedTransformations(shapeData.BodyFromShape, aabb, out var transformations);
+                        HashableShapeInputs.GetQuantizedTransformations(shapeData.BodyFromShape, aabb, out var transformations, HashableShapeInputs.k_DefaultLinearPrecision);
                         bytes.Append(ref transformations);
                         break;
                     }
@@ -80,7 +80,7 @@ namespace Fixed.Physics.Authoring
                         var v1 = p.Vertex1;
                         var r = p.Radius;
                         var aabb = RotatedCylinderAabb(p.GetCenter(), p.GetHeight(), r, quaternion.LookRotationSafe(v0 - v1, math.up()));
-                        HashableShapeInputs.GetQuantizedTransformations(shapeData.BodyFromShape, aabb, out var transformations);
+                        HashableShapeInputs.GetQuantizedTransformations(shapeData.BodyFromShape, aabb, out var transformations, HashableShapeInputs.k_DefaultLinearPrecision);
                         bytes.Append(ref transformations);
                         break;
                     }
@@ -89,7 +89,7 @@ namespace Fixed.Physics.Authoring
                         var p = shapeData.CylinderProperties;
                         bytes.Append(ref p);
                         var aabb = RotatedCylinderAabb(p.Center, p.Height, p.Radius, shapeData.CylinderProperties.Orientation);
-                        HashableShapeInputs.GetQuantizedTransformations(shapeData.BodyFromShape, aabb, out var transformations);
+                        HashableShapeInputs.GetQuantizedTransformations(shapeData.BodyFromShape, aabb, out var transformations, HashableShapeInputs.k_DefaultLinearPrecision);
                         bytes.Append(ref transformations);
                         break;
                     }
@@ -97,10 +97,10 @@ namespace Fixed.Physics.Authoring
                     {
                         var v = shapeData.PlaneVertices;
                         bytes.Append(ref v);
-                        var planeCenter = math.lerp(v.c0, v.c2, 0.5f);
+                        var planeCenter = math.lerp(v.c0, v.c2, (sfloat)0.5f);
                         var planeSize = math.abs(v.c0 - v.c2);
                         var aabb = RotatedBoxAabb(planeCenter, planeSize, quaternion.LookRotationSafe(v.c1 - v.c2, math.cross(v.c1 - v.c0, v.c2 - v.c1)));
-                        HashableShapeInputs.GetQuantizedTransformations(shapeData.BodyFromShape, aabb, out var transformations);
+                        HashableShapeInputs.GetQuantizedTransformations(shapeData.BodyFromShape, aabb, out var transformations, HashableShapeInputs.k_DefaultLinearPrecision);
                         bytes.Append(ref transformations);
                         break;
                     }
@@ -109,7 +109,7 @@ namespace Fixed.Physics.Authoring
                         var p = shapeData.SphereProperties;
                         bytes.Append(ref p);
                         var aabb = new Aabb { Min = p.Center - new float3(p.Radius), Max = p.Center + new float3(p.Radius) };
-                        HashableShapeInputs.GetQuantizedTransformations(shapeData.BodyFromShape, aabb, out var transformations);
+                        HashableShapeInputs.GetQuantizedTransformations(shapeData.BodyFromShape, aabb, out var transformations, HashableShapeInputs.k_DefaultLinearPrecision);
                         bytes.Append(ref transformations);
                         break;
                     }

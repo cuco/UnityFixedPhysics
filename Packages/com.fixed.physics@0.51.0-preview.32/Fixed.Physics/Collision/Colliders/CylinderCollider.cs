@@ -67,8 +67,8 @@ namespace Fixed.Physics
 
         // Convex hull data, sized for the maximum allowed number of cylinder faces
         // Todo: would be nice to use the actual types here but C# only likes fixed arrays of builtin types..
-        private unsafe fixed byte m_Vertices[sizeof(sfloat) * 3 * 2 * CylinderGeometry.MaxSideCount];
-        private unsafe fixed byte m_FacePlanes[sizeof(sfloat) * 4 * (2 + CylinderGeometry.MaxSideCount)];
+        private unsafe fixed byte m_Vertices[sizeof(uint) * 3 * 2 * CylinderGeometry.MaxSideCount];
+        private unsafe fixed byte m_FacePlanes[sizeof(uint) * 4 * (2 + CylinderGeometry.MaxSideCount)];
         private unsafe fixed byte m_Faces[4 * (2 + CylinderGeometry.MaxSideCount)];
         private unsafe fixed byte m_FaceVertexIndices[sizeof(byte) * 6 * CylinderGeometry.MaxSideCount];
 

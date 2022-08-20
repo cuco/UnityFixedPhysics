@@ -124,11 +124,11 @@ namespace Fixed.Physics.Authoring
 
             public static void AppendSphere(SphereCollider* sphere, RigidTransform worldFromCollider, ref List<DisplayResult> results)
             {
-                sfloat r = sphere->Radius;
+                sfloat r = sphere->Radius * (sfloat)2.0f;
                 results.Add(new DisplayResult
                 {
                     Mesh = ReferenceSphere,
-                    Scale = new Vector4(r * 2.0f, r * 2.0f, r * 2.0f),
+                    Scale = new Vector4((float)r, (float)r, (float)r),
                     Position = math.transform(worldFromCollider, sphere->Center),
                     Orientation = worldFromCollider.rot,
                 });
@@ -136,27 +136,27 @@ namespace Fixed.Physics.Authoring
 
             public static void AppendCapsule(CapsuleCollider* capsule, RigidTransform worldFromCollider, ref List<DisplayResult> results)
             {
-                sfloat r = capsule->Radius;
+                sfloat r = capsule->Radius * (sfloat)2.0f;
                 results.Add(new DisplayResult
                 {
                     Mesh = ReferenceSphere,
-                    Scale = new Vector4(r * 2.0f, r * 2.0f, r * 2.0f),
+                    Scale = new Vector4((float)r, (float)r, (float)r),
                     Position = math.transform(worldFromCollider, capsule->Vertex0),
                     Orientation = worldFromCollider.rot
                 });
                 results.Add(new DisplayResult
                 {
                     Mesh = ReferenceSphere,
-                    Scale = new Vector4(r * 2.0f, r * 2.0f, r * 2.0f),
+                    Scale = new Vector4((float)r, (float)r, (float)r),
                     Position = math.transform(worldFromCollider, capsule->Vertex1),
                     Orientation = worldFromCollider.rot
                 });
                 results.Add(new DisplayResult
                 {
                     Mesh = ReferenceCylinder,
-                    Scale = new Vector4(r * 2.0f, math.length(capsule->Vertex1 - capsule->Vertex0) * 0.5f, r * 2.0f),
-                    Position = math.transform(worldFromCollider, (capsule->Vertex0 + capsule->Vertex1) * 0.5f),
-                    Orientation = math.mul(worldFromCollider.rot, Quaternion.FromToRotation(new float3(0, 1, 0), math.normalizesafe(capsule->Vertex1 - capsule->Vertex0)))
+                    Scale = new Vector4((float)r, (float)math.length(capsule->Vertex1 - capsule->Vertex0) * 0.5f, (float)r),
+                    Position = math.transform(worldFromCollider, (capsule->Vertex0 + capsule->Vertex1) * (sfloat)0.5f),
+                    Orientation = math.mul(worldFromCollider.rot, Quaternion.FromToRotation(new float3(sfloat.Zero, sfloat.One, sfloat.Zero), math.normalizesafe(capsule->Vertex1 - capsule->Vertex0)))
                 });
             }
 
@@ -253,12 +253,12 @@ namespace Fixed.Physics.Authoring
                         int i1 = i + 1;
                         int j0 = j;
                         int j1 = j + 1;
-                        float3 v0 = new float3(i0, terrain.Heights[i0 + terrain.Size.x * j0], j0) * terrain.Scale;
-                        float3 v1 = new float3(i1, terrain.Heights[i1 + terrain.Size.x * j0], j0) * terrain.Scale;
-                        float3 v2 = new float3(i0, terrain.Heights[i0 + terrain.Size.x * j1], j1) * terrain.Scale;
-                        float3 v3 = new float3(i1, terrain.Heights[i1 + terrain.Size.x * j1], j1) * terrain.Scale;
-                        float3 n0 = math.normalize(new float3(v0.y - v1.y, 1.0f, v0.y - v2.y));
-                        float3 n1 = math.normalize(new float3(v2.y - v3.y, 1.0f, v1.y - v3.y));
+                        float3 v0 = new float3((sfloat)i0, (sfloat)terrain.Heights[i0 + terrain.Size.x * j0], (sfloat)j0) * terrain.Scale;
+                        float3 v1 = new float3((sfloat)i1, (sfloat)terrain.Heights[i1 + terrain.Size.x * j0], (sfloat)j0) * terrain.Scale;
+                        float3 v2 = new float3((sfloat)i0, (sfloat)terrain.Heights[i0 + terrain.Size.x * j1], (sfloat)j1) * terrain.Scale;
+                        float3 v3 = new float3((sfloat)i1, (sfloat)terrain.Heights[i1 + terrain.Size.x * j1], (sfloat)j1) * terrain.Scale;
+                        float3 n0 = math.normalize(new float3(v0.y - v1.y, sfloat.One, v0.y - v2.y));
+                        float3 n1 = math.normalize(new float3(v2.y - v3.y, sfloat.One, v1.y - v3.y));
 
                         vertices.Add(v1);
                         vertices.Add(v0);

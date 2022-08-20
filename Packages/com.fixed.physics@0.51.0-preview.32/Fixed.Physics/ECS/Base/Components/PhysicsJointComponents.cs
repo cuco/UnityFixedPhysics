@@ -257,8 +257,8 @@ namespace Fixed.Physics
             m_Constraints = new FixedList128Bytes<Constraint>
             {
                 Length = 2,
-                    [0] = Constraint.BallAndSocket(Constraint.DefaultSpringFrequency, Constraint.DefaultSpringDamping),
-                    [1] = Constraint.FixedAngle(Constraint.DefaultSpringFrequency, Constraint.DefaultSpringDamping)
+                [0] = Constraint.BallAndSocket(Constraint.DefaultSpringFrequency, Constraint.DefaultSpringDamping),
+                [1] = Constraint.FixedAngle(Constraint.DefaultSpringFrequency, Constraint.DefaultSpringDamping)
             }
         };
 
@@ -276,8 +276,8 @@ namespace Fixed.Physics
             m_Constraints = new FixedList128Bytes<Constraint>
             {
                 Length = 2,
-                    [0] = Constraint.Hinge(0, Constraint.DefaultSpringFrequency, Constraint.DefaultSpringDamping),
-                    [1] = Constraint.BallAndSocket(Constraint.DefaultSpringFrequency, Constraint.DefaultSpringDamping)
+                [0] = Constraint.Hinge(0, Constraint.DefaultSpringFrequency, Constraint.DefaultSpringDamping),
+                [1] = Constraint.BallAndSocket(Constraint.DefaultSpringFrequency, Constraint.DefaultSpringDamping)
             }
         };
 
@@ -327,9 +327,9 @@ namespace Fixed.Physics
             m_Constraints = new FixedList128Bytes<Constraint>
             {
                 Length = 3,
-                    [k_LimitedHingeRangeIndex]     = Constraint.Twist(0, angularRange.Sorted(), Constraint.DefaultSpringFrequency, Constraint.DefaultSpringDamping),
-                    [k_LimitedHingeRangeIndex + 1] = Constraint.Hinge(0, Constraint.DefaultSpringFrequency, Constraint.DefaultSpringDamping),
-                    [k_LimitedHingeRangeIndex + 2] = Constraint.BallAndSocket(Constraint.DefaultSpringFrequency, Constraint.DefaultSpringDamping)
+                [k_LimitedHingeRangeIndex]     = Constraint.Twist(0, angularRange.Sorted(), Constraint.DefaultSpringFrequency, Constraint.DefaultSpringDamping),
+                [k_LimitedHingeRangeIndex + 1] = Constraint.Hinge(0, Constraint.DefaultSpringFrequency, Constraint.DefaultSpringDamping),
+                [k_LimitedHingeRangeIndex + 2] = Constraint.BallAndSocket(Constraint.DefaultSpringFrequency, Constraint.DefaultSpringDamping)
             }
         };
 
@@ -352,9 +352,9 @@ namespace Fixed.Physics
             m_Constraints = new FixedList128Bytes<Constraint>
             {
                 Length = 3,
-                    [0]                                  = Constraint.FixedAngle(Constraint.DefaultSpringFrequency, Constraint.DefaultSpringDamping),
-                    [k_PrismaticDistanceOnAxisIndex]     = Constraint.Planar(0, distanceOnAxis.Sorted(), Constraint.DefaultSpringFrequency, Constraint.DefaultSpringDamping),
-                    [k_PrismaticDistanceOnAxisIndex + 1] = Constraint.Cylindrical(0, float2.zero, Constraint.DefaultSpringFrequency, Constraint.DefaultSpringDamping)
+                [0]                                  = Constraint.FixedAngle(Constraint.DefaultSpringFrequency, Constraint.DefaultSpringDamping),
+                [k_PrismaticDistanceOnAxisIndex]     = Constraint.Planar(0, distanceOnAxis.Sorted(), Constraint.DefaultSpringFrequency, Constraint.DefaultSpringDamping),
+                [k_PrismaticDistanceOnAxisIndex + 1] = Constraint.Cylindrical(0, float2.zero, Constraint.DefaultSpringFrequency, Constraint.DefaultSpringDamping)
             }
         };
 

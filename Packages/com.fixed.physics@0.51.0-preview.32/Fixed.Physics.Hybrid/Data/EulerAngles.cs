@@ -22,6 +22,6 @@ namespace Fixed.Physics.Authoring
 
         public override bool Equals(object obj) => obj is EulerAngles other && Equals(other);
 
-        public override int GetHashCode() => unchecked((int)math.hash(new float4(Value, (sfloat)RotationOrder)));
+        public override int GetHashCode() => unchecked((int)math.hash(new float4(Value, (sfloat)(int)RotationOrder)));
     }
 }

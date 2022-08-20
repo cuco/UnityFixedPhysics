@@ -273,7 +273,7 @@ namespace Fixed.Physics
         public static void CalculateSpringFrequencyAndDamping(sfloat constraintTau, sfloat constraintDamping, sfloat timestep, int iterations, out sfloat springFrequency, out sfloat springDamping)
         {
             int n = iterations;
-            sfloat sn = (sfloat) iterations;
+            sfloat sn = (sfloat)iterations;
             sfloat h = timestep;
             sfloat hh = h * h;
             sfloat a = sfloat.One - constraintDamping;

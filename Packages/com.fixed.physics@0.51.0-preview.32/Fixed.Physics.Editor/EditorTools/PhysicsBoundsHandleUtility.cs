@@ -8,9 +8,9 @@ namespace Fixed.Physics.Editor
 {
     static class PhysicsBoundsHandleUtility
     {
-        internal const float kBackfaceAlphaMultiplier = 0.2f;
-        const float kDegreeEpsilon = 0.001f;
-        public const float kDistanceEpsilon = 0.0001f;
+        internal static readonly sfloat kBackfaceAlphaMultiplier = (sfloat)0.2f;
+        static readonly sfloat kDegreeEpsilon = (sfloat)0.001f;
+        public static readonly sfloat kDistanceEpsilon = (sfloat)0.0001f;
 
         public static bool IsBackfaced(float3 localPos, float3 localTangent, float3 localBinormal, Axes axes, bool isCameraInsideBox)
         {
@@ -31,12 +31,12 @@ namespace Fixed.Physics.Editor
             {
                 float3 cameraPos = currentCamera.transform.position;
                 float3 worldPos = Handles.matrix.MultiplyPoint(localPos);
-                cosV = math.dot(math.normalize(cameraPos - worldPos), worldDir);
+                cosV = (float)math.dot(math.normalize(cameraPos - worldPos), worldDir);
             }
             else
             {
                 float3 cameraForward = currentCamera == null ? Vector3.forward : currentCamera.transform.forward;
-                cosV = math.dot(-cameraForward, worldDir);
+                cosV = (float)math.dot(-cameraForward, worldDir);
             }
 
             return cosV < -0.0001f;
@@ -44,7 +44,7 @@ namespace Fixed.Physics.Editor
 
         public static Color GetStateColor(bool isBackfaced)
         {
-            float alphaMultiplier = isBackfaced ? kBackfaceAlphaMultiplier : 1f;
+            float alphaMultiplier = isBackfaced ? (float)kBackfaceAlphaMultiplier : 1f;
             return Handles.color * new Color(1f, 1f, 1f, alphaMultiplier);
         }
 
@@ -68,11 +68,11 @@ namespace Fixed.Physics.Editor
             int b = k_NextAxis[a];
             int c = k_NextAxis[b];
 
-            cornerRadius = math.abs(cornerRadius);
-            size *= 0.5f;
+            cornerRadius = Mathf.Abs(cornerRadius);
+            size *= (sfloat)0.5f;
             var normal = new float3 { [a] = size[a] };
             var ctr = center + normal;
-            size -= new float3(cornerRadius);
+            size -= new float3((sfloat)cornerRadius);
 
             // check if our face is a point
             if (math.abs(size[c]) < kDistanceEpsilon &&
@@ -114,7 +114,7 @@ namespace Fixed.Physics.Editor
             }
 
             float3 tangent, biNormal;
-            if (size[c] > 0)
+            if (size[c] > sfloat.Zero)
             {
                 tangent = math.cross(normal, math.normalizesafe(new float3 { [c] = size[c] }));
                 biNormal = math.cross(normal, tangent);
@@ -151,12 +151,12 @@ namespace Fixed.Physics.Editor
 
         public static void CalculateCornerHorizon(float3 cornerPosition, quaternion orientation, float3 cameraCenter, float3 cameraForward, bool cameraOrtho, float radius, out Corner corner)
         {
-            var axisx = new float3(1f, 0f, 0f);
-            var axisy = new float3(0f, 1f, 0f);
-            var axisz = new float3(0f, 0f, 1f);
+            var axisx = new float3(sfloat.One, sfloat.Zero, sfloat.Zero);
+            var axisy = new float3(sfloat.Zero, sfloat.One, sfloat.Zero);
+            var axisz = new float3(sfloat.Zero, sfloat.Zero, sfloat.One);
 
             // a vector pointing away from the center of the corner
-            var cornerNormal = math.normalize(math.mul(orientation, new float3(1f, 1f, 1f)));
+            var cornerNormal = math.normalize(math.mul(orientation, new float3(sfloat.One, sfloat.One, sfloat.One)));
 
             var axes = math.mul(new float3x3(orientation), new float3x3(axisx, axisy, axisz));
             CalculateCornerHorizon(cornerPosition,
@@ -169,7 +169,7 @@ namespace Fixed.Physics.Editor
         public static void CalculateCornerHorizon(float3 cornerPosition, float3x3 axes, float3 cornerNormal, float3 cameraCenter, float3 cameraForward, bool cameraOrtho, float radius, out Corner corner)
         {
             var cameraToCenter          = cornerPosition - cameraCenter; // vector from camera to center
-            var sqrRadius               = radius * radius;
+            var sqrRadius               = (sfloat)(radius * radius);
             var sqrDistCameraToCenter   = math.lengthsq(cameraToCenter);
             var sqrOffset               = (sqrRadius * sqrRadius / sqrDistCameraToCenter);  // squared distance from actual center to drawn disc center
 
@@ -200,7 +200,7 @@ namespace Fixed.Physics.Editor
                 position        = cornerPosition,
                 radius          = radius,
                 cameraForward   = cameraForward,
-                isBackFaced     = math.dot(cornerNormal, cameraForward) > 0,
+                isBackFaced     = math.dot(cornerNormal, cameraForward) > sfloat.Zero,
                 splitCount      = 0
             };
 
@@ -216,13 +216,13 @@ namespace Fixed.Physics.Editor
                     var axis3 = axes[(i + 2) % 3] * sign;
 
                     var Q = Math.Angle(cameraForward, axis1);
-                    var f = math.tan(math.radians(90 - math.min(Q, 180 - Q)));
+                    var f = math.tan(math.radians((sfloat)90f - math.min(Q, (sfloat)180.0f - Q)));
                     var g = sqrOffset + f * f * sqrOffset;
                     if (g >= sqrRadius)
                         continue;
 
-                    var e                       = math.degrees(math.asin(math.sqrt(g) / radius));
-                    var vectorToPointOnHorizon  = Quaternion.AngleAxis(e, axis1) * math.normalize(math.cross(axis1, cameraForward));
+                    var e                       = math.degrees(math.asin(math.sqrt(g) / (sfloat)radius));
+                    var vectorToPointOnHorizon  = Quaternion.AngleAxis((float)e, axis1) * math.normalize(math.cross(axis1, cameraForward));
 
                     vectorToPointOnHorizon = math.normalize(Math.ProjectOnPlane(vectorToPointOnHorizon, axis1));
 
@@ -230,7 +230,7 @@ namespace Fixed.Physics.Editor
                     var angle1 = Math.SignedAngle(axis2, intersectionDirection, axis1);
                     var angle2 = Math.SignedAngle(axis3, intersectionDirection, axis1);
 
-                    if (angle1 <= 0 || angle2 >= 0)
+                    if (angle1 <= sfloat.Zero || angle2 >= sfloat.Zero)
                         continue;
 
                     var point = corner.position + (float3)(intersectionDirection * radius);
@@ -267,19 +267,19 @@ namespace Fixed.Physics.Editor
             if (corner.splitCount <= 1)
             {
                 AdjustMidpointHandleColor(corner.isBackFaced);
-                if (showAxis[0]) Handles.DrawWireArc(origin, normals[0], axes[1], corner.angle[1], radius);
-                if (showAxis[1]) Handles.DrawWireArc(origin, normals[1], axes[2], corner.angle[2], radius);
-                if (showAxis[2]) Handles.DrawWireArc(origin, normals[2], axes[0], corner.angle[0], radius);
+                if (showAxis[0]) Handles.DrawWireArc(origin, normals[0], axes[1], (float)corner.angle[1], radius);
+                if (showAxis[1]) Handles.DrawWireArc(origin, normals[1], axes[2], (float)corner.angle[2], radius);
+                if (showAxis[2]) Handles.DrawWireArc(origin, normals[2], axes[0], (float)corner.angle[0], radius);
             }
             else
             {
                 var angleLength = Math.SignedAngle(Math.ProjectOnPlane(intersections[0], corner.cameraForward),
                     Math.ProjectOnPlane(intersections[1], corner.cameraForward), corner.cameraForward);
-                bool reversePolarity = angleLength < 0;
+                bool reversePolarity = angleLength < sfloat.Zero;
                 if (reversePolarity)
-                    Handles.DrawWireArc(origin, corner.cameraForward, corner.points[1] - origin, -angleLength, radius);
+                    Handles.DrawWireArc(origin, corner.cameraForward, corner.points[1] - origin, -(float)angleLength, radius);
                 else
-                    Handles.DrawWireArc(origin, corner.cameraForward, corner.points[0] - origin, angleLength, radius);
+                    Handles.DrawWireArc(origin, corner.cameraForward, corner.points[0] - origin, (float)angleLength, radius);
 
 
                 var backfacedColor = GetStateColor(true);
@@ -303,8 +303,8 @@ namespace Fixed.Physics.Editor
                         if (showAxis[C])
                         {
                             angleLength = Math.Angle(intersections[0], axes[A]);
-                            Handles.color = color1; Handles.DrawWireArc(origin, normals[C], intersections[0],                 -angleLength, radius);
-                            Handles.color = color2; Handles.DrawWireArc(origin, normals[C], intersections[0], corner.angle[A] - angleLength, radius);
+                            Handles.color = color1; Handles.DrawWireArc(origin, normals[C], intersections[0],                 -(float)angleLength, radius);
+                            Handles.color = color2; Handles.DrawWireArc(origin, normals[C], intersections[0], (float)corner.angle[A] - (float)angleLength, radius);
                         }
                         axesBackfaced[A] = true;
                     }
@@ -314,8 +314,8 @@ namespace Fixed.Physics.Editor
                         if (showAxis[C])
                         {
                             angleLength = Math.Angle(intersections[1], axes[A]);
-                            Handles.color = color2; Handles.DrawWireArc(origin, normals[C], intersections[1],                 -angleLength, radius);
-                            Handles.color = color1; Handles.DrawWireArc(origin, normals[C], intersections[1], corner.angle[A] - angleLength, radius);
+                            Handles.color = color2; Handles.DrawWireArc(origin, normals[C], intersections[1],                 -(float)angleLength, radius);
+                            Handles.color = color1; Handles.DrawWireArc(origin, normals[C], intersections[1], (float)corner.angle[A] - (float)angleLength, radius);
                         }
                         axesBackfaced[B] = true;
                     }
@@ -333,7 +333,7 @@ namespace Fixed.Physics.Editor
                     if (corner.splitAxis[0][C] == corner.splitAxis[1][C])
                     {
                         Handles.color = (axesBackfaced[B] && axesBackfaced[A]) ? color1 : color2;
-                        Handles.DrawWireArc(origin, normals[C], axes[A], corner.angle[A], radius);
+                        Handles.DrawWireArc(origin, normals[C], axes[A], (float)corner.angle[A], radius);
                     }
                 }
             }

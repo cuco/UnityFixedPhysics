@@ -93,7 +93,7 @@ namespace Fixed.Physics.Authoring
                 }
 
                 var averageContactPosition = details.AverageContactPointPosition;
-                OutputStreamContext->Point(averageContactPosition, 0.01f, color);
+                OutputStreamContext->Point(averageContactPosition, (sfloat)0.01f, color);
                 OutputStreamContext->Arrow(averageContactPosition, collisionEvent.Normal * details.EstimatedImpulse, color);
             }
         }

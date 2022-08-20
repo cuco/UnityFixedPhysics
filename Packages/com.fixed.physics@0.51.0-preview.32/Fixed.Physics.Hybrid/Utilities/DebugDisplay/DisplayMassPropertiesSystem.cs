@@ -63,7 +63,7 @@ namespace Fixed.Physics.Authoring
                     quaternion o = MotionDatas[m].WorldFromMotion.rot;
 
                     float3 invInertiaLocal = MotionVelocities[m].InverseInertia;
-                    float3 il = new float3(1.0f / invInertiaLocal.x, 1.0f / invInertiaLocal.y, 1.0f / invInertiaLocal.z);
+                    float3 il = new float3(sfloat.One / invInertiaLocal.x, sfloat.One / invInertiaLocal.y, sfloat.One / invInertiaLocal.z);
                     sfloat invMass = MotionVelocities[m].InverseMass;
 
                     // Reverse the inertia tensor computation to build a box which has the inerta tensor 'il'
@@ -79,9 +79,10 @@ namespace Fixed.Physics.Authoring
                     // 2ww = Kx - Ky + Kz
                     // => w = ((0.5)(Kx - Ky + Kz))^-1
                     // Then, substitution gives h and d.
+                    var temp = (sfloat)12;
 
-                    float3 k = new float3(il.x * 12 * invMass, il.y * 12 * invMass, il.z * 12 * invMass);
-                    sfloat w = math.sqrt((k.x - k.y + k.z) * 0.5f);
+                    float3 k = new float3(il.x * temp * invMass, il.y * temp * invMass, il.z * temp * invMass);
+                    sfloat w = math.sqrt((k.x - k.y + k.z) * (sfloat)0.5f);
                     sfloat h = math.sqrt(k.z - w * w);
                     sfloat d = math.sqrt(k.y - h * h);
 

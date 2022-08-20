@@ -66,7 +66,7 @@ namespace Fixed.Physics.Editor
                 EditorGUI.BeginChangeCheck();
                 EditorGUI.PropertyField(position, property, label);
                 if (EditorGUI.EndChangeCheck())
-                    property.floatValue = math.clamp(property.floatValue, textFieldMin, textFieldMax);
+                    property.floatValue = Mathf.Clamp(property.floatValue, textFieldMin, textFieldMax);
             }
             else
             {

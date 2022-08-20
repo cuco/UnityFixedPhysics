@@ -26,7 +26,7 @@ namespace Fixed.Physics.Editor
             if (radius > 0)
             {
                 var frontfacedColor = Handles.color;
-                var backfacedColor  = Handles.color * new Color(1f, 1f, 1f, PhysicsBoundsHandleUtility.kBackfaceAlphaMultiplier);
+                var backfacedColor  = Handles.color * new Color(1f, 1f, 1f, (float)PhysicsBoundsHandleUtility.kBackfaceAlphaMultiplier);
                 var discVisible = new bool[]
                 {
                     y && z,
@@ -65,7 +65,7 @@ namespace Fixed.Physics.Editor
                             }
                             else
                             {
-                                var horizonRadius = math.sqrt(sqrRadius - sqrOffset);
+                                var horizonRadius = Mathf.Sqrt(sqrRadius - sqrOffset);
                                 var horizonCenter = center - sqrRadius * cameraToCenter / sqrDistCameraToCenter;
                                 Handles.DrawWireDisc(horizonCenter, cameraToCenter, horizonRadius);
                             }
@@ -80,13 +80,13 @@ namespace Fixed.Physics.Editor
                             var discOrientation = discOrientations[i];
 
                             var angleBetweenDiscAndNormal = math.acos(math.dot(discOrientation, planeNormal));
-                            angleBetweenDiscAndNormal = (math.PI * 0.5f) - math.min(angleBetweenDiscAndNormal, math.PI - angleBetweenDiscAndNormal);
+                            angleBetweenDiscAndNormal = (math.PI * (sfloat)0.5f) - math.min(angleBetweenDiscAndNormal, math.PI - angleBetweenDiscAndNormal);
 
-                            float f = math.tan(angleBetweenDiscAndNormal);
-                            float g = math.sqrt(sqrOffset + f * f * sqrOffset) / radius;
+                            float f = (float)math.tan(angleBetweenDiscAndNormal);
+                            float g = (float)math.sqrt(sqrOffset + f * f * sqrOffset) / radius;
                             if (g < 1)
                             {
-                                var angleToHorizon          = math.degrees(math.asin(g));
+                                var angleToHorizon          = (float)math.degrees(math.asin((sfloat)g));
                                 var discTangent             = math.cross(discOrientation, planeNormal);
                                 var vectorToPointOnHorizon  = Quaternion.AngleAxis(angleToHorizon, discOrientation) * discTangent;
                                 var horizonArcLength        = (90 - angleToHorizon) * 2.0f;

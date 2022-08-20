@@ -40,7 +40,7 @@ namespace Fixed.DebugDisplay
         {
             m_Instance[index] = new Instance
             {
-                worldPosition = new float3((sfloat) (cellXY.x * Cell.kPixelsWide), (sfloat) (cellXY.y * Cell.kPixelsTall), sfloat.Zero),
+                worldPosition = new float3((sfloat)(cellXY.x * Cell.kPixelsWide), (sfloat)(cellXY.y * Cell.kPixelsTall), sfloat.Zero),
                 firstCell = new float2(cellXY),
                 cellSize = new float2(cellWH),
                 useWorldMatrix = 0

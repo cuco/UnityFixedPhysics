@@ -36,7 +36,7 @@ namespace Fixed.Physics.Authoring
     [Serializable]
     public struct PhysicsMaterialCoefficient
     {
-        [SoftRange(0f, 1f, TextFieldMax = sfloat.MaxValue)]
+        [SoftRange(0f, 1f, TextFieldMax = float.MaxValue)]
         public sfloat Value;
         public Material.CombinePolicy CombineMode;
     }
@@ -70,7 +70,7 @@ namespace Fixed.Physics.Authoring
     class OverridableMaterialCoefficient : OverridableValue<PhysicsMaterialCoefficient>
     {
         protected override void OnValidate(ref PhysicsMaterialCoefficient value) =>
-            value.Value = math.max(0f, value.Value);
+            value.Value = math.max(sfloat.Zero, value.Value);
     }
 
     [Serializable]
@@ -122,7 +122,7 @@ namespace Fixed.Physics.Authoring
         [SerializeField]
         OverridableMaterialCoefficient m_Friction = new OverridableMaterialCoefficient
         {
-            Value = new PhysicsMaterialCoefficient { Value = 0.5f, CombineMode = Material.CombinePolicy.GeometricMean },
+            Value = new PhysicsMaterialCoefficient { Value = (sfloat)0.5f, CombineMode = Material.CombinePolicy.GeometricMean },
             Override = false
         };
 
@@ -135,7 +135,7 @@ namespace Fixed.Physics.Authoring
         [SerializeField]
         OverridableMaterialCoefficient m_Restitution = new OverridableMaterialCoefficient
         {
-            Value = new PhysicsMaterialCoefficient { Value = 0f, CombineMode = Material.CombinePolicy.Maximum },
+            Value = new PhysicsMaterialCoefficient { Value = sfloat.Zero, CombineMode = Material.CombinePolicy.Maximum },
             Override = false
         };
 

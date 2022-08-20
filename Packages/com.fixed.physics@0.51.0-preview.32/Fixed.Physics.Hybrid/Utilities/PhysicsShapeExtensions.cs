@@ -43,7 +43,7 @@ namespace Fixed.Physics.Authoring
         }
 
         //TODO
-        static sfloat k_HashFloatTolerance = (sfloat)0.01f;
+        static readonly sfloat k_HashFloatTolerance = (sfloat)0.01f;
 
         // used to hash convex hull generation properties in a way that is robust to imprecision
         internal static uint GetStableHash(
@@ -115,7 +115,8 @@ namespace Fixed.Physics.Authoring
             var rs1 = m.c1.xyz / math.max(math.cmax(math.abs(m.c1.xyz)), sfloat.Epsilon);
             var rs2 = m.c2.xyz / math.max(math.cmax(math.abs(m.c2.xyz)), sfloat.Epsilon);
             // verify all axes are orthogonal
-            const sfloat k_Zero = 1e-6f;
+            //TODO
+            sfloat k_Zero = (sfloat)1e-6f;
             return
                 math.abs(math.dot(rs0, rs1)) > k_Zero ||
                 math.abs(math.dot(rs0, rs2)) > k_Zero ||
@@ -271,7 +272,7 @@ namespace Fixed.Physics.Authoring
 
                 // recompute third axes from first two
                 var n2 = math.normalizesafe(
-                    new float4(math.cross(localToBake[basisPriority[0]].xyz, localToBake[basisPriority[1]].xyz), 0f)
+                    new float4(math.cross(localToBake[basisPriority[0]].xyz, localToBake[basisPriority[1]].xyz), sfloat.Zero)
                 );
                 localToBake[basisPriority[2]] = n2 * math.dot(localToBake[basisPriority[2]], n2);
             }
@@ -380,15 +381,15 @@ namespace Fixed.Physics.Authoring
                     }
 
                     rotationMatrix = new float4x4(
-                        new float4 { [basisPriority[2]] = 1 },
-                        new float4 { [basisPriority[1]] = 1 },
-                        new float4 { [basisPriority[0]] = 1 },
-                        new float4 { [3] = 1 }
+                        new float4 { [basisPriority[2]] = sfloat.One },
+                        new float4 { [basisPriority[1]] = sfloat.One },
+                        new float4 { [basisPriority[0]] = sfloat.One },
+                        new float4 { [3] = sfloat.One }
                     );
                 }
 
                 bakeToShape =
-                    GetPrimitiveBakeToShapeMatrix(localToWorld, shapeToWorld, ref center, ref orientation, 1f, basisPriority);
+                    GetPrimitiveBakeToShapeMatrix(localToWorld, shapeToWorld, ref center, ref orientation, sfloat.One, basisPriority);
 
                 bakeToShape = math.mul(bakeToShape, rotationMatrix);
                 return bakeToShape;
@@ -412,13 +413,13 @@ namespace Fixed.Physics.Authoring
                     Center = center,
                     Orientation = orientation,
                     Size = size,
-                    BevelRadius = math.clamp(bevelRadius, 0f, 0.5f * math.cmin(size))
+                    BevelRadius = math.clamp(bevelRadius, sfloat.Zero, (sfloat)0.5f * math.cmin(size))
                 };
             }
         }
 
         // avoids drift in axes we're not actually changing
-        const sfloat kMinimumChange = HashableShapeInputs.k_DefaultLinearPrecision;
+        static readonly sfloat kMinimumChange = HashableShapeInputs.k_DefaultLinearPrecision;
 
         internal static void SetBakedBoxSize(this PhysicsShapeAuthoring shape, float3 size, sfloat bevelRadius)
         {
@@ -451,10 +452,10 @@ namespace Fixed.Physics.Authoring
         }
 
         internal static float3 GetCenter(this CapsuleGeometry geometry) =>
-            math.lerp(geometry.Vertex0, geometry.Vertex1, 0.5f);
+            math.lerp(geometry.Vertex0, geometry.Vertex1, (sfloat)0.5f);
 
         internal static sfloat GetHeight(this CapsuleGeometry geometry) =>
-            2f * geometry.Radius + math.length(geometry.Vertex1 - geometry.Vertex0);
+            (sfloat)2f * geometry.Radius + math.length(geometry.Vertex1 - geometry.Vertex0);
 
         internal static CapsuleGeometryAuthoring GetBakedCapsuleProperties(this PhysicsShapeAuthoring shape)
         {
@@ -509,7 +510,7 @@ namespace Fixed.Physics.Authoring
                     }
                     MakeZAxisPrimaryBasis(ref basisPriority);
                 }
-                return GetPrimitiveBakeToShapeMatrix(localToWorld, shapeToWorld, ref center, ref orientation, 1f, basisPriority);
+                return GetPrimitiveBakeToShapeMatrix(localToWorld, shapeToWorld, ref center, ref orientation, sfloat.One, basisPriority);
             }
 
             public void Execute()
@@ -523,7 +524,7 @@ namespace Fixed.Physics.Authoring
                 var scale = bakeToShape.DecomposeScale();
 
                 radius *= math.cmax(scale.xy);
-                height = math.max(0, height * scale.z);
+                height = math.max(sfloat.Zero, height * scale.z);
 
                 Capsule[0] = new CapsuleGeometryAuthoring
                 {
@@ -608,7 +609,7 @@ namespace Fixed.Physics.Authoring
                     }
                     MakeZAxisPrimaryBasis(ref basisPriority);
                 }
-                return GetPrimitiveBakeToShapeMatrix(localToWorld, shapeToWorld, ref center, ref orientation, 1f, basisPriority);
+                return GetPrimitiveBakeToShapeMatrix(localToWorld, shapeToWorld, ref center, ref orientation, sfloat.One, basisPriority);
             }
 
             public void Execute()
@@ -630,7 +631,7 @@ namespace Fixed.Physics.Authoring
                     Orientation = orientation,
                     Height = height,
                     Radius = radius,
-                    BevelRadius = math.min(bevelRadius, math.min(height * 0.5f, radius)),
+                    BevelRadius = math.min(bevelRadius, math.min(height * (sfloat)0.5f, radius)),
                     SideCount = Cylinder[0].SideCount
                 };
             }
@@ -649,7 +650,7 @@ namespace Fixed.Physics.Authoring
             if (math.abs(cylinder.BevelRadius - bevelRadius) > kMinimumChange) cylinder.BevelRadius = bevelRadius;
 
 
-            var newHeight = math.max(0, height / scale.z);
+            var newHeight = math.max(sfloat.Zero, height / scale.z);
             if (math.abs(cylinder.Height - newHeight) > kMinimumChange) cylinder.Height = newHeight;
             shape.SetCylinder(cylinder, orientation);
         }
@@ -695,9 +696,9 @@ namespace Fixed.Physics.Authoring
                 var radius = Sphere[0].Radius;
                 var orientation = Orientation[0];
 
-                var basisToWorld = GetBasisToWorldMatrix(localToWorld, center, orientation, 1f);
+                var basisToWorld = GetBasisToWorldMatrix(localToWorld, center, orientation, sfloat.One);
                 var basisPriority = basisToWorld.HasShear() ? GetBasisAxisPriority(basisToWorld) : k_DefaultAxisPriority;
-                var bakeToShape = GetPrimitiveBakeToShapeMatrix(localToWorld, shapeToWorld, ref center, ref orientation, 1f, basisPriority);
+                var bakeToShape = GetPrimitiveBakeToShapeMatrix(localToWorld, shapeToWorld, ref center, ref orientation, sfloat.One, basisPriority);
 
                 radius *= math.cmax(bakeToShape.DecomposeScale());
 
@@ -716,9 +717,9 @@ namespace Fixed.Physics.Authoring
             var center = sphere.Center;
             radius = math.abs(radius);
 
-            var basisToWorld    = GetBasisToWorldMatrix(shape.transform.localToWorldMatrix, center, eulerAngles, 1f);
+            var basisToWorld    = GetBasisToWorldMatrix(shape.transform.localToWorldMatrix, center, eulerAngles, sfloat.One);
             var basisPriority   = basisToWorld.HasShear() ? GetBasisAxisPriority(basisToWorld) : k_DefaultAxisPriority;
-            var bakeToShape     = GetPrimitiveBakeToShapeMatrix(shape.transform.localToWorldMatrix, shape.GetShapeToWorldMatrix(), ref center, ref eulerAngles, 1f, basisPriority);
+            var bakeToShape     = GetPrimitiveBakeToShapeMatrix(shape.transform.localToWorldMatrix, shape.GetShapeToWorldMatrix(), ref center, ref eulerAngles, sfloat.One, basisPriority);
 
             var scale = math.cmax(bakeToShape.DecomposeScale());
 
@@ -732,12 +733,12 @@ namespace Fixed.Physics.Authoring
             out float3 vertex0, out float3 vertex1, out float3 vertex2, out float3 vertex3
         )
         {
-            var sizeYUp = math.float3(size.x, 0, size.y);
+            var sizeYUp = math.float3(size.x, sfloat.Zero, size.y);
 
-            vertex0 = center + math.mul(orientation, sizeYUp * math.float3(-0.5f, 0,  0.5f));
-            vertex1 = center + math.mul(orientation, sizeYUp * math.float3(0.5f, 0,  0.5f));
-            vertex2 = center + math.mul(orientation, sizeYUp * math.float3(0.5f, 0, -0.5f));
-            vertex3 = center + math.mul(orientation, sizeYUp * math.float3(-0.5f, 0, -0.5f));
+            vertex0 = center + math.mul(orientation, sizeYUp * math.float3(-(sfloat)0.5f, sfloat.Zero,  (sfloat)0.5f));
+            vertex1 = center + math.mul(orientation, sizeYUp * math.float3((sfloat)0.5f, sfloat.Zero,  (sfloat)0.5f));
+            vertex2 = center + math.mul(orientation, sizeYUp * math.float3((sfloat)0.5f, sfloat.Zero, -(sfloat)0.5f));
+            vertex3 = center + math.mul(orientation, sizeYUp * math.float3(-(sfloat)0.5f, sfloat.Zero, -(sfloat)0.5f));
         }
 
         internal static void GetBakedPlaneProperties(
@@ -791,10 +792,10 @@ namespace Fixed.Physics.Authoring
                 var v = Vertices[0];
                 GetPlanePoints(center, size, orientation, out v.c0, out v.c1, out v.c2, out v.c3);
                 var localToShape = math.mul(math.inverse(shapeToWorld), localToWorld);
-                v.c0 = math.mul(localToShape, new float4(v.c0, 1f)).xyz;
-                v.c1 = math.mul(localToShape, new float4(v.c1, 1f)).xyz;
-                v.c2 = math.mul(localToShape, new float4(v.c2, 1f)).xyz;
-                v.c3 = math.mul(localToShape, new float4(v.c3, 1f)).xyz;
+                v.c0 = math.mul(localToShape, new float4(v.c0, sfloat.One)).xyz;
+                v.c1 = math.mul(localToShape, new float4(v.c1, sfloat.One)).xyz;
+                v.c2 = math.mul(localToShape, new float4(v.c2, sfloat.One)).xyz;
+                v.c3 = math.mul(localToShape, new float4(v.c3, sfloat.One)).xyz;
                 Vertices[0] = v;
             }
         }
@@ -870,7 +871,7 @@ namespace Fixed.Physics.Authoring
             {
                 Result[0] = HashableShapeInputs.GetHash128(
                     ForceUniqueIdentifier, GenerationParameters, Material, CollisionFilter, BakeFromShape,
-                    Inputs, AllSkinIndices, AllBlendShapeWeights
+                    Inputs, AllSkinIndices, AllBlendShapeWeights, kMinimumChange
                 );
             }
         }

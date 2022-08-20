@@ -35,9 +35,9 @@ namespace Fixed.Physics.Authoring
             {
                 var lines = new Fixed.DebugDisplay.Lines(3);
 
-                lines.Draw(x - new float3(size, 0, 0), x + new float3(size, 0, 0), color);
-                lines.Draw(x - new float3(0, size, 0), x + new float3(0, size, 0), color);
-                lines.Draw(x - new float3(0, 0, size), x + new float3(0, 0, size), color);
+                lines.Draw(x - new float3(size, sfloat.Zero, sfloat.Zero), x + new float3(size, sfloat.Zero, sfloat.Zero), color);
+                lines.Draw(x - new float3(sfloat.Zero, size, sfloat.Zero), x + new float3(sfloat.Zero, size, sfloat.Zero), color);
+                lines.Draw(x - new float3(sfloat.Zero, sfloat.Zero, size), x + new float3(sfloat.Zero, sfloat.Zero, size), color);
             }
 
             internal void Line(float3 x0, float3 x1, Fixed.DebugDisplay.ColorIndex color)
@@ -163,9 +163,9 @@ namespace Fixed.Physics.Authoring
             {
 #if UNITY_EDITOR
                 Handles.color = Color;
-                Handles.DrawLine(X - new float3(Size, 0, 0), X + new float3(Size, 0, 0));
-                Handles.DrawLine(X - new float3(0, Size, 0), X + new float3(0, Size, 0));
-                Handles.DrawLine(X - new float3(0, 0, Size), X + new float3(0, 0, Size));
+                Handles.DrawLine(X - new float3(Size, sfloat.Zero, sfloat.Zero), X + new float3(Size, sfloat.Zero, sfloat.Zero));
+                Handles.DrawLine(X - new float3(sfloat.Zero, Size, sfloat.Zero), X + new float3(sfloat.Zero, Size, sfloat.Zero));
+                Handles.DrawLine(X - new float3(sfloat.Zero, sfloat.Zero, Size), X + new float3(sfloat.Zero, sfloat.Zero, Size));
 #endif
             }
         }
@@ -197,7 +197,9 @@ namespace Fixed.Physics.Authoring
                     sfloat length = Math.NormalizeWithLength(v, out dir);
                     float3 perp, perp2;
                     Math.CalculatePerpendicularNormalized(dir, out perp, out perp2);
-                    float3 scale = length * 0.2f;
+                    //TODO
+                    //float3 scale = length * 0.2f;
+                    float3 scale = length / (sfloat)5f;
 
                     Handles.DrawLine(X1, X1 + (perp - dir) * scale);
                     Handles.DrawLine(X1, X1 - (perp + dir) * scale);
@@ -220,7 +222,9 @@ namespace Fixed.Physics.Authoring
                     sfloat length = Math.NormalizeWithLength(v, out dir);
                     float3 perp, perp2;
                     Math.CalculatePerpendicularNormalized(dir, out perp, out perp2);
-                    float3 scale = length * 0.2f;
+                    //TODO
+                    //float3 scale = length * 0.2f;
+                    float3 scale = length / (sfloat)5f;
 
                     Handles.DrawLine(X1, X1 + (perp - dir) * scale);
                     Handles.DrawLine(X1, X1 - (perp + dir) * scale);
@@ -249,10 +253,12 @@ namespace Fixed.Physics.Authoring
                     sfloat length = Math.NormalizeWithLength(v, out dir);
                     float3 perp, perp2;
                     Math.CalculatePerpendicularNormalized(dir, out perp, out perp2);
-                    float3 scale = length * 0.2f;
+                    //TODO
+                    //float3 scale = length * 0.2f;
+                    float3 scale = length / (sfloat)5f;
 
                     const int res = 16;
-                    quaternion q = quaternion.AxisAngle(dir, 2.0f * (sfloat)math.PI / res);
+                    quaternion q = quaternion.AxisAngle(dir, (sfloat)2.0f * (sfloat)math.PI / (sfloat)res);
                     float3 arm = perp * length;
                     for (int i = 0; i < res; i++)
                     {
@@ -279,7 +285,7 @@ namespace Fixed.Physics.Authoring
                 Handles.color = Color;
 
                 const int res = 16;
-                quaternion q = quaternion.AxisAngle(Normal, Angle / res);
+                quaternion q = quaternion.AxisAngle(Normal, Angle / (sfloat)res);
                 float3 currentArm = Arm;
                 Handles.DrawLine(Center, Center + currentArm);
                 for (int i = 0; i < res; i++)
@@ -317,7 +323,7 @@ namespace Fixed.Physics.Authoring
                 }
 
                 const int res = 16;
-                quaternion q = quaternion.AxisAngle(dir, 2.0f * (sfloat)math.PI / res);
+                quaternion q = quaternion.AxisAngle(dir, (sfloat)2.0f * (sfloat)math.PI / (sfloat)res);
                 for (int i = 0; i < res; i++)
                 {
                     float3 nextArm = math.mul(q, arm);
@@ -344,7 +350,7 @@ namespace Fixed.Physics.Authoring
                 Matrix4x4 mat = Matrix4x4.TRS(Center, Orientation, Vector3.one);
                 Handles.matrix = mat;
                 Handles.color = Color;
-                Handles.DrawWireCube(Vector3.zero, new Vector3(Size.x, Size.y, Size.z));
+                Handles.DrawWireCube(Vector3.zero, Size);
 
                 Handles.matrix = orig;
 #endif

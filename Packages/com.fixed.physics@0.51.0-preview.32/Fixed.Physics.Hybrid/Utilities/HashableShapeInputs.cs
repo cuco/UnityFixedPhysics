@@ -15,7 +15,8 @@ namespace Fixed.Physics.Authoring
     struct HashableShapeInputs
     {
         // solver generally not expected to be precise under 0.01 units
-        internal const sfloat k_DefaultLinearPrecision = 0.001f;
+        //TODO
+        internal static readonly sfloat k_DefaultLinearPrecision = (sfloat)0.001f;
 
         readonly Aabb Bounds;
 
@@ -114,13 +115,13 @@ namespace Fixed.Physics.Authoring
             public NativeList<sfloat> AllBlendShapeWeights;
 
             public void Execute() => Result[0] = new HashableShapeInputs(
-                MeshKey, Bounds, LeafToBody, IncludedIndices, AllIncludedIndices, BlendShapeWeights, AllBlendShapeWeights
+                MeshKey, Bounds, LeafToBody, IncludedIndices, AllIncludedIndices, BlendShapeWeights, AllBlendShapeWeights, k_DefaultLinearPrecision
             );
         }
 
         HashableShapeInputs(
             int meshKey, Bounds bounds, float4x4 leafToBody,
-            sfloat linearPrecision = k_DefaultLinearPrecision
+            sfloat linearPrecision/* = k_DefaultLinearPrecision*/
         )
         {
             Bounds = new Aabb { Min = bounds.min, Max = bounds.max };
@@ -144,7 +145,7 @@ namespace Fixed.Physics.Authoring
             int meshKey, Bounds bounds, float4x4 leafToBody,
             NativeArray<int> includedIndices, NativeList<int> allIncludedIndices,
             NativeArray<sfloat> blendShapeWeights, NativeList<sfloat> allBlendShapeWeights,
-            sfloat linearPrecision = k_DefaultLinearPrecision
+            sfloat linearPrecision/* = k_DefaultLinearPrecision*/
         )
         {
             this = new HashableShapeInputs(meshKey, bounds, leafToBody, linearPrecision);
@@ -166,7 +167,7 @@ namespace Fixed.Physics.Authoring
 
         internal static void GetQuantizedTransformations(
             float4x4 leafToBody, Aabb bounds, out float4x4 transformations,
-            sfloat linearPrecision = k_DefaultLinearPrecision
+            sfloat linearPrecision/* = k_DefaultLinearPrecision*/
         )
         {
             GetQuantizedTransformations(
@@ -178,7 +179,7 @@ namespace Fixed.Physics.Authoring
         static void GetQuantizedTransformations(
             float4x4 leafToBody, Aabb bounds,
             out float3 translation, out quaternion orientationQ, out float3 scale, out float3x3 shear,
-            sfloat linearPrecision = k_DefaultLinearPrecision
+            sfloat linearPrecision/* = k_DefaultLinearPrecision*/
         )
         {
             translation = RoundToNearest(leafToBody.c3.xyz, linearPrecision);
@@ -190,8 +191,8 @@ namespace Fixed.Physics.Authoring
             // (i.e. amount to scale farthest point one unit of linear precision)
             var scalePrecision = linearPrecision / math.max(math.cmax(farthestPoint), math.FLT_MIN_NORMAL);
             scale = RoundToNearest(leafToBody.DecomposeScale(), scalePrecision);
-            if (math.determinant(leafToBody) < 0f)
-                scale.x *= -1f;
+            if (math.determinant(leafToBody) < sfloat.Zero)
+                scale.x *= -sfloat.One;
 
             shear = new float3x3(
                 leafToBody.c0.xyz / math.max(math.abs(scale.x), math.FLT_MIN_NORMAL) * math.sign(scale.x),
@@ -203,7 +204,7 @@ namespace Fixed.Physics.Authoring
             // if shear is very nearly identity, hash it as identity
             // TODO: quantize shear
             shear = math.mul(shear, math.inverse(orientation));
-            if (!PhysicsShapeExtensions.HasShear(new float4x4(shear, 0f)))
+            if (!PhysicsShapeExtensions.HasShear(new float4x4(shear, sfloat.Zero)))
                 shear = float3x3.identity;
 
             // round orientation using precision inversely proportional to scaled mesh size
@@ -228,8 +229,8 @@ namespace Fixed.Physics.Authoring
         {
             for (var i = 0; i < 3; ++i)
             {
-                if (value[i] == 0f)
-                    value[i] = 0f;
+                if (value[i] == sfloat.Zero)
+                    value[i] = sfloat.Zero;
             }
             return value;
         }
@@ -250,7 +251,7 @@ namespace Fixed.Physics.Authoring
             NativeArray<HashableShapeInputs> inputs,
             NativeArray<int> allIncludedIndices,
             NativeArray<sfloat> allBlendShapeWeights,
-            sfloat linearPrecision = k_DefaultLinearPrecision
+            sfloat linearPrecision/* = k_DefaultLinearPrecision*/
         )
         {
             var numInputs = inputs.IsCreated ? inputs.Length : 0;
@@ -260,8 +261,8 @@ namespace Fixed.Physics.Authoring
             for (int i = 0; i < numInputs; i++)
             {
                 var d = inputs[i];
-                bounds.Include(math.mul(d.BodyFromShape, new float4(d.Bounds.Min, 1f)).xyz);
-                bounds.Include(math.mul(d.BodyFromShape, new float4(d.Bounds.Max, 1f)).xyz);
+                bounds.Include(math.mul(d.BodyFromShape, new float4(d.Bounds.Min, sfloat.One)).xyz);
+                bounds.Include(math.mul(d.BodyFromShape, new float4(d.Bounds.Max, sfloat.One)).xyz);
             }
             GetQuantizedTransformations(bakeFromShape, bounds, out var bakeMatrix, linearPrecision);
 
