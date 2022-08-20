@@ -56,7 +56,7 @@ namespace Fixed.Physics.Authoring
                     }
                     // n.b. no way to know if CoM was manually adjusted, so all legacy Rigidbody objects use auto CoM
                     DstEntityManager.AddOrSetComponent(entity, !body.isKinematic ?
-                        PhysicsMass.CreateDynamic(massProperties, body.mass) :
+                        PhysicsMass.CreateDynamic(massProperties, (sfloat)body.mass) :
                         PhysicsMass.CreateKinematic(massProperties));
 
                     DstEntityManager.AddOrSetComponent(entity, new PhysicsVelocity());
@@ -65,14 +65,14 @@ namespace Fixed.Physics.Authoring
                     {
                         DstEntityManager.AddOrSetComponent(entity, new PhysicsDamping
                         {
-                            Linear = body.drag,
-                            Angular = body.angularDrag
+                            Linear = (sfloat)body.drag,
+                            Angular = (sfloat)body.angularDrag
                         });
                         if (!body.useGravity)
-                            DstEntityManager.AddOrSetComponent(entity, new PhysicsGravityFactor { Value = 0f });
+                            DstEntityManager.AddOrSetComponent(entity, new PhysicsGravityFactor { Value = sfloat.Zero });
                     }
                     else
-                        DstEntityManager.AddOrSetComponent(entity, new PhysicsGravityFactor { Value = 0 });
+                        DstEntityManager.AddOrSetComponent(entity, new PhysicsGravityFactor { Value = sfloat.Zero });
                 }
             );
 

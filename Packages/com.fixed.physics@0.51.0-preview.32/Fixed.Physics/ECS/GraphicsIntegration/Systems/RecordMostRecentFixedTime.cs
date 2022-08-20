@@ -14,17 +14,17 @@ namespace Fixed.Physics.GraphicsIntegration
         /// <summary>
         /// The value of <c>Time.ElapsedTime</c> in the most recent tick of the <c>FixedStepSimulationSystemGroup</c>.
         /// </summary>
-        public double MostRecentElapsedTime { get; private set; }
+        public sfloat MostRecentElapsedTime { get; private set; }
 
         /// <summary>
         /// The value of <c>Time.DeltaTime</c> in the most recent tick of the <c>FixedStepSimulationSystemGroup</c>.
         /// </summary>
-        public double MostRecentDeltaTime { get; private set; }
+        public sfloat MostRecentDeltaTime { get; private set; }
 
         protected override void OnUpdate()
         {
-            MostRecentElapsedTime = Time.ElapsedTime;
-            MostRecentDeltaTime = Time.DeltaTime;
+            MostRecentElapsedTime = (sfloat)Time.ElapsedTime;
+            MostRecentDeltaTime = (sfloat)Time.DeltaTime;
         }
     }
 }

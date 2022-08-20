@@ -34,9 +34,9 @@ namespace Fixed.Physics.Authoring
             {
                 constraints.Add(Constraint.Twist(
                     0,
-                    math.radians(new FloatRange(-highAngularXLimit.limit, -lowAngularXLimit.limit).Sorted()),
-                    CalculateSpringFrequencyFromSpringConstant(angularXLimitSpring.spring),
-                    angularXLimitSpring.damper)
+                    math.radians(new FloatRange(-(sfloat)highAngularXLimit.limit, -(sfloat)lowAngularXLimit.limit).Sorted()),
+                    CalculateSpringFrequencyFromSpringConstant((sfloat)angularXLimitSpring.spring),
+                    (sfloat)angularXLimitSpring.damper)
                 );
             }
 
@@ -44,18 +44,18 @@ namespace Fixed.Physics.Authoring
             {
                 constraints.Add(Constraint.Twist(
                     1,
-                    math.radians(new FloatRange(-angularYLimit.limit, angularYLimit.limit).Sorted()),
-                    CalculateSpringFrequencyFromSpringConstant(angularYZLimitSpring.spring),
-                    angularYZLimitSpring.damper));
+                    math.radians(new FloatRange(-(sfloat)angularYLimit.limit, (sfloat)angularYLimit.limit).Sorted()),
+                    CalculateSpringFrequencyFromSpringConstant((sfloat)angularYZLimitSpring.spring),
+                    (sfloat)angularYZLimitSpring.damper));
             }
 
             if (angularLimited[2])
             {
                 constraints.Add(Constraint.Twist(
                     2,
-                    math.radians(new FloatRange(-angularZLimit.limit, angularZLimit.limit).Sorted()),
-                    CalculateSpringFrequencyFromSpringConstant(angularYZLimitSpring.spring),
-                    angularYZLimitSpring.damper));
+                    math.radians(new FloatRange(-(sfloat)angularZLimit.limit, (sfloat)angularZLimit.limit).Sorted()),
+                    CalculateSpringFrequencyFromSpringConstant((sfloat)angularYZLimitSpring.spring),
+                    (sfloat)angularYZLimitSpring.damper));
             }
 
             if (math.any(linearLimited))
@@ -65,7 +65,7 @@ namespace Fixed.Physics.Authoring
                 var damping = 1.0f; //critically damped
                 if (linearSpring.spring > 0.0f)
                 {
-                    spring = linearSpring.spring;
+                    spring = (sfloat)linearSpring.spring;
                     damping = linearSpring.damper;
                 }
 
@@ -73,10 +73,10 @@ namespace Fixed.Physics.Authoring
                 {
                     ConstrainedAxes = linearLimited,
                     Type = ConstraintType.Linear,
-                    Min = 0f,
-                    Max = linearLimit.limit,  //allow movement up to limit from anchor
+                    Min = sfloat.Zero,
+                    Max = (sfloat)linearLimit.limit,  //allow movement up to limit from anchor
                     SpringFrequency = CalculateSpringFrequencyFromSpringConstant(spring),
-                    SpringDamping = damping
+                    SpringDamping = (sfloat)damping
                 });
             }
 
@@ -86,10 +86,10 @@ namespace Fixed.Physics.Authoring
                 {
                     ConstrainedAxes = linearLocks,
                     Type = ConstraintType.Linear,
-                    Min = linearLimit.limit,    //lock at distance from anchor
-                    Max = linearLimit.limit,
+                    Min = (sfloat)linearLimit.limit,    //lock at distance from anchor
+                    Max = (sfloat)linearLimit.limit,
                     SpringFrequency =  Constraint.DefaultSpringFrequency, //stiff spring
-                    SpringDamping = 1.0f //critically damped
+                    SpringDamping = sfloat.One //critically damped
                 });
             }
 
@@ -99,10 +99,10 @@ namespace Fixed.Physics.Authoring
                 {
                     ConstrainedAxes = angularLocks,
                     Type = ConstraintType.Angular,
-                    Min = 0,
-                    Max = 0,
+                    Min = sfloat.Zero,
+                    Max = sfloat.Zero,
                     SpringFrequency = Constraint.DefaultSpringFrequency, //stiff spring
-                    SpringDamping = 1.0f //critically damped
+                    SpringDamping = sfloat.One //critically damped
                 });
             }
 
@@ -129,7 +129,7 @@ namespace Fixed.Physics.Authoring
             {
                 Axis = math.mul(bFromA.rot, bodyAFromJoint.Axis),
                 PerpendicularAxis = math.mul(bFromA.rot, bodyAFromJoint.PerpendicularAxis),
-                Position = math.mul(bFromBSource, new float4(joint.connectedAnchor, 1f)).xyz
+                Position = math.mul(bFromBSource, new float4(joint.connectedAnchor, sfloat.One)).xyz
             };
 
             var jointData = new PhysicsJoint
@@ -143,7 +143,7 @@ namespace Fixed.Physics.Authoring
 
         sfloat CalculateSpringFrequencyFromSpringConstant(sfloat springConstant)
         {
-            if (springConstant < Math.Constants.Eps) return 0.0f;
+            if (springConstant < Math.Constants.Eps) return sfloat.Zero;
 
             return math.sqrt(springConstant) * Math.Constants.OneOverTau;
         }
@@ -216,15 +216,15 @@ namespace Fixed.Physics.Authoring
 
         void ConvertSpringJoint(LegacySpring joint)
         {
-            var distanceRange = new FloatRange(joint.minDistance, joint.maxDistance).Sorted();
+            var distanceRange = new FloatRange((sfloat)joint.minDistance, (sfloat)joint.maxDistance).Sorted();
             var constraint = new Constraint
             {
                 ConstrainedAxes = new bool3(true),
                 Type = ConstraintType.Linear,
                 Min = distanceRange.Min,
                 Max = distanceRange.Max,
-                SpringFrequency = CalculateSpringFrequencyFromSpringConstant(joint.spring),
-                SpringDamping = joint.damper
+                SpringFrequency = CalculateSpringFrequencyFromSpringConstant((sfloat)joint.spring),
+                SpringDamping = (sfloat)joint.damper
             };
 
             var jointFrameA = BodyFrame.Identity;
@@ -239,7 +239,7 @@ namespace Fixed.Physics.Authoring
                 isConnectedBodyConverted ? RigidTransform.identity : Math.DecomposeRigidBodyTransform(joint.connectedBody.transform.localToWorldMatrix);
 
             var jointFrameB = BodyFrame.Identity;
-            jointFrameB.Position = math.mul(bFromBSource, new float4(joint.connectedAnchor, 1f)).xyz;
+            jointFrameB.Position = math.mul(bFromBSource, new float4(joint.connectedAnchor, sfloat.One)).xyz;
 
             var jointData = new PhysicsJoint
             {
@@ -303,10 +303,10 @@ namespace Fixed.Physics.Authoring
             {
                 Axis = math.mul(bFromA.rot, joint.axis),
                 PerpendicularAxis = math.mul(bFromA.rot, perpendicularA),
-                Position = math.mul(bFromBSource, new float4(joint.connectedAnchor, 1f)).xyz
+                Position = math.mul(bFromBSource, new float4(joint.connectedAnchor, sfloat.One)).xyz
             };
 
-            var limits = math.radians(new FloatRange(joint.limits.min, joint.limits.max).Sorted());
+            var limits = math.radians(new FloatRange((sfloat)joint.limits.min, (sfloat)joint.limits.max).Sorted());
             var jointData = joint.useLimits
                 ? PhysicsJoint.CreateLimitedHinge(bodyAFromJoint, bodyBFromJoint, limits)
                 : PhysicsJoint.CreateHinge(bodyAFromJoint, bodyBFromJoint);

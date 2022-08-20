@@ -50,7 +50,7 @@ namespace Fixed.Physics.Authoring
             else
                 DeclareAssetDependency(collider.gameObject, legacyMaterial);
 
-            material.Friction = legacyMaterial.dynamicFriction;
+            material.Friction = (sfloat)legacyMaterial.dynamicFriction;
             if (k_MaterialCombineLookup.TryGetValue(legacyMaterial.frictionCombine, out var combine))
                 material.FrictionCombinePolicy = combine;
             else
@@ -59,7 +59,7 @@ namespace Fixed.Physics.Authoring
                     collider
                 );
 
-            material.Restitution = legacyMaterial.bounciness;
+            material.Restitution = (sfloat)legacyMaterial.bounciness;
             if (k_MaterialCombineLookup.TryGetValue(legacyMaterial.bounceCombine, out combine))
                 material.RestitutionCombinePolicy = combine;
             else
@@ -113,7 +113,7 @@ namespace Fixed.Physics.Authoring
             res.ShapeType = ShapeType.Box;
 
             var shapeLocalToWorld = shape.transform.localToWorldMatrix;
-            var worldCenter = math.mul(shapeLocalToWorld, new float4(shape.center, 1f));
+            var worldCenter = math.mul(shapeLocalToWorld, new float4(shape.center, sfloat.One));
             var transformRotation  = shape.transform.rotation;
             var rigidBodyTransform = Math.DecomposeRigidBodyTransform(shapeLocalToWorld);
             var shapeFromWorld = math.inverse(new float4x4(rigidBodyTransform));
@@ -129,7 +129,7 @@ namespace Fixed.Physics.Authoring
             var linearScale = float4x4.TRS(float3.zero, math.inverse(orientationFixup), shape.transform.lossyScale).DecomposeScale();
             geometry.Size = math.abs(shape.size * linearScale);
 
-            geometry.BevelRadius = math.min(ConvexHullGenerationParameters.Default.BevelRadius, math.cmin(geometry.Size) * 0.5f);
+            geometry.BevelRadius = math.min(ConvexHullGenerationParameters.Default.BevelRadius, math.cmin(geometry.Size) * (sfloat)0.5f);
 
             res.BoxProperties = geometry;
 
@@ -159,11 +159,11 @@ namespace Fixed.Physics.Authoring
             var linearScale         = float4x4.TRS(float3.zero, math.inverse(orientationFixup), shape.transform.lossyScale).DecomposeScale();
 
             // radius is max of the two non-height axes
-            var radius = shape.radius * math.cmax(new float3(math.abs(linearScale)) { [shape.direction] = 0f });
+            var radius = (sfloat)shape.radius * math.cmax(new float3(math.abs(linearScale)) { [shape.direction] = sfloat.Zero });
 
-            var ax = new float3 { [shape.direction] = 1f };
-            var vertex = ax * (0.5f * shape.height);
-            var worldCenter = math.mul(shapeLocalToWorld, new float4(shape.center, 0f));
+            var ax = new float3 { [shape.direction] = sfloat.One };
+            var vertex = ax * ((sfloat)0.5f * (sfloat)shape.height);
+            var worldCenter = math.mul(shapeLocalToWorld, new float4(shape.center, sfloat.Zero));
             var offset = math.mul(math.inverse(new float4x4(rigidBodyTransform)), worldCenter).xyz - shape.center * math.abs(linearScale);
 
             var v0 = math.mul(orientationFixup, offset + ((float3)shape.center + vertex) * math.abs(linearScale) - ax * radius);
@@ -190,7 +190,7 @@ namespace Fixed.Physics.Authoring
             res.ShapeType = ShapeType.Sphere;
 
             var shapeLocalToWorld = shape.transform.localToWorldMatrix;
-            var worldCenter = math.mul(shapeLocalToWorld, new float4(shape.center, 1f));
+            var worldCenter = math.mul(shapeLocalToWorld, new float4(shape.center, sfloat.One));
             var transformRotation  = shape.transform.rotation;
             var rigidBodyTransform  = Math.DecomposeRigidBodyTransform(shapeLocalToWorld);
             var orientationFixup    = math.inverse(math.mul(math.inverse(transformRotation), rigidBodyTransform.rot));
@@ -199,7 +199,7 @@ namespace Fixed.Physics.Authoring
             var center = math.mul(shapeFromWorld, worldCenter).xyz;
 
             var linearScale = float4x4.TRS(float3.zero, math.inverse(orientationFixup), shape.transform.lossyScale).DecomposeScale();
-            var radius = shape.radius * math.cmax(math.abs(linearScale));
+            var radius = (sfloat)shape.radius * math.cmax(math.abs(linearScale));
 
             res.SphereProperties = new SphereGeometry { Center = center, Radius = radius };
 
@@ -263,7 +263,7 @@ namespace Fixed.Physics.Authoring
                 bakeFromShape,
                 new NativeArray<HashableShapeInputs>(1, Allocator.Temp) { [0] = HashableShapeInputs.FromMesh(shape.sharedMesh, float4x4.identity) },
                 default,
-                default
+                default, HashableShapeInputs.k_DefaultLinearPrecision
             );
 
             if (BlobComputationContext.NeedToComputeBlobAsset(res.Instance.Hash))
@@ -290,7 +290,7 @@ namespace Fixed.Physics.Authoring
                         default, default
                     );
                     for (int i = 0, count = pointCloud.Length; i < count; ++i)
-                        pointCloud[i] = math.mul(bakeFromShape, new float4(pointCloud[i], 1f)).xyz;
+                        pointCloud[i] = math.mul(bakeFromShape, new float4(pointCloud[i], sfloat.One)).xyz;
 
                     if (shape.convex)
                     {

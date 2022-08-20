@@ -50,7 +50,7 @@ namespace Fixed.Physics.GraphicsIntegration
 
         protected override void OnUpdate()
         {
-            var timeAhead = (sfloat)(Time.ElapsedTime - m_RecordMostRecentFixedTime.MostRecentElapsedTime);
+            var timeAhead = (sfloat)((sfloat)Time.ElapsedTime - m_RecordMostRecentFixedTime.MostRecentElapsedTime);
             var timeStep = (sfloat)m_RecordMostRecentFixedTime.MostRecentDeltaTime;
             if (timeAhead < sfloat.Zero || timeStep == sfloat.Zero)
                 return;
