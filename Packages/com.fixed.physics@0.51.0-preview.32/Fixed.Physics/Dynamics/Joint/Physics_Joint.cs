@@ -24,8 +24,8 @@ namespace Fixed.Physics
         //public const sfloat DefaultSpringFrequency = 74341.31f;
         //public const sfloat DefaultSpringDamping = 2530.126f;
 
-        public static sfloat DefaultSpringFrequency => sfloat.FromRaw(0x4771fefa); // 61950.977267809007887192914302327f
-        public static sfloat DefaultSpringDamping => sfloat.FromRaw(0x451e21f2); // 2530.12155587434178122630287018f
+        public static readonly sfloat DefaultSpringFrequency = sfloat.FromRaw(0x4771fefa); // 61950.977267809007887192914302327f
+        public static readonly sfloat DefaultSpringDamping = sfloat.FromRaw(0x451e21f2); // 2530.12155587434178122630287018f
 
         public bool3 ConstrainedAxes;
         public ConstraintType Type;

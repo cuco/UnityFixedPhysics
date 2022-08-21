@@ -30,8 +30,8 @@ namespace Fixed.Physics
             PerpendicularAxis = rotation.c1;
         }
 
-        static float3 k_DefaultAxis => new float3(sfloat.One, sfloat.Zero, sfloat.Zero);
-        static float3 k_DefaultPerpendicular = new float3(sfloat.Zero, sfloat.One, sfloat.Zero);
+        static readonly float3 k_DefaultAxis = new float3(sfloat.One, sfloat.Zero, sfloat.Zero);
+        static readonly float3 k_DefaultPerpendicular = new float3(sfloat.Zero, sfloat.One, sfloat.Zero);
 
         public static readonly BodyFrame Identity =
             new BodyFrame { Axis = k_DefaultAxis, PerpendicularAxis = k_DefaultPerpendicular };

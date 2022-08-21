@@ -1,0 +1,46 @@
+{
+    "name": "Fixed.Physics.PlayModeTests",
+    "rootNamespace": "",
+    "references": [
+        "Unity.Burst",
+        "Unity.Collections",
+        "Unity.Entities",
+        "Unity.Entities.Hybrid",
+        "Unity.Entities.Tests",
+        "Fixed.Mathematics",
+        "Unity.PerformanceTesting",
+        "Fixed.Physics",
+        "Fixed.Physics.Hybrid",
+        "Fixed.Physics.Editor",
+        "Fixed.Transforms",
+        "Unity.Jobs",
+        "Unity.DataFlowGraph",
+        "UnityEngine.TestRunner",
+        "UnityEditor.TestRunner",
+        "Fixed.Sfloat"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ],
+    "versionDefines": [
+        {
+            "name": "com.unity.modules.physics",
+            "expression": "",
+            "define": "LEGACY_PHYSICS"
+        },
+        {
+            "name": "com.unity.dataflowgraph",
+            "expression": "",
+            "define": "UNITY_DATAFLOWGRAPH_EXISTS"
+        }
+    ],
+    "noEngineReferences": false
+}

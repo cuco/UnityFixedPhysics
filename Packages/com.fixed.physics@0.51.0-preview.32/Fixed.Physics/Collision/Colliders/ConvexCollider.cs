@@ -13,9 +13,9 @@ namespace Fixed.Physics
         internal const string k_BevelRadiusTooltip =
             "Determines how rounded the edges of the convex shape will be. A value greater than 0 results in more optimized collision, at the expense of some shape detail.";
 
-        static sfloat k_DefaultSimplificationTolerance => sfloat.FromRaw(0x3c75c28f);
-        static sfloat k_DefaultBevelRadius => sfloat.FromRaw(0x3d4ccccd);
-        static sfloat k_DefaultMinAngle => sfloat.FromRaw(0x3d32b8c2); // 2.5 degrees
+        static readonly sfloat k_DefaultSimplificationTolerance = sfloat.FromRaw(0x3c75c28f);
+        static readonly sfloat k_DefaultBevelRadius = sfloat.FromRaw(0x3d4ccccd);
+        static readonly sfloat k_DefaultMinAngle = sfloat.FromRaw(0x3d32b8c2); // 2.5 degrees
 
         public static readonly ConvexHullGenerationParameters Default = new ConvexHullGenerationParameters
         {
