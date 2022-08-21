@@ -41,10 +41,10 @@ namespace Fixed.Physics.Tests.Collision.Colliders
             var capsuleCollider = UnsafeUtility.AsRef<CapsuleCollider>(collider.GetUnsafePtr());
             Assert.AreEqual(ColliderType.Capsule, capsuleCollider.Type);
             Assert.AreEqual(CollisionType.Convex, capsuleCollider.CollisionType);
-            TestUtils.AreEqual(geometry.Vertex0, capsuleCollider.Vertex0);
-            TestUtils.AreEqual(geometry.Vertex0, capsuleCollider.Geometry.Vertex0);
-            TestUtils.AreEqual(geometry.Vertex1, capsuleCollider.Vertex1);
-            TestUtils.AreEqual(geometry.Vertex1, capsuleCollider.Geometry.Vertex1);
+            TestUtils.AreEqual(geometry.Vertex0, capsuleCollider.Vertex0, sfloat.Zero);
+            TestUtils.AreEqual(geometry.Vertex0, capsuleCollider.Geometry.Vertex0, sfloat.Zero);
+            TestUtils.AreEqual(geometry.Vertex1, capsuleCollider.Vertex1, sfloat.Zero);
+            TestUtils.AreEqual(geometry.Vertex1, capsuleCollider.Geometry.Vertex1, sfloat.Zero);
             TestUtils.AreEqual(geometry.Radius, capsuleCollider.Radius, sfloat.Zero);
             TestUtils.AreEqual(geometry.Radius, capsuleCollider.Geometry.Radius, sfloat.Zero);
         }
@@ -134,8 +134,8 @@ namespace Fixed.Physics.Tests.Collision.Colliders
             expectedAabb.Max = math.max(p0Transformed, p1Transformed) + new float3(radius);
 
             Aabb aabb = capsuleCollider.Value.CalculateAabb(new RigidTransform(rotation, translation));
-            TestUtils.AreEqual(expectedAabb.Min, aabb.Min, 1e-3f);
-            TestUtils.AreEqual(expectedAabb.Max, aabb.Max, 1e-3f);
+            TestUtils.AreEqual(expectedAabb.Min, aabb.Min, (sfloat)1e-3f);
+            TestUtils.AreEqual(expectedAabb.Max, aabb.Max, (sfloat)1e-3f);
         }
 
         /// <summary>

@@ -278,8 +278,8 @@ namespace Fixed.Physics.Tests.Collision.Colliders
                 Max = math.max(math.max(vertices[0], vertices[1]), vertices[2])
             };
 
-            TestUtils.AreEqual(expected.Min, aabb.Min, 1e-3f);
-            TestUtils.AreEqual(expected.Max, aabb.Max, 1e-3f);
+            TestUtils.AreEqual(expected.Min, aabb.Min, (sfloat)1e-3f);
+            TestUtils.AreEqual(expected.Max, aabb.Max, (sfloat)1e-3f);
         }
 
         /// <summary>
@@ -328,7 +328,7 @@ namespace Fixed.Physics.Tests.Collision.Colliders
 
             float3 inertiaTensor = collider.Value.MassProperties.MassDistribution.InertiaTensor;
             float3 expectedInertiaTensor = calcTriangleInertiaTensor(vertices[0], vertices[1], vertices[2]);
-            TestUtils.AreEqual(expectedInertiaTensor, inertiaTensor, 1e-3f);
+            TestUtils.AreEqual(expectedInertiaTensor, inertiaTensor, (sfloat)1e-3f);
         }
 
         //[Test] // #TODO: Add test back in once we have implemented this in Physics
@@ -346,7 +346,7 @@ namespace Fixed.Physics.Tests.Collision.Colliders
 
             float3 inertiaTensor = collider.Value.MassProperties.MassDistribution.InertiaTensor;
             float3 expectedInertiaTensor = calcQuadInertiaTensor(vertices[0], vertices[1], vertices[2], vertices[3]);
-            TestUtils.AreEqual(expectedInertiaTensor, inertiaTensor, 1e-3f);
+            TestUtils.AreEqual(expectedInertiaTensor, inertiaTensor, (sfloat)1e-3f);
         }
 
         private float3 calcTriangleInertiaTensor(float3 v0, float3 v1, float3 v2)

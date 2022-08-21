@@ -19,7 +19,7 @@ namespace Fixed.Physics.Tests.Authoring
             Root.GetComponent<PhysicsBodyAuthoring>().Mass = (sfloat)100f;
             Root.GetComponent<LegacyRigidBody>().mass = 50f;
 
-            TestConvertedData<PhysicsMass>(mass => Assert.That(mass.InverseMass, Is.EqualTo(0.01f)));
+            TestConvertedData<PhysicsMass>(mass => Assert.That(mass.InverseMass, Is.EqualTo((sfloat)0.01f)));
         }
 
         [Test]
@@ -29,7 +29,7 @@ namespace Fixed.Physics.Tests.Authoring
             Root.GetComponent<PhysicsBodyAuthoring>().LinearDamping = (sfloat)1f;
             Root.GetComponent<LegacyRigidBody>().drag = 0.5f;
 
-            TestConvertedData<PhysicsDamping>(damping => Assert.That(damping.Linear, Is.EqualTo(1f)));
+            TestConvertedData<PhysicsDamping>(damping => Assert.That(damping.Linear, Is.EqualTo((sfloat)1f)));
         }
 
         [Test]
@@ -40,7 +40,7 @@ namespace Fixed.Physics.Tests.Authoring
             Root.GetComponent<PhysicsBodyAuthoring>().GravityFactor = (sfloat)2f;
             Root.GetComponent<LegacyRigidBody>().isKinematic = true;
 
-            TestConvertedData<PhysicsGravityFactor>(gravity => Assert.That(gravity.Value, Is.EqualTo(2f)));
+            TestConvertedData<PhysicsGravityFactor>(gravity => Assert.That(gravity.Value, Is.EqualTo((sfloat)2f)));
         }
 
         [Test]
@@ -50,7 +50,7 @@ namespace Fixed.Physics.Tests.Authoring
             Root.GetComponent<PhysicsBodyAuthoring>().MotionType = BodyMotionType.Kinematic;
             Root.GetComponent<LegacyRigidBody>().isKinematic = false;
 
-            TestConvertedData<PhysicsGravityFactor>(gravity => Assert.That(gravity.Value, Is.EqualTo(0f)));
+            TestConvertedData<PhysicsGravityFactor>(gravity => Assert.That(gravity.Value, Is.EqualTo((sfloat)0f)));
         }
 
         [Test]
@@ -84,7 +84,7 @@ namespace Fixed.Physics.Tests.Authoring
             Root.GetComponent<LegacyRigidBody>().isKinematic = true;
             Root.GetComponent<LegacyRigidBody>().mass = 50f;
 
-            TestConvertedData<PhysicsMass>(mass => Assert.That(mass.InverseMass, Is.EqualTo(0.01f)));
+            TestConvertedData<PhysicsMass>(mass => Assert.That(mass.InverseMass, Is.EqualTo((sfloat)0.01f)));
         }
 
         [Test]
@@ -96,7 +96,7 @@ namespace Fixed.Physics.Tests.Authoring
             Root.GetComponent<LegacyRigidBody>().isKinematic = false;
             Root.GetComponent<LegacyRigidBody>().mass = 50f;
 
-            TestConvertedData<PhysicsMass>(mass => Assert.That(mass.InverseMass, Is.EqualTo(0f)));
+            TestConvertedData<PhysicsMass>(mass => Assert.That(mass.InverseMass, Is.EqualTo((sfloat)0f)));
         }
 
         [Test]

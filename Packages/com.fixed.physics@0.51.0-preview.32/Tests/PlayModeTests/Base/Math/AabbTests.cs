@@ -76,7 +76,7 @@ namespace Fixed.Physics.Tests.Base.Math
                 // Identity transform should not modify aabb
                 Aabb outAabb = Fixed.Physics.Math.TransformAabb(RigidTransform.identity, ut);
 
-                TestUtils.AreEqual(ut.Min, outAabb.Min, 1e-3f);
+                TestUtils.AreEqual(ut.Min, outAabb.Min, (sfloat)1e-3f);
 
                 // Test translation
                 outAabb = Fixed.Physics.Math.TransformAabb(new RigidTransform(quaternion.identity, float3((sfloat)100.0f, (sfloat)0.0f, (sfloat)0.0f)), ut);
@@ -90,8 +90,8 @@ namespace Fixed.Physics.Tests.Base.Math
                 quaternion rot = quaternion.EulerXYZ((sfloat)0.0f, (sfloat)0.0f, k_pi2);
                 outAabb = Fixed.Physics.Math.TransformAabb(new RigidTransform(rot, float3.zero), ut);
 
-                TestUtils.AreEqual(outAabb.Min, float3(-(sfloat)300.0f, (sfloat)100.0f, (sfloat)300.0f), 1e-3f);
-                TestUtils.AreEqual(outAabb.Max, float3(-(sfloat)200.0f, (sfloat)200.0f, (sfloat)400.0f), 1e-3f);
+                TestUtils.AreEqual(outAabb.Min, float3(-(sfloat)300.0f, (sfloat)100.0f, (sfloat)300.0f), (sfloat)1e-3f);
+                TestUtils.AreEqual(outAabb.Max, float3(-(sfloat)200.0f, (sfloat)200.0f, (sfloat)400.0f), (sfloat)1e-3f);
                 TestUtils.AreEqual(outAabb.SurfaceArea, ut.SurfaceArea, (sfloat)1e-2f);
             }
         }
@@ -114,8 +114,8 @@ namespace Fixed.Physics.Tests.Base.Math
                 Physics.Math.MTransform bFromA = new Physics.Math.MTransform(r, t);
                 Aabb outAabb2 = Fixed.Physics.Math.TransformAabb(bFromA, orig);
 
-                TestUtils.AreEqual(outAabb1.Min, outAabb2.Min, 1e-3f);
-                TestUtils.AreEqual(outAabb1.Max, outAabb2.Max, 1e-3f);
+                TestUtils.AreEqual(outAabb1.Min, outAabb2.Min, (sfloat)1e-3f);
+                TestUtils.AreEqual(outAabb1.Max, outAabb2.Max, (sfloat)1e-3f);
             }
         }
     }

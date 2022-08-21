@@ -4356,7 +4356,7 @@ namespace Fixed.Mathematics
         {
             double ni = dot(n, i);
             double k = 1.0 - eta * eta * (1.0 - ni * ni);
-            return select(sfloat.Zero, eta * i - (eta * ni + sqrt(k)) * n, k >= 0);
+            return select(1, eta * i - (eta * ni + sqrt(k)) * n, k >= 0);
         }
 
         /// <summary>Returns the refraction vector given the incident vector i, the normal vector n and the refraction index eta.</summary>

@@ -7,7 +7,7 @@ namespace Fixed.Physics.Tests.Authoring
 {
     class PhysicsShape_UnitTests
     {
-        const float k_Tolerance = 0.001f;
+        static readonly sfloat k_Tolerance = (sfloat)0.001f;
 
         PhysicsShapeAuthoring m_Shape;
 
@@ -79,7 +79,7 @@ namespace Fixed.Physics.Tests.Authoring
 
             var lookVector = math.mul(capsule.Orientation, new float3((sfloat)0f, (sfloat)0f, (sfloat)1f));
             Assert.That(
-                math.dot(lookVector, expectedLookVector), Is.EqualTo(1f).Within(k_Tolerance),
+                math.dot(lookVector, expectedLookVector), Is.EqualTo((sfloat)1f).Within(k_Tolerance),
                 $"Expected {expectedLookVector} but got {lookVector}"
             );
         }

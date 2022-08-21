@@ -32,7 +32,7 @@ namespace Fixed.Physics.Tests.Authoring
             CreateHierarchy(new[] { typeof(LegacySpring) }, Array.Empty<Type>(), Array.Empty<Type>());
             Root.GetComponent<LegacySpring>().minDistance = 100f;
             var expectedMin =
-                math.min(Root.GetComponent<LegacySpring>().minDistance, Root.GetComponent<LegacySpring>().maxDistance);
+                math.min((sfloat)Root.GetComponent<LegacySpring>().minDistance, (sfloat)Root.GetComponent<LegacySpring>().maxDistance);
 
             TestConvertedData<PhysicsJoint>(j =>
             {
@@ -47,7 +47,7 @@ namespace Fixed.Physics.Tests.Authoring
             CreateHierarchy(new[] { typeof(LegacySpring) }, Array.Empty<Type>(), Array.Empty<Type>());
             Root.GetComponent<LegacySpring>().maxDistance = 100f;
             var expectedMax =
-                math.max(Root.GetComponent<LegacySpring>().minDistance, Root.GetComponent<LegacySpring>().maxDistance);
+                math.max((sfloat)Root.GetComponent<LegacySpring>().minDistance, (sfloat)Root.GetComponent<LegacySpring>().maxDistance);
 
             TestConvertedData<PhysicsJoint>(j =>
             {

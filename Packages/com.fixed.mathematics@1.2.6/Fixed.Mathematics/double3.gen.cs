@@ -231,26 +231,26 @@ namespace Fixed.Mathematics
         /// <summary>Implicitly converts a single half value to a double3 vector by converting it to double and assigning it to every component.</summary>
         /// <param name="v">half to convert to double3</param>
         /// <returns>Converted value.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static implicit operator double3(half v) { return new double3(v); }
-
-        /// <summary>Implicitly converts a half3 vector to a double3 vector by componentwise conversion.</summary>
-        /// <param name="v">half3 to convert to double3</param>
-        /// <returns>Converted value.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static implicit operator double3(half3 v) { return new double3(v); }
-
-        /// <summary>Implicitly converts a single sfloat value to a double3 vector by converting it to double and assigning it to every component.</summary>
-        /// <param name="v">sfloat to convert to double3</param>
-        /// <returns>Converted value.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static implicit operator double3(sfloat v) { return new double3(v); }
-
-        /// <summary>Implicitly converts a float3 vector to a double3 vector by componentwise conversion.</summary>
-        /// <param name="v">float3 to convert to double3</param>
-        /// <returns>Converted value.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static implicit operator double3(float3 v) { return new double3(v); }
+        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // public static implicit operator double3(half v) { return new double3(v); }
+        //
+        // /// <summary>Implicitly converts a half3 vector to a double3 vector by componentwise conversion.</summary>
+        // /// <param name="v">half3 to convert to double3</param>
+        // /// <returns>Converted value.</returns>
+        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // public static implicit operator double3(half3 v) { return new double3(v); }
+        //
+        // /// <summary>Implicitly converts a single sfloat value to a double3 vector by converting it to double and assigning it to every component.</summary>
+        // /// <param name="v">sfloat to convert to double3</param>
+        // /// <returns>Converted value.</returns>
+        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // public static implicit operator double3(sfloat v) { return new double3(v); }
+        //
+        // /// <summary>Implicitly converts a float3 vector to a double3 vector by componentwise conversion.</summary>
+        // /// <param name="v">float3 to convert to double3</param>
+        // /// <returns>Converted value.</returns>
+        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // public static implicit operator double3(float3 v) { return new double3(v); }
 
 
         /// <summary>Returns the result of a componentwise multiplication operation on two double3 vectors.</summary>
@@ -1750,26 +1750,26 @@ namespace Fixed.Mathematics
         /// <summary>Returns a double3 vector constructed from a single half value by converting it to double and assigning it to every component.</summary>
         /// <param name="v">half to convert to double3</param>
         /// <returns>Converted value.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static double3 double3(half v) { return new double3(v); }
-
-        /// <summary>Return a double3 vector constructed from a half3 vector by componentwise conversion.</summary>
-        /// <param name="v">half3 to convert to double3</param>
-        /// <returns>Converted value.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static double3 double3(half3 v) { return new double3(v); }
-
-        /// <summary>Returns a double3 vector constructed from a single sfloat value by converting it to double and assigning it to every component.</summary>
-        /// <param name="v">sfloat to convert to double3</param>
-        /// <returns>Converted value.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static double3 double3(sfloat v) { return new double3(v); }
-
-        /// <summary>Return a double3 vector constructed from a float3 vector by componentwise conversion.</summary>
-        /// <param name="v">float3 to convert to double3</param>
-        /// <returns>Converted value.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static double3 double3(float3 v) { return new double3(v); }
+        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // public static double3 double3(half v) { return new double3(v); }
+        //
+        // /// <summary>Return a double3 vector constructed from a half3 vector by componentwise conversion.</summary>
+        // /// <param name="v">half3 to convert to double3</param>
+        // /// <returns>Converted value.</returns>
+        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // public static double3 double3(half3 v) { return new double3(v); }
+        //
+        // /// <summary>Returns a double3 vector constructed from a single sfloat value by converting it to double and assigning it to every component.</summary>
+        // /// <param name="v">sfloat to convert to double3</param>
+        // /// <returns>Converted value.</returns>
+        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // public static double3 double3(sfloat v) { return new double3(v); }
+        //
+        // /// <summary>Return a double3 vector constructed from a float3 vector by componentwise conversion.</summary>
+        // /// <param name="v">float3 to convert to double3</param>
+        // /// <returns>Converted value.</returns>
+        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // public static double3 double3(float3 v) { return new double3(v); }
 
         /// <summary>Returns a uint hash code of a double3 vector.</summary>
         /// <param name="v">Vector value to hash.</param>

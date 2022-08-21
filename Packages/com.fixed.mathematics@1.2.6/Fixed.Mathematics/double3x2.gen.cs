@@ -121,18 +121,18 @@ namespace Fixed.Mathematics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public double3x2(sfloat v)
         {
-            this.c0 = v;
-            this.c1 = v;
+            this.c0 = (float)v;
+            this.c1 = (float)v;
         }
 
-        /// <summary>Constructs a double3x2 matrix from a float3x2 matrix by componentwise conversion.</summary>
-        /// <param name="v">float3x2 to convert to double3x2</param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public double3x2(float3x2 v)
-        {
-            this.c0 = v.c0;
-            this.c1 = v.c1;
-        }
+        // /// <summary>Constructs a double3x2 matrix from a float3x2 matrix by componentwise conversion.</summary>
+        // /// <param name="v">float3x2 to convert to double3x2</param>
+        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // public double3x2(float3x2 v)
+        // {
+        //     this.c0 = v.c0;
+        //     this.c1 = v.c1;
+        // }
 
 
         /// <summary>Implicitly converts a single double value to a double3x2 matrix by assigning it to every component.</summary>
@@ -186,8 +186,8 @@ namespace Fixed.Mathematics
         /// <summary>Implicitly converts a float3x2 matrix to a double3x2 matrix by componentwise conversion.</summary>
         /// <param name="v">float3x2 to convert to double3x2</param>
         /// <returns>Converted value.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static implicit operator double3x2(float3x2 v) { return new double3x2(v); }
+        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // public static implicit operator double3x2(float3x2 v) { return new double3x2(v); }
 
 
         /// <summary>Returns the result of a componentwise multiplication operation on two double3x2 matrices.</summary>
@@ -590,8 +590,8 @@ namespace Fixed.Mathematics
         /// <summary>Return a double3x2 matrix constructed from a float3x2 matrix by componentwise conversion.</summary>
         /// <param name="v">float3x2 to convert to double3x2</param>
         /// <returns>Converted value.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static double3x2 double3x2(float3x2 v) { return new double3x2(v); }
+        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // public static double3x2 double3x2(float3x2 v) { return new double3x2(v); }
 
         /// <summary>Return the double2x3 transpose of a double3x2 matrix.</summary>
         /// <param name="v">Value to transpose.</param>
