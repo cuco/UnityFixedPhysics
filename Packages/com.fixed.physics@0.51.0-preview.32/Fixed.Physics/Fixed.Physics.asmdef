@@ -8,9 +8,11 @@
         "Fixed.Mathematics",
         "Unity.Properties",
         "Fixed.Transforms",
+        "Unity.Transforms",
         "Unity.Jobs",
         "Unity.DataFlowGraph",
-        "Fixed.Sfloat"
+        "Fixed.Sfloat",
+        "Unity.Mathematics"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

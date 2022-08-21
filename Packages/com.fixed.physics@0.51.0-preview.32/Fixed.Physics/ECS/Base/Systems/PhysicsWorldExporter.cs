@@ -58,7 +58,9 @@ namespace Fixed.Physics.Systems
                     MotionDatas = world.MotionDatas,
                     PositionType = system.GetComponentTypeHandle<Translation>(),
                     RotationType = system.GetComponentTypeHandle<Rotation>(),
-                    VelocityType = system.GetComponentTypeHandle<PhysicsVelocity>()
+                    VelocityType = system.GetComponentTypeHandle<PhysicsVelocity>(),
+                    UnityPositionType = system.GetComponentTypeHandle<Unity.Transforms.Translation>(),
+                    UnityRotationType = system.GetComponentTypeHandle<Unity.Transforms.Rotation>()
                 }.ScheduleParallel(dynamicEntities, ScheduleGranularity.Chunk, limitToEntityArray: default, inputDep);
             }
 
@@ -153,12 +155,17 @@ namespace Fixed.Physics.Systems
             public ComponentTypeHandle<Translation> PositionType;
             public ComponentTypeHandle<Rotation> RotationType;
             public ComponentTypeHandle<PhysicsVelocity> VelocityType;
+            public ComponentTypeHandle<Unity.Transforms.Translation> UnityPositionType;
+            public ComponentTypeHandle<Unity.Transforms.Rotation> UnityRotationType;
+
 
             public void Execute(ArchetypeChunk batchInChunk, int batchIndex, int entityStartIndex)
             {
                 var chunkPositions = batchInChunk.GetNativeArray(PositionType);
                 var chunkRotations = batchInChunk.GetNativeArray(RotationType);
                 var chunkVelocities = batchInChunk.GetNativeArray(VelocityType);
+                var chunkUnityPositions = batchInChunk.GetNativeArray(UnityPositionType);
+                var chunkUnityRotations = batchInChunk.GetNativeArray(UnityRotationType);
 
                 int numItems = batchInChunk.Count;
 
@@ -173,6 +180,12 @@ namespace Fixed.Physics.Systems
                         Linear = MotionVelocities[motionIndex].LinearVelocity,
                         Angular = MotionVelocities[motionIndex].AngularVelocity
                     };
+                    var unityPos = new Unity.Mathematics.float3((float)worldFromBody.pos.x, (float)worldFromBody.pos.y, (float)worldFromBody.pos.z);
+                    var rotValue = worldFromBody.rot.value;
+                    var unityRot = new Unity.Mathematics.quaternion((float)rotValue.x, (float)rotValue.y,
+                        (float)rotValue.z, (float)rotValue.w);
+                    chunkUnityPositions[i] = new Unity.Transforms.Translation() {Value = unityPos};
+                    chunkUnityRotations[i] = new Unity.Transforms.Rotation() {Value = unityRot};
                 }
             }
         }
