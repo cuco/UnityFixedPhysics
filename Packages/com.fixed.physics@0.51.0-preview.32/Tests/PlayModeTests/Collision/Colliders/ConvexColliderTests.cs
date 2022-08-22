@@ -108,6 +108,7 @@ namespace Fixed.Physics.Tests.Collision.Colliders
             expectedAabb.Include(points[4]);
             expectedAabb.Include(points[5]);
 
+            //TODO 计算有问题
             var collider = ConvexCollider.Create(
                 points, new ConvexHullGenerationParameters { BevelRadius = (sfloat)maxShrinkMovement }, CollisionFilter.Default
             );

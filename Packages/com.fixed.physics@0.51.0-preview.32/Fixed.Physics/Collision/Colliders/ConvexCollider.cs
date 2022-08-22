@@ -13,9 +13,9 @@ namespace Fixed.Physics
         internal const string k_BevelRadiusTooltip =
             "Determines how rounded the edges of the convex shape will be. A value greater than 0 results in more optimized collision, at the expense of some shape detail.";
 
-        static readonly sfloat k_DefaultSimplificationTolerance = sfloat.FromRaw(0x3c75c28f);
-        static readonly sfloat k_DefaultBevelRadius = sfloat.FromRaw(0x3d4ccccd);
-        static readonly sfloat k_DefaultMinAngle = sfloat.FromRaw(0x3d32b8c2); // 2.5 degrees
+        private static readonly sfloat k_DefaultSimplificationTolerance = (sfloat) 0.015f; //sfloat.FromRaw(0x3c75c28f);
+        private static readonly sfloat k_DefaultBevelRadius = (sfloat) 0.05f; //sfloat.FromRaw(0x3d4ccccd);
+        private static readonly sfloat k_DefaultMinAngle = (sfloat) 2.5f * math.PI / (sfloat) 180f;//sfloat.FromRaw(0x3d32b8c2); // 2.5 degrees
 
         public static readonly ConvexHullGenerationParameters Default = new ConvexHullGenerationParameters
         {
@@ -347,7 +347,7 @@ namespace Fixed.Physics
                             for (int i = 2; i < Vertices.Length; i++)
                             {
                                 cross = math.cross(edge0, Vertices[i] - Vertices[0]);
-                                if (math.lengthsq(cross) > sfloat.FromRaw(0x322bcc77)) // take the first cross product good enough to calculate a normal
+                                if (math.lengthsq(cross) > (sfloat)1e-8f) //sfloat.FromRaw(0x322bcc77)) // take the first cross product good enough to calculate a normal
                                 {
                                     break;
                                 }

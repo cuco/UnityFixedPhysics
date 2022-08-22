@@ -83,7 +83,7 @@ namespace Fixed.Physics.Tests.Collision.Queries
                         aabb.Include(vertexA - vertexB);
                     }
                 }
-                ConvexHullBuilderStorage diffStorage = new ConvexHullBuilderStorage(maxNumVertices, Allocator.Temp, aabb, (sfloat)0.0f, ConvexHullBuilder.IntResolution.Low);
+                ConvexHullBuilderStorage diffStorage = new ConvexHullBuilderStorage(maxNumVertices, Allocator.Temp, aabb, 0.0f, ConvexHullBuilder.IntResolution.Low);
                 ref ConvexHullBuilder diff = ref diffStorage.Builder;
                 success = true;
                 for (int iB = 0; iB < b.NumVertices; iB++)

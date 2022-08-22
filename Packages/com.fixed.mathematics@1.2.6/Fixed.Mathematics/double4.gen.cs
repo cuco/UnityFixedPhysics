@@ -232,27 +232,27 @@ namespace Fixed.Mathematics
         //     this.w = v.w;
         // }
         //
-        // /// <summary>Constructs a double4 vector from a single sfloat value by converting it to double and assigning it to every component.</summary>
-        // /// <param name="v">sfloat to convert to double4</param>
-        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        // public double4(sfloat v)
-        // {
-        //     this.x = v;
-        //     this.y = v;
-        //     this.z = v;
-        //     this.w = v;
-        // }
-        //
-        // /// <summary>Constructs a double4 vector from a float4 vector by componentwise conversion.</summary>
-        // /// <param name="v">float4 to convert to double4</param>
-        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        // public double4(float4 v)
-        // {
-        //     this.x = v.x;
-        //     this.y = v.y;
-        //     this.z = v.z;
-        //     this.w = v.w;
-        // }
+        /// <summary>Constructs a double4 vector from a single sfloat value by converting it to double and assigning it to every component.</summary>
+        /// <param name="v">sfloat to convert to double4</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public double4(sfloat v)
+        {
+            this.x = (float)v;
+            this.y = (float)v;
+            this.z = (float)v;
+            this.w = (float)v;
+        }
+        
+        /// <summary>Constructs a double4 vector from a float4 vector by componentwise conversion.</summary>
+        /// <param name="v">float4 to convert to double4</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public double4(float4 v)
+        {
+            this.x = (float)v.x;
+            this.y = (float)v.y;
+            this.z = (float)v.z;
+            this.w = (float)v.w;
+        }
 
 
         /// <summary>Implicitly converts a single double value to a double4 vector by assigning it to every component.</summary>

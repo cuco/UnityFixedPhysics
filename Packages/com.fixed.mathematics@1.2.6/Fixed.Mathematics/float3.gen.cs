@@ -42,6 +42,14 @@ namespace Fixed.Mathematics
             this.y = y;
             this.z = z;
         }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public float3(int x, int y, int z)
+        {
+            this.x = (sfloat)x;
+            this.y = (sfloat)y;
+            this.z = (sfloat)z;
+        }
 
         /// <summary>Constructs a float3 vector from a sfloat value and a float2 vector.</summary>
         /// <param name="x">The constructed vector's x component will be set to this value.</param>

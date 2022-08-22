@@ -22,7 +22,7 @@ namespace Fixed.Physics.Tests.Collision.Geometry
                 points[i] = expectedCom + new float3(math.cos(angle), math.sin(angle), (sfloat)0);
                 domain.Include(points[i]);
             }
-            ConvexHullBuilderStorage builder = new ConvexHullBuilderStorage(8192, Allocator.Temp, domain, (sfloat)0.0f, ConvexHullBuilder.IntResolution.High);
+            ConvexHullBuilderStorage builder = new ConvexHullBuilderStorage(8192, Allocator.Temp, domain, 0.0f, ConvexHullBuilder.IntResolution.High);
             for (int i = 0; i < n; ++i)
             {
                 builder.Builder.AddPoint(points[i]);

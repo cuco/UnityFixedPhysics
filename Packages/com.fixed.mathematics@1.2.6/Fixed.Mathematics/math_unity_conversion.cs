@@ -37,6 +37,16 @@ namespace Fixed.Mathematics
         /// <param name="v">Vector3 to convert.</param>
         /// <returns>The converted float3.</returns>
         public static implicit operator float3(Vector3 v)     { return new float3((sfloat)v.x, (sfloat)v.y, (sfloat)v.z); }
+
+        public static implicit operator double3(float3 v)
+        {
+            return new double3((float) v.x, (float) v.y, (float) v.z);
+        }
+
+        public static implicit operator float3(double3 v)
+        {
+            return new float3((sfloat) (float) v.x, (sfloat) (float) v.y, (sfloat) (float) v.z);
+        }
     }
 
     public partial struct float4

@@ -9,6 +9,7 @@ using Unity.Jobs;
 using Fixed.Mathematics;
 using UnityEngine;
 using UnityEngine.Rendering;
+using Debug = UnityEngine.Debug;
 using UnityComponent = UnityEngine.Component;
 using UnityMesh = UnityEngine.Mesh;
 
@@ -83,10 +84,11 @@ namespace Fixed.Physics.Authoring
 
         [SerializeField]
         [Tooltip(
+            "0f-1f" +
             "Specifies the minimum weight of a skinned vertex assigned to this shape and/or its transform children required for it to be included for automatic detection. " +
             "A value of 0 will include all points with any weight assigned to this shape's hierarchy."
          )]
-        [Range(0f, 1f)]
+        //[Range(0f, 1f)]
         sfloat m_MinimumSkinnedVertexWeight = (sfloat)0.1f;
 
         [SerializeField]
