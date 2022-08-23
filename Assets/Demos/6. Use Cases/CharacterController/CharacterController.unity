@@ -173,33 +173,52 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_MotionType: 1
   m_Smoothing: 1
-  m_Mass: 1
-  m_LinearDamping: 0
-  m_AngularDamping: 0
+  m_Mass:
+    rawValue: 1065353216
+  m_LinearDamping:
+    rawValue: 1008981770
+  m_AngularDamping:
+    rawValue: 1028443341
   m_InitialLinearVelocity:
-    x: 0
-    y: 0
-    z: 0
+    x:
+      rawValue: 0
+    y:
+      rawValue: 0
+    z:
+      rawValue: 0
   m_InitialAngularVelocity:
-    x: 0
-    y: 0
-    z: 0
-  m_GravityFactor: 0
+    x:
+      rawValue: 0
+    y:
+      rawValue: 0
+    z:
+      rawValue: 0
+  m_GravityFactor:
+    rawValue: 1065353216
   m_OverrideDefaultMassDistribution: 0
   m_CenterOfMass:
-    x: 0
-    y: 0
-    z: 0
+    x:
+      rawValue: 0
+    y:
+      rawValue: 0
+    z:
+      rawValue: 0
   m_Orientation:
     Value:
-      x: 0
-      y: 0
-      z: 0
+      x:
+        rawValue: 0
+      y:
+        rawValue: 0
+      z:
+        rawValue: 0
     RotationOrder: 4
   m_InertiaTensor:
-    x: 0
-    y: 0
-    z: 0
+    x:
+      rawValue: 1053609164
+    y:
+      rawValue: 1053609164
+    z:
+      rawValue: 1053609164
   m_WorldIndex: 0
   m_CustomTags:
     Tag00: 0
@@ -224,34 +243,52 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_ShapeType: 1
   m_PrimitiveCenter:
-    x: 0.000000059604645
-    y: 0
-    z: -0.00000008940697
+    x:
+      rawValue: 0
+    y:
+      rawValue: 0
+    z:
+      rawValue: 0
   m_PrimitiveSize:
-    x: 1.0000002
-    y: 1.0000002
-    z: 2
+    x:
+      rawValue: 1065353216
+    y:
+      rawValue: 1065353216
+    z:
+      rawValue: 1073741823
   m_PrimitiveOrientation:
     Value:
-      x: -90
-      y: 0
-      z: 90
+      x:
+        rawValue: 3266576384
+      y:
+        rawValue: 0
+      z:
+        rawValue: 3266576384
     RotationOrder: 4
   m_Capsule:
-    Height: 2
-    Radius: 0.5000001
+    Height:
+      rawValue: 1073741823
+    Radius:
+      rawValue: 1056964608
     Axis: 2
   m_Cylinder:
-    Height: 2
-    Radius: 0.5000001
+    Height:
+      rawValue: 1073741823
+    Radius:
+      rawValue: 1056964608
     Axis: 2
   m_CylinderSideCount: 20
-  m_SphereRadius: 1
-  m_MinimumSkinnedVertexWeight: 0.1
+  m_SphereRadius:
+    rawValue: 1065353215
+  m_MinimumSkinnedVertexWeight:
+    rawValue: 0
   m_ConvexHullGenerationParameters:
-    m_SimplificationTolerance: 0.015
-    m_BevelRadius: 0.05
-    m_MinimumAngle: 2.5000002
+    m_SimplificationTolerance:
+      rawValue: 1014350479
+    m_BevelRadius:
+      rawValue: 1028443341
+    m_MinimumAngle:
+      rawValue: 1075838975
   m_CustomMesh: {fileID: 0}
   m_ForceUnique: 0
   m_Material:
@@ -263,12 +300,14 @@ MonoBehaviour:
     m_Friction:
       m_Override: 0
       m_Value:
-        Value: 0
+        Value:
+          rawValue: 1056964608
         CombineMode: 0
     m_Restitution:
       m_Override: 0
       m_Value:
-        Value: 0
+        Value:
+          rawValue: 0
         CombineMode: 2
     m_BelongsToCategories:
       m_Override: 0
@@ -366,18 +405,29 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Gravity:
-    x: 0
-    y: -9.81
-    z: 0
-  MovementSpeed: 4
-  MaxMovementSpeed: 10
-  RotationSpeed: 3
-  JumpUpwardsSpeed: 5
-  MaxSlope: 60
+    x:
+      rawValue: 0
+    y:
+      rawValue: 3239900611
+    z:
+      rawValue: 0
+  MovementSpeed:
+    rawValue: 1075838976
+  MaxMovementSpeed:
+    rawValue: 1092616192
+  RotationSpeed:
+    rawValue: 1075838976
+  JumpUpwardsSpeed:
+    rawValue: 1084227584
+  MaxSlope:
+    rawValue: 1114636288
   MaxIterations: 10
-  CharacterMass: 1
-  SkinWidth: 0.02
-  ContactTolerance: 0.1
+  CharacterMass:
+    rawValue: 1065353216
+  SkinWidth:
+    rawValue: 1017370378
+  ContactTolerance:
+    rawValue: 1036831949
   AffectsPhysicsBodies: 1
   RaiseCollisionEvents: 0
   RaiseTriggerEvents: 0
@@ -517,6 +567,39 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ConversionMode: 1
+--- !u!114 &321989226
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 321989219}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a79441f348de89743a2939f4d699eac1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_RenderShadows: 1
+  m_RequiresDepthTextureOption: 2
+  m_RequiresOpaqueTextureOption: 2
+  m_CameraType: 0
+  m_Cameras: []
+  m_RendererIndex: -1
+  m_VolumeLayerMask:
+    serializedVersion: 2
+    m_Bits: 1
+  m_VolumeTrigger: {fileID: 0}
+  m_VolumeFrameworkUpdateModeOption: 2
+  m_RenderPostProcessing: 0
+  m_Antialiasing: 0
+  m_AntialiasingQuality: 2
+  m_StopNaN: 0
+  m_Dithering: 0
+  m_ClearDepth: 1
+  m_AllowXRRendering: 1
+  m_RequiresDepthTexture: 0
+  m_RequiresColorTexture: 0
+  m_Version: 2
 --- !u!1 &858386147
 GameObject:
   m_ObjectHideFlags: 0
@@ -5390,8 +5473,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Bullet: {fileID: 1488858408965022, guid: dc4b59da5a2eacd48933507b79bba3b8, type: 3}
-  Strength: 20
-  Rate: 0.1
+  Strength:
+    rawValue: 0
+  Rate:
+    rawValue: 0
 --- !u!114 &1149222591
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5641,7 +5726,7 @@ PrefabInstance:
     - target: {fileID: 1357867726654781253, guid: c0ce7b3c74021e840a5995cf136ee0fe,
         type: 3}
       propertyPath: m_Enabled
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1357867726848807427, guid: c0ce7b3c74021e840a5995cf136ee0fe,
         type: 3}
@@ -5748,6 +5833,11 @@ PrefabInstance:
       propertyPath: m_SerializedData.DrawCollisionEvents
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2102388684916877290, guid: c0ce7b3c74021e840a5995cf136ee0fe,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8666090344260274590, guid: c0ce7b3c74021e840a5995cf136ee0fe,
         type: 3}
       propertyPath: m_LocalScale.x
@@ -5818,9 +5908,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   prefab: {fileID: 1191054677816456, guid: 72ed9871ccf992c4fbcb7250c50b8805, type: 3}
   range:
-    x: 0
-    y: 0
-    z: 0
+    x:
+      rawValue: 1092616192
+    y:
+      rawValue: 1092616192
+    z:
+      rawValue: 1092616192
   count: 10
 --- !u!4 &1555230820
 Transform:
@@ -6076,33 +6169,52 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_MotionType: 2
   m_Smoothing: 0
-  m_Mass: 1
-  m_LinearDamping: 0.01
-  m_AngularDamping: 0.05
+  m_Mass:
+    rawValue: 1065353216
+  m_LinearDamping:
+    rawValue: 1008981770
+  m_AngularDamping:
+    rawValue: 1028443341
   m_InitialLinearVelocity:
-    x: 0
-    y: 0
-    z: 0
+    x:
+      rawValue: 0
+    y:
+      rawValue: 0
+    z:
+      rawValue: 0
   m_InitialAngularVelocity:
-    x: 0
-    y: 0
-    z: 0
-  m_GravityFactor: 1
+    x:
+      rawValue: 0
+    y:
+      rawValue: 0
+    z:
+      rawValue: 0
+  m_GravityFactor:
+    rawValue: 1065353216
   m_OverrideDefaultMassDistribution: 0
   m_CenterOfMass:
-    x: 0
-    y: 0
-    z: 0
+    x:
+      rawValue: 0
+    y:
+      rawValue: 0
+    z:
+      rawValue: 0
   m_Orientation:
     Value:
-      x: 0
-      y: 0
-      z: 0
+      x:
+        rawValue: 0
+      y:
+        rawValue: 0
+      z:
+        rawValue: 0
     RotationOrder: 4
   m_InertiaTensor:
-    x: 0.4
-    y: 0.4
-    z: 0.4
+    x:
+      rawValue: 1053609164
+    y:
+      rawValue: 1053609164
+    z:
+      rawValue: 1053609164
   m_WorldIndex: 0
   m_CustomTags:
     Tag00: 0
@@ -6127,34 +6239,52 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_ShapeType: 31
   m_PrimitiveCenter:
-    x: -0.18018913
-    y: -2.1294053
-    z: -0.4887352
+    x:
+      rawValue: 0
+    y:
+      rawValue: 0
+    z:
+      rawValue: 0
   m_PrimitiveSize:
-    x: 65.52365
-    y: 18.218975
-    z: 38.01181
+    x:
+      rawValue: 1065353216
+    y:
+      rawValue: 1065353216
+    z:
+      rawValue: 1065353216
   m_PrimitiveOrientation:
     Value:
-      x: -0
-      y: 0
-      z: 0
+      x:
+        rawValue: 0
+      y:
+        rawValue: 0
+      z:
+        rawValue: 0
     RotationOrder: 4
   m_Capsule:
-    Height: 38.01181
-    Radius: 32.761826
+    Height:
+      rawValue: 1065353216
+    Radius:
+      rawValue: 1056964608
     Axis: 2
   m_Cylinder:
-    Height: 38.01181
-    Radius: 32.761826
+    Height:
+      rawValue: 1065353216
+    Radius:
+      rawValue: 1056964608
     Axis: 2
   m_CylinderSideCount: 20
-  m_SphereRadius: 32.761826
-  m_MinimumSkinnedVertexWeight: 0.1
+  m_SphereRadius:
+    rawValue: 1056964608
+  m_MinimumSkinnedVertexWeight:
+    rawValue: 1036831949
   m_ConvexHullGenerationParameters:
-    m_SimplificationTolerance: 0.015
-    m_BevelRadius: 0.05
-    m_MinimumAngle: 2.5000002
+    m_SimplificationTolerance:
+      rawValue: 1014350479
+    m_BevelRadius:
+      rawValue: 1028443341
+    m_MinimumAngle:
+      rawValue: 1075838975
   m_CustomMesh: {fileID: 0}
   m_ForceUnique: 0
   m_Material:
@@ -6166,12 +6296,14 @@ MonoBehaviour:
     m_Friction:
       m_Override: 0
       m_Value:
-        Value: 0.5
+        Value:
+          rawValue: 1056964608
         CombineMode: 0
     m_Restitution:
       m_Override: 0
       m_Value:
-        Value: 0
+        Value:
+          rawValue: 0
         CombineMode: 2
     m_BelongsToCategories:
       m_Override: 0

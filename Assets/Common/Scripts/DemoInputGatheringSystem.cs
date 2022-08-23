@@ -23,12 +23,12 @@ partial class DemoInputGatheringSystem : SystemBase
 #pragma warning disable 649
     Vector2 m_CharacterMovement;
     Vector2 m_CharacterLooking;
-    sfloat m_CharacterFiring;
+    float m_CharacterFiring;
     bool m_CharacterJumped;
 
     Vector2 m_VehicleLooking;
     Vector2 m_VehicleSteering;
-    sfloat m_VehicleThrottle;
+    float m_VehicleThrottle;
     int m_VehicleChanged;
 #pragma warning restore 649
 
@@ -55,12 +55,12 @@ partial class DemoInputGatheringSystem : SystemBase
 
     void InputActions.ICharacterControllerActions.OnMove(InputAction.CallbackContext context) => m_CharacterMovement = context.ReadValue<Vector2>();
     void InputActions.ICharacterControllerActions.OnLook(InputAction.CallbackContext context) => m_CharacterLooking = context.ReadValue<Vector2>();
-    void InputActions.ICharacterControllerActions.OnFire(InputAction.CallbackContext context) => m_CharacterFiring = context.ReadValue<sfloat>();
+    void InputActions.ICharacterControllerActions.OnFire(InputAction.CallbackContext context) => m_CharacterFiring = context.ReadValue<float>();
     void InputActions.ICharacterControllerActions.OnJump(InputAction.CallbackContext context) { if (context.started) m_CharacterJumped = true; }
 
     void InputActions.IVehicleActions.OnLook(InputAction.CallbackContext context) => m_VehicleLooking = context.ReadValue<Vector2>();
     void InputActions.IVehicleActions.OnSteering(InputAction.CallbackContext context) => m_VehicleSteering = context.ReadValue<Vector2>();
-    void InputActions.IVehicleActions.OnThrottle(InputAction.CallbackContext context) => m_VehicleThrottle = context.ReadValue<sfloat>();
+    void InputActions.IVehicleActions.OnThrottle(InputAction.CallbackContext context) => m_VehicleThrottle = context.ReadValue<float>();
     void InputActions.IVehicleActions.OnPrevious(InputAction.CallbackContext context) { if (context.started) m_VehicleChanged = -1; }
     void InputActions.IVehicleActions.OnNext(InputAction.CallbackContext context) { if (context.started) m_VehicleChanged = 1; }
 #endif
@@ -85,7 +85,7 @@ partial class DemoInputGatheringSystem : SystemBase
          m_CharacterGunInputQuery.SetSingleton(new CharacterGunInput
          {
              Looking = m_CharacterLooking,
-             Firing = m_CharacterFiring,
+             Firing = (sfloat)m_CharacterFiring,
          });
         
          m_CharacterJumped = false;
@@ -98,7 +98,7 @@ partial class DemoInputGatheringSystem : SystemBase
          {
              Looking = m_VehicleLooking,
              Steering = m_VehicleSteering,
-             Throttle = m_VehicleThrottle,
+             Throttle = (sfloat)m_VehicleThrottle,
              Change = m_VehicleChanged
          });
         

@@ -1,0 +1,14 @@
+{
+    "name": "Unity.Mathematics.FixedPoint.Editor",
+    "references": [
+        "Unity.Mathematics.FixedPoint",
+        "Unity.Mathematics",
+        "Unity.Mathematics.Editor"
+    ],
+    "optionalUnityReferences": [],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true
+}
