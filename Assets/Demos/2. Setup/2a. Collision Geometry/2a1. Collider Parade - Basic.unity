@@ -2212,6 +2212,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1165604059612894560, guid: c0ce7b3c74021e840a5995cf136ee0fe,
         type: 3}
+      propertyPath: DrawColliderAabbs
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1165604059612894560, guid: c0ce7b3c74021e840a5995cf136ee0fe,
+        type: 3}
       propertyPath: DrawColliderEdges
       value: 1
       objectReference: {fileID: 0}

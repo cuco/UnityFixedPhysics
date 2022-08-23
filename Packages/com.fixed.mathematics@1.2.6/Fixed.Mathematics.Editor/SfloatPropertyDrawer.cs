@@ -49,7 +49,7 @@ namespace Fixed.Mathematics.Editor
 
         public static void Draw(Rect position, SerializedProperty property, GUIContent label)
         {
-            var f = sfloat.FromRaw((uint)property.intValue);
+            var f = sfloat.FromRaw((uint)property.longValue);
             var v = (float) f;
             
             try
@@ -57,7 +57,7 @@ namespace Fixed.Mathematics.Editor
                 var n = label == null ? EditorGUI.FloatField(position, v) : EditorGUI.FloatField(position, label, v);
                 if (n != v)
                 {
-                    property.intValue = (int)(((sfloat)n).RawValue);
+                    property.longValue = ((sfloat)n).RawValue;
                 }
                 GUI.Label(position, "FP", OverlayStyle);
             }

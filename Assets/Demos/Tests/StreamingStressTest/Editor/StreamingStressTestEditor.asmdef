@@ -1,0 +1,20 @@
+{
+    "name": "StreamingStressTestEditor",
+    "references": [
+        "Fixed.Mathematics",
+        "StreamingStressTest"
+    ],
+    "optionalUnityReferences": [],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": false,
+    "precompiledReferences": [
+        ""
+    ],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": []
+}

@@ -84,6 +84,11 @@ namespace Fixed.Physics
             };
         }
 
+        public static Constraint BallAndSocket()
+        {
+            return BallAndSocket(DefaultSpringFrequency, DefaultSpringDamping);
+        }
+
         /// <summary>
         /// Constrains linear motion about all three axes within the specified range.
         /// </summary>

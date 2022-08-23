@@ -98,6 +98,7 @@ public struct sfloat : IEquatable<sfloat>, IComparable<sfloat>, IComparable, IFo
     public static sfloat NegativeInfinity => new sfloat(RawNegativeInfinity);
     public static sfloat NaN => new sfloat(RawNaN);
     public static sfloat One => new sfloat(RawOne);
+    public static sfloat Half => (sfloat)0.5f;
     public static sfloat MinusOne => new sfloat(RawMinusOne);
     public static sfloat MaxValue => new sfloat(RawMaxValue);
     public static sfloat MinValue => new sfloat(RawMinValue);

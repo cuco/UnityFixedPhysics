@@ -87,7 +87,7 @@ public partial class TriggerGravityFactorSystem : SystemBase
             var dynamicEntity = isBodyATrigger ? entityB : entityA;
 
             var triggerGravityComponent = TriggerGravityFactorGroup[triggerEntity];
-            // tweak PhysicsGravityFactor
+            //tweak PhysicsGravityFactor
             {
                 var component = PhysicsGravityFactorGroup[dynamicEntity];
                 component.Value = triggerGravityComponent.GravityFactor;

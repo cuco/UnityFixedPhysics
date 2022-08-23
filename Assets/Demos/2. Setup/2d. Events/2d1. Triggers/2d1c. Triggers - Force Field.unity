@@ -674,37 +674,37 @@ PrefabInstance:
     - target: {fileID: 3945518518046659535, guid: ebfe93b387bf4a54989a6f911bdc11d1,
         type: 3}
       propertyPath: m_Cylinder.Axis
-      value: 2
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3945518518046659535, guid: ebfe93b387bf4a54989a6f911bdc11d1,
         type: 3}
       propertyPath: m_SphereRadius.rawValue
-      value: 1056964608
+      value: 1056964616
       objectReference: {fileID: 0}
     - target: {fileID: 3945518518046659535, guid: ebfe93b387bf4a54989a6f911bdc11d1,
         type: 3}
       propertyPath: m_Capsule.Height.rawValue
-      value: 1065353216
+      value: 1065353224
       objectReference: {fileID: 0}
     - target: {fileID: 3945518518046659535, guid: ebfe93b387bf4a54989a6f911bdc11d1,
         type: 3}
       propertyPath: m_Cylinder.Height.rawValue
-      value: 1065353216
+      value: 1065353224
       objectReference: {fileID: 0}
     - target: {fileID: 3945518518046659535, guid: ebfe93b387bf4a54989a6f911bdc11d1,
         type: 3}
       propertyPath: m_PrimitiveSize.y.rawValue
-      value: 1065353216
+      value: 1065353224
       objectReference: {fileID: 0}
     - target: {fileID: 3945518518046659535, guid: ebfe93b387bf4a54989a6f911bdc11d1,
         type: 3}
       propertyPath: m_PrimitiveSize.z.rawValue
-      value: 1065353216
+      value: 1065353215
       objectReference: {fileID: 0}
     - target: {fileID: 3945518518046659535, guid: ebfe93b387bf4a54989a6f911bdc11d1,
         type: 3}
       propertyPath: m_PrimitiveCenter.y.rawValue
-      value: 0
+      value: 3045064704
       objectReference: {fileID: 0}
     - target: {fileID: 3945518518046659535, guid: ebfe93b387bf4a54989a6f911bdc11d1,
         type: 3}
@@ -714,7 +714,7 @@ PrefabInstance:
     - target: {fileID: 3945518518046659535, guid: ebfe93b387bf4a54989a6f911bdc11d1,
         type: 3}
       propertyPath: m_PrimitiveOrientation.Value.x.rawValue
-      value: 0
+      value: 3068473057
       objectReference: {fileID: 0}
     - target: {fileID: 7682084060178167355, guid: ebfe93b387bf4a54989a6f911bdc11d1,
         type: 3}
@@ -894,6 +894,11 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1165604059612894560, guid: c0ce7b3c74021e840a5995cf136ee0fe,
+        type: 3}
+      propertyPath: DrawColliderEdges
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 1165604059612894560, guid: c0ce7b3c74021e840a5995cf136ee0fe,
         type: 3}
       propertyPath: DrawTriggerEvents
