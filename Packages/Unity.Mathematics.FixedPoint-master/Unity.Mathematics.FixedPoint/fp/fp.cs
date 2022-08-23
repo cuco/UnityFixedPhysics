@@ -14,17 +14,23 @@ namespace Unity.Mathematics.FixedPoint
         long m_rawValue;
 
         // Precision of this type is 2^-32, that is 2,3283064365386962890625E-10
-        public static decimal precision => new fp(1L);//0.00000000023283064365386962890625m;
-        public static fp max_value => new fp(MAX_VALUE);
-        public static fp min_value => new fp(MIN_VALUE);
-        public static fp one => new fp(ONE);
-        public static fp zero => new fp();
+        public static readonly decimal precision = new fp(1L);//0.00000000023283064365386962890625m;
+        public static readonly fp max_value = new fp(MAX_VALUE);
+        public static readonly fp min_value = new fp(MIN_VALUE);
+        public static readonly fp one = new fp(ONE);
+        public static readonly fp minusOne = new fp(-ONE);
+        public static readonly fp half = new fp(1L << (FRACTIONAL_PLACES - 1));
+        public static readonly fp quarter = new fp(1L << (FRACTIONAL_PLACES - 2));
+        public static readonly fp eighth = new fp(1L << (FRACTIONAL_PLACES - 3));
+        public static readonly fp two = new fp(1L << (FRACTIONAL_PLACES + 1));
+        public static readonly fp epsilon = new fp(1L);
+        public static readonly fp zero = new fp();
 
-        static fp Pi => new fp(PI);
-        static fp PiOver2 => new fp(PI_OVER_2);
-        static fp Log2Max => new fp(LOG2MAX);
-        static fp Log2Min => new fp(LOG2MIN);
-        static fp Ln2 => new fp(LN2);
+        public static readonly fp Pi = new fp(PI);
+        public static readonly fp PiOver2 = new fp(PI_OVER_2);
+        public static readonly fp Log2Max = new fp(LOG2MAX);
+        public static readonly fp Log2Min = new fp(LOG2MIN);
+        public static readonly fp Ln2 = new fp(LN2);
 
         static readonly fp LutInterval = (fp)(LUT_SIZE - 1) / PiOver2;
         const long MAX_VALUE = long.MaxValue;
@@ -142,7 +148,7 @@ namespace Unity.Mathematics.FixedPoint
         }
 
         /// <summary>
-        /// Adds x and y. Performs saturating addition, i.e. in case of overflow, 
+        /// Adds x and y. Performs saturating addition, i.e. in case of overflow,
         /// rounds to MinValue or MaxValue depending on sign of operands.
         /// </summary>
         public static fp operator +(fp x, fp y)
@@ -167,7 +173,7 @@ namespace Unity.Mathematics.FixedPoint
         }
 
         /// <summary>
-        /// Subtracts y from x. Performs saturating substraction, i.e. in case of overflow, 
+        /// Subtracts y from x. Performs saturating substraction, i.e. in case of overflow,
         /// rounds to MinValue or MaxValue depending on sign of operands.
         /// </summary>
         public static fp operator -(fp x, fp y)
@@ -473,7 +479,7 @@ namespace Unity.Mathematics.FixedPoint
 
             /* The algorithm is based on the power series for exp(x):
              * http://en.wikipedia.org/wiki/Exponential_function#Formal_definition
-             * 
+             *
              * From term n, we get term n+1 by multiplying with x/n.
              * When the sum term drops to zero, we can stop summing.
              */
@@ -1035,11 +1041,11 @@ namespace Unity.Mathematics.FixedPoint
             using (var writer = new StreamWriter("Fix64SinLut.cs"))
             {
                 writer.Write(
-@"namespace Unity.Mathematics.FixedPoint 
+@"namespace Unity.Mathematics.FixedPoint
 {
-    partial struct Fix64 
+    partial struct Fix64
     {
-        public static readonly long[] SinLut = new[] 
+        public static readonly long[] SinLut = new[]
         {");
                 int lineCounter = 0;
                 for (int i = 0; i < LUT_SIZE; ++i)
@@ -1067,11 +1073,11 @@ namespace Unity.Mathematics.FixedPoint
             using (var writer = new StreamWriter("Fix64TanLut.cs"))
             {
                 writer.Write(
-@"namespace Unity.Mathematics.FixedPoint 
+@"namespace Unity.Mathematics.FixedPoint
 {
-    partial struct Fix64 
+    partial struct Fix64
     {
-        public static readonly long[] TanLut = new[] 
+        public static readonly long[] TanLut = new[]
         {");
                 int lineCounter = 0;
                 for (int i = 0; i < LUT_SIZE; ++i)
