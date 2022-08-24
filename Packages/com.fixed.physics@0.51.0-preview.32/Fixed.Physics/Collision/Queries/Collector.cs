@@ -2,7 +2,7 @@ using System.Runtime.CompilerServices;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
-using Fixed.Mathematics;
+using Unity.Mathematics.FixedPoint;
 using UnityEngine.Assertions;
 using static Fixed.Physics.Math;
 
@@ -12,7 +12,7 @@ namespace Fixed.Physics
     {
         // For casts this is fraction of the query at which the hit occurred.
         // For distance queries, this is a distance from the query object
-        sfloat Fraction { get; }
+        fp Fraction { get; }
 
         // Index of the hit body in the CollisionWorld's rigid body array
         int RigidBodyIndex { get; }
@@ -78,7 +78,7 @@ namespace Fixed.Physics
         // The maximum fraction of the query within which to check for hits
         // For casts, this is a fraction along the ray
         // For distance queries, this is a distance from the query object
-        sfloat MaxFraction { get; }
+        fp MaxFraction { get; }
 
         // The number of hits that have been collected
         int NumHits { get; }
@@ -92,10 +92,10 @@ namespace Fixed.Physics
     public struct AnyHitCollector<T> : ICollector<T> where T : struct, IQueryResult
     {
         public bool EarlyOutOnFirstHit => true;
-        public sfloat MaxFraction { get; }
+        public fp MaxFraction { get; }
         public int NumHits => 0;
 
-        public AnyHitCollector(sfloat maxFraction)
+        public AnyHitCollector(fp maxFraction)
         {
             MaxFraction = maxFraction;
         }
@@ -115,13 +115,13 @@ namespace Fixed.Physics
     public struct ClosestHitCollector<T> : ICollector<T> where T : struct, IQueryResult
     {
         public bool EarlyOutOnFirstHit => false;
-        public sfloat MaxFraction { get; private set; }
+        public fp MaxFraction { get; private set; }
         public int NumHits { get; private set; }
 
         private T m_ClosestHit;
         public T ClosestHit => m_ClosestHit;
 
-        public ClosestHitCollector(sfloat maxFraction)
+        public ClosestHitCollector(fp maxFraction)
         {
             MaxFraction = maxFraction;
             m_ClosestHit = default(T);
@@ -146,12 +146,12 @@ namespace Fixed.Physics
     public struct AllHitsCollector<T> : ICollector<T> where T : unmanaged, IQueryResult
     {
         public bool EarlyOutOnFirstHit => false;
-        public sfloat MaxFraction { get; }
+        public fp MaxFraction { get; }
         public int NumHits => AllHits.Length;
 
         public NativeList<T> AllHits;
 
-        public AllHitsCollector(sfloat maxFraction, ref NativeList<T> allHits)
+        public AllHitsCollector(fp maxFraction, ref NativeList<T> allHits)
         {
             MaxFraction = maxFraction;
             AllHits = allHits;
@@ -178,7 +178,7 @@ namespace Fixed.Physics
         where C : struct, ICollector<T>
     {
         public bool EarlyOutOnFirstHit => Collector.EarlyOutOnFirstHit;
-        public sfloat MaxFraction => Collector.MaxFraction;
+        public fp MaxFraction => Collector.MaxFraction;
         public int NumHits => Collector.NumHits;
 
         // Todo: have a QueryInteraction field here, and filter differently based on it in AddHit()
@@ -215,7 +215,7 @@ namespace Fixed.Physics
         where C : struct, ICollector<ColliderCastHit>
     {
         public bool EarlyOutOnFirstHit => Collector.EarlyOutOnFirstHit;
-        public sfloat MaxFraction => Collector.MaxFraction;
+        public fp MaxFraction => Collector.MaxFraction;
         public int NumHits => Collector.NumHits;
 
         public ref C Collector
@@ -225,12 +225,12 @@ namespace Fixed.Physics
 
         private ColliderKey m_TargetColliderKey;
         private Material m_TargetMaterial;
-        private float3 m_CastDirectionWS;
+        private fp3 m_CastDirectionWS;
 
         // This must be a void ptr, since C# doesn't allow generic type pointers
         private void* m_CollectorPtr;
 
-        public FlippedColliderCastQueryCollector(ref C collector, float3 castDirectionWS, ColliderKey targetColliderKey, Material targetMaterial)
+        public FlippedColliderCastQueryCollector(ref C collector, fp3 castDirectionWS, ColliderKey targetColliderKey, Material targetMaterial)
         {
             m_TargetColliderKey = targetColliderKey;
             m_TargetMaterial = targetMaterial;
@@ -262,7 +262,7 @@ namespace Fixed.Physics
         where C : struct, ICollector<DistanceHit>
     {
         public bool EarlyOutOnFirstHit => Collector.EarlyOutOnFirstHit;
-        public sfloat MaxFraction => Collector.MaxFraction;
+        public fp MaxFraction => Collector.MaxFraction;
         public int NumHits => Collector.NumHits;
 
         public ref C Collector

@@ -1,5 +1,5 @@
 using NUnit.Framework;
-using Fixed.Mathematics;
+using Unity.Mathematics.FixedPoint;
 using Fixed.Physics.Authoring;
 using UnityEngine;
 
@@ -10,7 +10,7 @@ namespace Fixed.Physics.Tests.Authoring
         [Test]
         public void SetOrientation_DoesNotThrow()
         {
-            Assert.DoesNotThrow(() => new CapsuleGeometryAuthoring { Orientation = quaternion.identity });
+            Assert.DoesNotThrow(() => new CapsuleGeometryAuthoring { Orientation = fpquaternion.identity });
         }
     }
 }

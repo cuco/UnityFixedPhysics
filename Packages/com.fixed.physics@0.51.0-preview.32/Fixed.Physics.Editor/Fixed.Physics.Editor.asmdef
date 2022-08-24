@@ -6,13 +6,13 @@
         "Unity.Collections",
         "Unity.Entities",
         "Unity.Entities.Hybrid",
-        "Fixed.Mathematics",
+        "Unity.Mathematics.FixedPoint",
         "Fixed.Physics",
         "Fixed.Physics.Hybrid",
         "Unity.Rendering.Hybrid",
         "Fixed.Transforms",
         "Fixed.Transforms.Hybrid",
-        "Fixed.Sfloat"
+        "Fixed.fp"
     ],
     "includePlatforms": [
         "Editor"

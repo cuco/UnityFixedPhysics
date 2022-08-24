@@ -4,7 +4,7 @@ using Unity.Burst;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Jobs;
-using Fixed.Mathematics;
+using Unity.Mathematics.FixedPoint;
 using Unity.PerformanceTesting;
 using static Fixed.Physics.BoundingVolumeHierarchy;
 using static Fixed.Physics.BoundingVolumeHierarchy.Builder;
@@ -25,13 +25,13 @@ namespace Fixed.Physics.Tests.Collision.Geometry
 
             for (int i = 0; i < points.Length; i++)
             {
-                float3 pos;
-                pos.x = (sfloat)Random.Range(-posRange, posRange);
-                pos.y = (sfloat)Random.Range(-posRange, posRange);
-                pos.z = (sfloat)Random.Range(-posRange, posRange);
+                fp3 pos;
+                pos.x = (fp)Random.Range(-posRange, posRange);
+                pos.y = (fp)Random.Range(-posRange, posRange);
+                pos.z = (fp)Random.Range(-posRange, posRange);
                 points[i] = new PointAndIndex { Position = pos, Index = i };
 
-                float3 radius = new float3(Random.Range(radiusRangeMin, radiusRangeMax));
+                fp3 radius = new fp3(Random.Range(radiusRangeMin, radiusRangeMax));
                 aabbs[i] = new Aabb { Min = pos - radius, Max = pos + radius };
 
                 filters[i] = CollisionFilter.Default;
@@ -49,13 +49,13 @@ namespace Fixed.Physics.Tests.Collision.Geometry
 
             for (int i = 0; i < points.Length; i++)
             {
-                float3 pos;
-                pos.x = (sfloat)Random.Range(-posRange, posRange);
-                pos.y = (sfloat)Random.Range(-posRange, posRange);
-                pos.z = (sfloat)Random.Range(-posRange, posRange);
+                fp3 pos;
+                pos.x = (fp)Random.Range(-posRange, posRange);
+                pos.y = (fp)Random.Range(-posRange, posRange);
+                pos.z = (fp)Random.Range(-posRange, posRange);
                 points[i] = new PointAndIndex { Position = pos, Index = i };
 
-                float3 radius = new float3(Random.Range(radiusRangeMin, radiusRangeMax));
+                fp3 radius = new fp3(Random.Range(radiusRangeMin, radiusRangeMax));
                 aabbs[i] = new Aabb { Min = pos - radius, Max = pos + radius };
 
                 points[i + 1] = new PointAndIndex { Position = pos, Index = i + 1 };
@@ -129,7 +129,7 @@ namespace Fixed.Physics.Tests.Collision.Geometry
             for (int i = 0; i < branchCount; i++)
             {
                 bvh.BuildBranch(points, aabbs, ranges[i], branchNodeOffsets[i]);
-                minBranchNodeIndex = math.min(branchNodeOffsets[i], minBranchNodeIndex);
+                minBranchNodeIndex = fpmath.min(branchNodeOffsets[i], minBranchNodeIndex);
             }
 
             bvh.Refit(aabbs, 1, minBranchNodeIndex);

@@ -4,7 +4,8 @@ using System.Runtime.CompilerServices;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
-using Fixed.Mathematics;
+using Unity.Mathematics;
+using Unity.Mathematics.FixedPoint;
 
 namespace Fixed.Physics
 {
@@ -41,7 +42,7 @@ namespace Fixed.Physics
             public BlobArray.Accessor<PrimitiveVertexIndices> PrimitiveVertexIndices => new BlobArray.Accessor<PrimitiveVertexIndices>(ref PrimitiveVertexIndicesBlob);
 
             internal BlobArray VerticesBlob;
-            public BlobArray.Accessor<float3> Vertices => new BlobArray.Accessor<float3>(ref VerticesBlob);
+            public BlobArray.Accessor<fp3> Vertices => new BlobArray.Accessor<fp3>(ref VerticesBlob);
 
             internal BlobArray PrimitiveFilterIndicesBlob;
             public BlobArray.Accessor<short> PrimitiveFilterIndices => new BlobArray.Accessor<short>(ref PrimitiveFilterIndicesBlob);
@@ -56,7 +57,7 @@ namespace Fixed.Physics
             public BlobArray.Accessor<Material> Materials => new BlobArray.Accessor<Material>(ref MaterialsBlob);
         }
 
-        internal sfloat m_BoundingRadius;
+        internal fp m_BoundingRadius;
 
         // The bounding volume
         private BlobArray m_BvhNodesBlob;
@@ -78,19 +79,19 @@ namespace Fixed.Physics
 
         internal void UpdateCachedBoundingRadius()
         {
-            float3 center = BoundingVolumeHierarchy.Domain.Center;
-            sfloat boundingRadiusSq = sfloat.Zero;
+            fp3 center = BoundingVolumeHierarchy.Domain.Center;
+            fp boundingRadiusSq = fp.zero;
 
             for (int i = 0; i < Sections.Length; ++i)
             {
                 var vertices = Sections[i].Vertices;
                 for (int j = 0; j < vertices.Length; ++j)
                 {
-                    boundingRadiusSq = math.max(math.distancesq(center, vertices[j]), boundingRadiusSq);
+                    boundingRadiusSq = fpmath.max(fpmath.distancesq(center, vertices[j]), boundingRadiusSq);
                 }
             }
 
-            m_BoundingRadius = math.sqrt(boundingRadiusSq);
+            m_BoundingRadius = fpmath.sqrt(boundingRadiusSq);
         }
 
         // Get the number of bits required to store a key to any of the leaf colliders
@@ -113,7 +114,7 @@ namespace Fixed.Physics
         }
 
         // Get the vertices, flags and collision filter of a primitive
-        internal void GetPrimitive(int primitiveKey, out float3x4 vertices, out PrimitiveFlags flags, out CollisionFilter filter)
+        internal void GetPrimitive(int primitiveKey, out fp3x4 vertices, out PrimitiveFlags flags, out CollisionFilter filter)
         {
             int sectionIndex = primitiveKey >> 8;
             int sectionPrimitiveIndex = primitiveKey & 0xFF;
@@ -122,7 +123,7 @@ namespace Fixed.Physics
 
             PrimitiveVertexIndices vertexIndices = section.PrimitiveVertexIndices[sectionPrimitiveIndex];
 
-            vertices = new float3x4(
+            vertices = new fp3x4(
                 section.Vertices[vertexIndices.A],
                 section.Vertices[vertexIndices.B],
                 section.Vertices[vertexIndices.C],
@@ -135,7 +136,7 @@ namespace Fixed.Physics
         }
 
         // Get the vertices, flags, collision filter and material of a primitive
-        internal void GetPrimitive(int primitiveKey, out float3x4 vertices, out PrimitiveFlags flags, out CollisionFilter filter, out Material material)
+        internal void GetPrimitive(int primitiveKey, out fp3x4 vertices, out PrimitiveFlags flags, out CollisionFilter filter, out Material material)
         {
             int sectionIndex = primitiveKey >> 8;
             int sectionPrimitiveIndex = primitiveKey & 0xFF;
@@ -144,7 +145,7 @@ namespace Fixed.Physics
 
             PrimitiveVertexIndices vertexIndices = section.PrimitiveVertexIndices[sectionPrimitiveIndex];
 
-            vertices = new float3x4(
+            vertices = new fp3x4(
                 section.Vertices[vertexIndices.A],
                 section.Vertices[vertexIndices.B],
                 section.Vertices[vertexIndices.C],
@@ -180,7 +181,7 @@ namespace Fixed.Physics
             // because the caller doesn't need it
 
             PrimitiveVertexIndices vertexIndices = section.PrimitiveVertexIndices[sectionPrimitiveIndex];
-            var vertices = new float3x4(
+            var vertices = new fp3x4(
                 section.Vertices[vertexIndices.A],
                 section.Vertices[vertexIndices.B],
                 section.Vertices[vertexIndices.C],
@@ -214,7 +215,7 @@ namespace Fixed.Physics
 
             ref Section section = ref Sections[0];
             PrimitiveVertexIndices vertexIndices = section.PrimitiveVertexIndices[0];
-            var vertices = new float3x4(
+            var vertices = new fp3x4(
                 section.Vertices[vertexIndices.A],
                 section.Vertices[vertexIndices.B],
                 section.Vertices[vertexIndices.C],
@@ -283,7 +284,7 @@ namespace Fixed.Physics
 
                 ref Section section = ref Sections[sectionIndex];
                 PrimitiveVertexIndices vertexIndices = section.PrimitiveVertexIndices[sectionPrimitiveIndex];
-                var vertices = new float3x4(
+                var vertices = new fp3x4(
                     section.Vertices[vertexIndices.A],
                     section.Vertices[vertexIndices.B],
                     section.Vertices[vertexIndices.C],
@@ -322,7 +323,7 @@ namespace Fixed.Physics
                 int numPrimitives = section.PrimitivesLength;
                 totalSize += Math.NextMultipleOf(numPrimitives * UnsafeUtility.SizeOf<PrimitiveFlags>(), 4);
                 totalSize += Math.NextMultipleOf(numPrimitives * UnsafeUtility.SizeOf<PrimitiveVertexIndices>(), 4);
-                totalSize += Math.NextMultipleOf(section.VerticesLength * UnsafeUtility.SizeOf<float3>(), 4);
+                totalSize += Math.NextMultipleOf(section.VerticesLength * UnsafeUtility.SizeOf<fp3>(), 4);
                 totalSize += Math.NextMultipleOf(numPrimitives * sizeof(short), 4);
                 totalSize += Math.NextMultipleOf(1 * UnsafeUtility.SizeOf<CollisionFilter>(), 4);
                 totalSize += Math.NextMultipleOf(numPrimitives * sizeof(short), 4);
@@ -369,7 +370,7 @@ namespace Fixed.Physics
 
                 section->VerticesBlob.Offset = UnsafeEx.CalculateOffset(end, ref section->VerticesBlob);
                 section->VerticesBlob.Length = range.VerticesLength;
-                end += Math.NextMultipleOf(section->VerticesBlob.Length * sizeof(float3), 4);
+                end += Math.NextMultipleOf(section->VerticesBlob.Length * sizeof(fp3), 4);
 
                 for (int i = 0; i < range.PrimitivesFlagsLength; i++)
                 {

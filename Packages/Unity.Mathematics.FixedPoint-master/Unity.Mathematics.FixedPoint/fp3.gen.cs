@@ -29,7 +29,7 @@ namespace Unity.Mathematics.FixedPoint
         /// <summary>Constructs a fp3 vector from three fp values.</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public fp3(fp x, fp y, fp z)
-        { 
+        {
             this.x = x;
             this.y = y;
             this.z = z;
@@ -38,7 +38,7 @@ namespace Unity.Mathematics.FixedPoint
         /// <summary>Constructs a fp3 vector from a fp value and a fp2 vector.</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public fp3(fp x, fp2 yz)
-        { 
+        {
             this.x = x;
             this.y = yz.x;
             this.z = yz.y;
@@ -47,7 +47,7 @@ namespace Unity.Mathematics.FixedPoint
         /// <summary>Constructs a fp3 vector from a fp2 vector and a fp value.</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public fp3(fp2 xy, fp z)
-        { 
+        {
             this.x = xy.x;
             this.y = xy.y;
             this.z = z;
@@ -56,7 +56,7 @@ namespace Unity.Mathematics.FixedPoint
         /// <summary>Constructs a fp3 vector from a fp3 vector.</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public fp3(fp3 xyz)
-        { 
+        {
             this.x = xyz.x;
             this.y = xyz.y;
             this.z = xyz.z;
@@ -128,6 +128,14 @@ namespace Unity.Mathematics.FixedPoint
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static explicit operator fp3(uint3 v) { return new fp3(v); }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static explicit operator int3(fp3 v) { return new int3((int)v.x, (int)v.y, (int)v.z); }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static explicit operator double3(fp3 v) { return new double3((double)v.x, (double)v.y, (double)v.z); }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static explicit operator fp3(double3 v) { return new fp3((fp)v.x, (fp)v.y, (fp)v.z); }
 
         /// <summary>Returns the result of a componentwise multiplication operation on two fp3 vectors.</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -1,4 +1,5 @@
-using Fixed.Mathematics;
+using Unity.Mathematics;
+using Unity.Mathematics.FixedPoint;
 using FloatRange = Fixed.Physics.Math.FloatRange;
 
 namespace Fixed.Physics.Extensions
@@ -96,7 +97,7 @@ namespace Fixed.Physics.Extensions
         /// </summary>
         /// <param name="maxConeAngle">Half angle of the primary cone, which defines the maximum possible range of motion in which the primary axis is restricted.</param>
         /// <param name="angularTwistRange">The range of angular motion for twisting around the primary axis within the region defined by the primary and perpendicular cones. This range is usually symmetrical.</param>
-        public static void GetRagdollPrimaryConeAndTwistRange(in this PhysicsJoint joint, out sfloat maxConeAngle, out FloatRange angularTwistRange)
+        public static void GetRagdollPrimaryConeAndTwistRange(in this PhysicsJoint joint, out fp maxConeAngle, out FloatRange angularTwistRange)
         {
             maxConeAngle = joint[PhysicsJoint.k_RagdollPrimaryMaxConeIndex].Max;
             angularTwistRange = new FloatRange
@@ -111,12 +112,12 @@ namespace Fixed.Physics.Extensions
         /// </summary>
         /// <param name="maxConeAngle">Half angle of the primary cone, which defines the maximum possible range of motion in which the primary axis is restricted. This value is clamped to the range (-pi, pi).</param>
         /// <param name="angularTwistRange">The range of angular motion for twisting around the primary axis within the region defined by the primary and perpendicular cones. This range is usually symmetrical, and is clamped to the range (-pi, pi).</param>
-        public static void SetRagdollPrimaryConeAndTwistRange(ref this PhysicsJoint joint, sfloat maxConeAngle, FloatRange angularTwistRange)
+        public static void SetRagdollPrimaryConeAndTwistRange(ref this PhysicsJoint joint, fp maxConeAngle, FloatRange angularTwistRange)
         {
-            angularTwistRange = math.clamp(angularTwistRange, new float2(-math.PI), new float2(math.PI));
+            angularTwistRange = fpmath.clamp(angularTwistRange, new fp2(-fpmath.PI), new fp2(fpmath.PI));
             var constraints = joint.GetConstraints();
-            constraints.ElementAt(PhysicsJoint.k_RagdollPrimaryMaxConeIndex).Min = sfloat.Zero;
-            constraints.ElementAt(PhysicsJoint.k_RagdollPrimaryMaxConeIndex).Max = math.min(math.abs(maxConeAngle), math.PI);
+            constraints.ElementAt(PhysicsJoint.k_RagdollPrimaryMaxConeIndex).Min = fp.zero;
+            constraints.ElementAt(PhysicsJoint.k_RagdollPrimaryMaxConeIndex).Max = fpmath.min(fpmath.abs(maxConeAngle), fpmath.PI);
             constraints.ElementAt(PhysicsJoint.k_RagdollPrimaryTwistRangeIndex).Min = angularTwistRange.Min;
             constraints.ElementAt(PhysicsJoint.k_RagdollPrimaryTwistRangeIndex).Max = angularTwistRange.Max;
             joint.SetConstraints(constraints);
@@ -133,7 +134,7 @@ namespace Fixed.Physics.Extensions
             Max = joint[PhysicsJoint.k_RagdollPerpendicularRangeIndex].Max
         }
 
-        -new float2(sfloat.FromRaw(0x3fc90fdb));
+        -new fp2(fp.FromRaw(0x3fc90fdb));
 
         /// <summary>
         /// Applies the specified range of motion to a ragdoll perpendicular cone <see cref="PhysicsJoint"/> created using <see cref="PhysicsJoint.CreateRagdoll"/>.
@@ -141,7 +142,7 @@ namespace Fixed.Physics.Extensions
         /// <param name="angularPlaneRange">The range of angular motion defining the cones perpendicular to the primary cone, between which the primary cone's axis may swing. This range may be asymmetrical, and is clamped to the range (-pi/2, pi/2).</param>
         public static void SetRagdollPerpendicularConeRange(ref this PhysicsJoint joint, FloatRange angularPlaneRange)
         {
-            angularPlaneRange = math.clamp(angularPlaneRange + new float2(sfloat.FromRaw(0x3fc90fdb)), new float2(sfloat.Zero), new float2(math.PI));
+            angularPlaneRange = fpmath.clamp(angularPlaneRange + new fp2(fp.FromRaw(0x3fc90fdb)), new fp2(fp.zero), new fp2(fpmath.PI));
             var constraints = joint.GetConstraints();
             constraints.ElementAt(PhysicsJoint.k_RagdollPerpendicularRangeIndex).Min = angularPlaneRange.Min;
             constraints.ElementAt(PhysicsJoint.k_RagdollPerpendicularRangeIndex).Max = angularPlaneRange.Max;

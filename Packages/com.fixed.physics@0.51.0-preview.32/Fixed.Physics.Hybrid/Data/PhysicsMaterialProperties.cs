@@ -1,5 +1,5 @@
 using System;
-using Fixed.Mathematics;
+using Unity.Mathematics.FixedPoint;
 using UnityEngine;
 
 namespace Fixed.Physics.Authoring
@@ -38,7 +38,7 @@ namespace Fixed.Physics.Authoring
     {
         //[SoftRange(0f, 1f, TextFieldMax = float.MaxValue)]
         //0-1
-        public sfloat Value;
+        public fp Value;
         public Material.CombinePolicy CombineMode;
     }
 
@@ -71,7 +71,7 @@ namespace Fixed.Physics.Authoring
     class OverridableMaterialCoefficient : OverridableValue<PhysicsMaterialCoefficient>
     {
         protected override void OnValidate(ref PhysicsMaterialCoefficient value) =>
-            value.Value = math.max(sfloat.Zero, value.Value);
+            value.Value = fpmath.max(fp.zero, value.Value);
     }
 
     [Serializable]
@@ -123,7 +123,7 @@ namespace Fixed.Physics.Authoring
         [SerializeField]
         OverridableMaterialCoefficient m_Friction = new OverridableMaterialCoefficient
         {
-            Value = new PhysicsMaterialCoefficient { Value = (sfloat)0.5f, CombineMode = Material.CombinePolicy.GeometricMean },
+            Value = new PhysicsMaterialCoefficient { Value = fp.half, CombineMode = Material.CombinePolicy.GeometricMean },
             Override = false
         };
 
@@ -136,7 +136,7 @@ namespace Fixed.Physics.Authoring
         [SerializeField]
         OverridableMaterialCoefficient m_Restitution = new OverridableMaterialCoefficient
         {
-            Value = new PhysicsMaterialCoefficient { Value = sfloat.Zero, CombineMode = Material.CombinePolicy.Maximum },
+            Value = new PhysicsMaterialCoefficient { Value = fp.zero, CombineMode = Material.CombinePolicy.Maximum },
             Override = false
         };
 

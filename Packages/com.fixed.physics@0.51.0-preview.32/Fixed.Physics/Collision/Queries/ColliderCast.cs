@@ -1,10 +1,11 @@
 using System;
 using Unity.Entities;
-using Fixed.Mathematics;
+using Unity.Mathematics.FixedPoint;
 using Unity.Collections.LowLevel.Unsafe;
 using static Fixed.Physics.BoundingVolumeHierarchy;
 using static Fixed.Physics.Math;
 using Unity.Assertions;
+using Unity.Mathematics;
 
 namespace Fixed.Physics
 {
@@ -13,26 +14,26 @@ namespace Fixed.Physics
     public struct ColliderCastInput
     {
         [NativeDisableUnsafePtrRestriction] public unsafe Collider* Collider;
-        public quaternion Orientation { get; set; }
+        public fpquaternion Orientation { get; set; }
 
-        public float3 Start
+        public fp3 Start
         {
             get => Ray.Origin;
             set
             {
-                float3 end = Ray.Origin + Ray.Displacement;
+                fp3 end = Ray.Origin + Ray.Displacement;
                 Ray.Origin = value;
                 Ray.Displacement = end - value;
-                Assert.IsTrue(math.all(math.abs(Ray.Displacement) < Math.Constants.MaxDisplacement3F), "ColliderCast length is very long. This would lead to floating point inaccuracies and invalid results.");
+                Assert.IsTrue(math.all(fpmath.abs(Ray.Displacement) < Math.Constants.MaxDisplacement3F), "ColliderCast length is very long. This would lead to floating point inaccuracies and invalid results.");
             }
         }
-        public float3 End
+        public fp3 End
         {
             get => Ray.Origin + Ray.Displacement;
             set
             {
                 Ray.Displacement = value - Ray.Origin;
-                Assert.IsTrue(math.all(math.abs(Ray.Displacement) < Math.Constants.MaxDisplacement3F), "ColliderCast length is very long. This would lead to floating point inaccuracies and invalid results.");
+                Assert.IsTrue(math.all(fpmath.abs(Ray.Displacement) < Math.Constants.MaxDisplacement3F), "ColliderCast length is very long. This would lead to floating point inaccuracies and invalid results.");
             }
         }
 
@@ -40,8 +41,8 @@ namespace Fixed.Physics
         internal QueryContext QueryContext;
         internal ColliderType ColliderType { get { unsafe { return Collider->Type; } } }
 
-        public ColliderCastInput(BlobAssetReference<Collider> collider, float3 start, float3 end) : this(collider, start, end, quaternion.identity) {}
-        public ColliderCastInput(BlobAssetReference<Collider> collider, float3 start, float3 end, quaternion orientation)
+        public ColliderCastInput(BlobAssetReference<Collider> collider, fp3 start, fp3 end) : this(collider, start, end, fpquaternion.identity) {}
+        public ColliderCastInput(BlobAssetReference<Collider> collider, fp3 start, fp3 end, fpquaternion orientation)
         {
             unsafe
             {
@@ -71,7 +72,7 @@ namespace Fixed.Physics
         /// Fraction of the distance along the Ray where the hit occurred.
         /// </summary>
         /// <value> Returns a value between 0 and 1. </value>
-        public sfloat Fraction { get; set; }
+        public fp Fraction { get; set; }
 
         /// <summary>
         ///
@@ -101,13 +102,13 @@ namespace Fixed.Physics
         /// The point in query space where the hit occurred.
         /// </summary>
         /// <value> Returns the position of the point where the hit occurred. </value>
-        public float3 Position { get; set; }
+        public fp3 Position { get; set; }
 
         /// <summary>
         ///
         /// </summary>
         /// <value> Returns the normal of the point where the hit occurred. </value>
-        public float3 SurfaceNormal { get; set; }
+        public fp3 SurfaceNormal { get; set; }
 
         /// <summary>
         /// Collider key of the query collider.
@@ -128,7 +129,7 @@ namespace Fixed.Physics
         private static unsafe void FlipColliderCastQuery<T>(ref ColliderCastInput input, ConvexCollider* target, ref T collector, out FlippedColliderCastQueryCollector<T> flipQueryCollector)
             where T : struct, ICollector<ColliderCastHit>
         {
-            float3 worldFromDirection = math.rotate(new quaternion(input.QueryContext.WorldFromLocalTransform.Rotation), input.Ray.Displacement);
+            fp3 worldFromDirection = fpmath.rotate(new fpquaternion(input.QueryContext.WorldFromLocalTransform.Rotation), input.Ray.Displacement);
 
             flipQueryCollector = new FlippedColliderCastQueryCollector<T>(ref collector, worldFromDirection, input.QueryContext.ColliderKey, target->Material);
 
@@ -148,7 +149,7 @@ namespace Fixed.Physics
             var displacement = input.Ray.Displacement;
 
             //Switch displacement from targetFromDisplacement to queryFromDisplacement, and inverse it's direction
-            displacement = math.rotate(math.inverse(new quaternion(targetFromQuery.Rotation)), displacement);
+            displacement = fpmath.rotate(fpmath.inverse(new fpquaternion(targetFromQuery.Rotation)), displacement);
             displacement *= -1;
 
             input.Ray.Displacement = displacement;
@@ -156,7 +157,7 @@ namespace Fixed.Physics
             var queryFromTarget = Inverse(targetFromQuery);
 
             input.Ray.Origin = queryFromTarget.Translation;
-            input.Orientation = new quaternion(queryFromTarget.Rotation);
+            input.Orientation = new fpquaternion(queryFromTarget.Rotation);
             input.QueryContext.IsFlipped = true;
         }
 
@@ -311,7 +312,7 @@ namespace Fixed.Physics
             }
         }
 
-        private static unsafe bool ConvexConvex(ColliderCastInput input, Collider* target, sfloat maxFraction, out ColliderCastHit hit)
+        private static unsafe bool ConvexConvex(ColliderCastInput input, Collider* target, fp maxFraction, out ColliderCastHit hit)
         {
             hit = default;
 
@@ -319,10 +320,10 @@ namespace Fixed.Physics
             MTransform targetFromQuery = new MTransform(input.Orientation, input.Start);
 
             // Conservative advancement
-            sfloat tolerance = sfloat.FromRaw(0x3a83126f);      // return if this close to a hit
-            sfloat keepDistance = sfloat.FromRaw(0x38d1b717);   // avoid bad cases for GJK (penetration / exact hit)
+            fp tolerance = fp.FromRaw(0x3a83126f);      // return if this close to a hit
+            fp keepDistance = fp.FromRaw(0x38d1b717);   // avoid bad cases for GJK (penetration / exact hit)
             int iterations = 10;                // return after this many advances, regardless of accuracy
-            sfloat fraction = sfloat.Zero;
+            fp fraction = fp.zero;
 
             while (true)
             {
@@ -342,7 +343,7 @@ namespace Fixed.Physics
 
                     // In case of penetration (fraction == 0) and non convex input (IsFlipped),
                     // hit position needs to be switched from the surface of the shape B to the surface of the shape A
-                    if (input.QueryContext.IsFlipped && fraction == sfloat.Zero)
+                    if (input.QueryContext.IsFlipped && fraction == fp.zero)
                     {
                         hit.Position = Mul(input.QueryContext.WorldFromLocalTransform, distanceResult.PositionOnAinA);
                     }
@@ -351,7 +352,7 @@ namespace Fixed.Physics
                         hit.Position = Mul(input.QueryContext.WorldFromLocalTransform, distanceResult.PositionOnBinA);
                     }
 
-                    hit.SurfaceNormal = math.mul(input.QueryContext.WorldFromLocalTransform.Rotation, -distanceResult.NormalInA);
+                    hit.SurfaceNormal = fpmath.mul(input.QueryContext.WorldFromLocalTransform.Rotation, -distanceResult.NormalInA);
                     hit.Fraction = fraction;
                     hit.RigidBodyIndex = input.QueryContext.RigidBodyIndex;
                     hit.ColliderKey = input.QueryContext.ColliderKey;
@@ -363,8 +364,8 @@ namespace Fixed.Physics
                 }
 
                 // Check for a miss
-                sfloat dot = math.dot(distanceResult.NormalInA, input.Ray.Displacement);
-                if (dot <= sfloat.Zero)
+                fp dot = fpmath.dot(distanceResult.NormalInA, input.Ray.Displacement);
+                if (dot <= fp.zero)
                 {
                     // Collider is moving away from the target, it will never hit
                     return false;
@@ -378,7 +379,7 @@ namespace Fixed.Physics
                     return false;
                 }
 
-                targetFromQuery.Translation = math.lerp(input.Start, input.End, fraction);
+                targetFromQuery.Translation = fpmath.lerp(input.Start, input.End, fraction);
             }
         }
 
@@ -452,7 +453,7 @@ namespace Fixed.Physics
             public bool ColliderCastLeaf<T>(ColliderCastInput input, int primitiveKey, ref T collector)
                 where T : struct, ICollector<ColliderCastHit>
             {
-                m_Mesh->GetPrimitive(primitiveKey, out float3x4 vertices, out Mesh.PrimitiveFlags flags, out CollisionFilter filter, out Material material);
+                m_Mesh->GetPrimitive(primitiveKey, out fp3x4 vertices, out Mesh.PrimitiveFlags flags, out CollisionFilter filter, out Material material);
 
                 if (!CollisionFilter.IsCollisionEnabled(input.Collider->Filter, filter)) // TODO: could do this check within GetPrimitive()
                 {
@@ -470,7 +471,7 @@ namespace Fixed.Physics
                 polygon.InitNoVertices(filter, material);
                 for (int polygonIndex = 0; polygonIndex < numPolygons; polygonIndex++)
                 {
-                    sfloat fraction = collector.MaxFraction;
+                    fp fraction = collector.MaxFraction;
 
                     if (isQuad)
                     {
@@ -556,10 +557,10 @@ namespace Fixed.Physics
 
                 // Transform the cast into child space
                 ColliderCastInput inputLs = input;
-                RigidTransform childFromCompound = math.inverse(child.CompoundFromChild);
-                inputLs.Ray.Origin = math.transform(childFromCompound, input.Ray.Origin);
-                inputLs.Ray.Displacement = math.mul(childFromCompound.rot, input.Ray.Displacement);
-                inputLs.Orientation = math.mul(childFromCompound.rot, input.Orientation);
+                FpRigidTransform childFromCompound = fpmath.inverse(child.CompoundFromChild);
+                inputLs.Ray.Origin = fpmath.transform(childFromCompound, input.Ray.Origin);
+                inputLs.Ray.Displacement = fpmath.mul(childFromCompound.rot, input.Ray.Displacement);
+                inputLs.Orientation = fpmath.mul(childFromCompound.rot, input.Orientation);
                 inputLs.QueryContext.ColliderKey = input.QueryContext.PushSubKey(m_CompoundCollider->NumColliderKeyBits, (uint)leafData);
                 inputLs.QueryContext.NumColliderKeyBits = input.QueryContext.NumColliderKeyBits;
                 inputLs.QueryContext.WorldFromLocalTransform = Mul(input.QueryContext.WorldFromLocalTransform, new MTransform(child.CompoundFromChild));
@@ -608,11 +609,11 @@ namespace Fixed.Physics
             bool hadHit = false;
 
             // Get a ray for the min corner of the AABB in tree-space and the extents of the AABB in tree-space
-            float3 aabbExtents;
+            fp3 aabbExtents;
             Ray aabbRay;
             Terrain.QuadTreeWalker walker;
             {
-                Aabb aabb = input.Collider->CalculateAabb(new RigidTransform(input.Orientation, input.Start));
+                Aabb aabb = input.Collider->CalculateAabb(new FpRigidTransform(input.Orientation, input.Start));
                 Aabb aabbInTree = new Aabb
                 {
                     Min = aabb.Min * terrain.InverseScale,
@@ -625,11 +626,11 @@ namespace Fixed.Physics
                     Displacement = input.Ray.Displacement * terrain.InverseScale
                 };
 
-                float3 maxDisplacement = aabbRay.Displacement * collector.MaxFraction;
+                fp3 maxDisplacement = aabbRay.Displacement * collector.MaxFraction;
                 Aabb queryAabb = new Aabb
                 {
-                    Min = aabbInTree.Min + math.min(maxDisplacement, float3.zero),
-                    Max = aabbInTree.Max + math.max(maxDisplacement, float3.zero)
+                    Min = aabbInTree.Min + fpmath.min(maxDisplacement, fp3.zero),
+                    Max = aabbInTree.Max + fpmath.max(maxDisplacement, fp3.zero)
                 };
                 walker = new Terrain.QuadTreeWalker(&terrainCollider->Terrain, queryAabb);
             }
@@ -642,7 +643,7 @@ namespace Fixed.Physics
                 bounds.Lx -= aabbExtents.x;
                 bounds.Ly -= aabbExtents.y;
                 bounds.Lz -= aabbExtents.z;
-                bool4 hitMask = bounds.Raycast(aabbRay, collector.MaxFraction, out float4 hitFractions);
+                bool4 hitMask = bounds.Raycast(aabbRay, collector.MaxFraction, out fp4 hitFractions);
                 hitMask &= (walker.Bounds.Ly <= walker.Bounds.Hy); // Mask off empty children
                 if (walker.IsLeaf)
                 {
@@ -652,7 +653,7 @@ namespace Fixed.Physics
                     for (int iHit = 0; iHit < hitCount; iHit++)
                     {
                         // Get the quad vertices
-                        walker.GetQuad(hitIndex[iHit], out int2 quadIndex, out float3 a, out float3 b, out float3 c, out float3 d);
+                        walker.GetQuad(hitIndex[iHit], out int2 quadIndex, out fp3 a, out fp3 b, out fp3 c, out fp3 d);
 
                         // Test each triangle in the quad
                         var polygon = new PolygonCollider();
@@ -660,7 +661,7 @@ namespace Fixed.Physics
                         for (int iTriangle = 0; iTriangle < 2; iTriangle++)
                         {
                             // Cast
-                            sfloat fraction = collector.MaxFraction;
+                            fp fraction = collector.MaxFraction;
                             polygon.SetAsTriangle(a, b, c);
 
                             hadHit |= dispatcher.Dispatch(input, (ConvexCollider*)&polygon, ref collector, terrain.NumColliderKeyBits, terrain.GetSubKey(quadIndex, iTriangle));

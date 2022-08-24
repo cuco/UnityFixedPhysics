@@ -1,7 +1,8 @@
 using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using Fixed.Mathematics;
+using Unity.Mathematics;
+using Unity.Mathematics.FixedPoint;
 
 namespace Fixed.Physics
 {

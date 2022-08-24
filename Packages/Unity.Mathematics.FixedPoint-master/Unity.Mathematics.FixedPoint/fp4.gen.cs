@@ -30,7 +30,7 @@ namespace Unity.Mathematics.FixedPoint
         /// <summary>Constructs a fp4 vector from four fp values.</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public fp4(fp x, fp y, fp z, fp w)
-        { 
+        {
             this.x = x;
             this.y = y;
             this.z = z;
@@ -40,7 +40,7 @@ namespace Unity.Mathematics.FixedPoint
         /// <summary>Constructs a fp4 vector from two fp values and a fp2 vector.</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public fp4(fp x, fp y, fp2 zw)
-        { 
+        {
             this.x = x;
             this.y = y;
             this.z = zw.x;
@@ -50,7 +50,7 @@ namespace Unity.Mathematics.FixedPoint
         /// <summary>Constructs a fp4 vector from a fp value, a fp2 vector and a fp value.</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public fp4(fp x, fp2 yz, fp w)
-        { 
+        {
             this.x = x;
             this.y = yz.x;
             this.z = yz.y;
@@ -60,7 +60,7 @@ namespace Unity.Mathematics.FixedPoint
         /// <summary>Constructs a fp4 vector from a fp value and a fp3 vector.</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public fp4(fp x, fp3 yzw)
-        { 
+        {
             this.x = x;
             this.y = yzw.x;
             this.z = yzw.y;
@@ -70,7 +70,7 @@ namespace Unity.Mathematics.FixedPoint
         /// <summary>Constructs a fp4 vector from a fp2 vector and two fp values.</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public fp4(fp2 xy, fp z, fp w)
-        { 
+        {
             this.x = xy.x;
             this.y = xy.y;
             this.z = z;
@@ -80,7 +80,7 @@ namespace Unity.Mathematics.FixedPoint
         /// <summary>Constructs a fp4 vector from two fp2 vectors.</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public fp4(fp2 xy, fp2 zw)
-        { 
+        {
             this.x = xy.x;
             this.y = xy.y;
             this.z = zw.x;
@@ -90,7 +90,7 @@ namespace Unity.Mathematics.FixedPoint
         /// <summary>Constructs a fp4 vector from a fp3 vector and a fp value.</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public fp4(fp3 xyz, fp w)
-        { 
+        {
             this.x = xyz.x;
             this.y = xyz.y;
             this.z = xyz.z;
@@ -100,7 +100,7 @@ namespace Unity.Mathematics.FixedPoint
         /// <summary>Constructs a fp4 vector from a fp4 vector.</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public fp4(fp4 xyzw)
-        { 
+        {
             this.x = xyzw.x;
             this.y = xyzw.y;
             this.z = xyzw.z;
@@ -177,6 +177,12 @@ namespace Unity.Mathematics.FixedPoint
         /// <summary>Explicitly converts a uint4 vector to a fp4 vector by componentwise conversion.</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static explicit operator fp4(uint4 v) { return new fp4(v); }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static explicit operator double4(fp4 v) { return new double4((double)v.x,(double)v.y,(double)v.z,(double)v.w); }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static explicit operator fp4(double4 v) { return new fp4((fp)v.x,(fp)v.y,(fp)v.z,(fp)v.w); }
 
 
         /// <summary>Returns the result of a componentwise multiplication operation on two fp4 vectors.</summary>
@@ -3349,7 +3355,7 @@ namespace Unity.Mathematics.FixedPoint
                 case ShuffleComponent.RightW:
                     return b.w;
                 default:
-                    throw new System.ArgumentException("Invalid shuffle component: " + component);
+                    throw new System.ArgumentException("Invalid shuffle component: ");
             }
         }
 

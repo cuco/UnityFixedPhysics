@@ -1,7 +1,7 @@
 using NUnit.Framework;
 using Unity.Burst;
 using Unity.Jobs;
-using Fixed.Mathematics;
+using Unity.Mathematics.FixedPoint;
 using Fixed.Physics.Authoring;
 using UnityEngine;
 
@@ -12,38 +12,38 @@ namespace Fixed.Physics.Tests.Authoring
         [BurstCompile(CompileSynchronously = true)]
         struct SetValueFromBurstJob : IJob
         {
-            public void Execute() => new EulerAngles().SetValue(quaternion.identity);
+            public void Execute() => new EulerAngles().SetValue(fpquaternion.identity);
         }
 
         [Test]
         public void SetValue_WhenCalledFromBurstJob_DoesNotThrow() => new SetValueFromBurstJob().Run();
 
-        static readonly quaternion k_NotIdentityQuaternion = math.mul(
-            math.mul(
-                quaternion.AxisAngle(new float3 { z = (sfloat)1f }, math.radians((sfloat)45f)),
-                quaternion.AxisAngle(new float3 { y = (sfloat)1f }, math.radians((sfloat)45f))
-                ),  quaternion.AxisAngle(new float3 { x = (sfloat)1f }, math.radians((sfloat)45f))
+        static readonly fpquaternion k_NotIdentityQuaternion = fpmath.mul(
+            fpmath.mul(
+                fpquaternion.AxisAngle(new fp3 { z = (fp)1f }, fpmath.radians((fp)45f)),
+                fpquaternion.AxisAngle(new fp3 { y = (fp)1f }, fpmath.radians((fp)45f))
+                ),  fpquaternion.AxisAngle(new fp3 { x = (fp)1f }, fpmath.radians((fp)45f))
         );
 
         static readonly TestCaseData[] k_TestCases =
         {
-            new TestCaseData(math.RotationOrder.XYZ, quaternion.identity, float3.zero).SetName("XYZ (identity)"),
-            new TestCaseData(math.RotationOrder.YZX, quaternion.identity, float3.zero).SetName("YZX (identity)"),
-            new TestCaseData(math.RotationOrder.ZXY, quaternion.identity, float3.zero).SetName("ZXY (identity)"),
-            new TestCaseData(math.RotationOrder.XZY, quaternion.identity, float3.zero).SetName("XZY (identity)"),
-            new TestCaseData(math.RotationOrder.YXZ, quaternion.identity, float3.zero).SetName("YXZ (identity)"),
-            new TestCaseData(math.RotationOrder.ZYX, quaternion.identity, float3.zero).SetName("ZYX (identity)"),
-            new TestCaseData(math.RotationOrder.XYZ, k_NotIdentityQuaternion, new float3((sfloat)45f, (sfloat)45f, (sfloat)45f)).SetName("XYZ (not identity)"),
-            new TestCaseData(math.RotationOrder.YZX, k_NotIdentityQuaternion, new float3((sfloat)30.36119f, (sfloat)59.63881f, (sfloat)8.421058f)).SetName("YZX (not identity)"),
-            new TestCaseData(math.RotationOrder.ZXY, k_NotIdentityQuaternion, new float3((sfloat)8.421058f, (sfloat)59.63881f, (sfloat)30.36119f)).SetName("ZXY (not identity)"),
-            new TestCaseData(math.RotationOrder.XZY, k_NotIdentityQuaternion, new float3((sfloat)9.735609f, (sfloat)54.73561f, (sfloat)30f)).SetName("XZY (not identity)"),
-            new TestCaseData(math.RotationOrder.YXZ, k_NotIdentityQuaternion, new float3((sfloat)30f, (sfloat)54.73561f, (sfloat)9.735609f)).SetName("YXZ (not identity)"),
-            new TestCaseData(math.RotationOrder.ZYX, k_NotIdentityQuaternion, new float3((sfloat)16.32495f, (sfloat)58.60028f, (sfloat)16.32495f)).SetName("ZYX (not identity)")
+            new TestCaseData(math.RotationOrder.XYZ, fpquaternion.identity, fp3.zero).SetName("XYZ (identity)"),
+            new TestCaseData(math.RotationOrder.YZX, fpquaternion.identity, fp3.zero).SetName("YZX (identity)"),
+            new TestCaseData(math.RotationOrder.ZXY, fpquaternion.identity, fp3.zero).SetName("ZXY (identity)"),
+            new TestCaseData(math.RotationOrder.XZY, fpquaternion.identity, fp3.zero).SetName("XZY (identity)"),
+            new TestCaseData(math.RotationOrder.YXZ, fpquaternion.identity, fp3.zero).SetName("YXZ (identity)"),
+            new TestCaseData(math.RotationOrder.ZYX, fpquaternion.identity, fp3.zero).SetName("ZYX (identity)"),
+            new TestCaseData(math.RotationOrder.XYZ, k_NotIdentityQuaternion, new fp3((fp)45f, (fp)45f, (fp)45f)).SetName("XYZ (not identity)"),
+            new TestCaseData(math.RotationOrder.YZX, k_NotIdentityQuaternion, new fp3((fp)30.36119f, (fp)59.63881f, (fp)8.421058f)).SetName("YZX (not identity)"),
+            new TestCaseData(math.RotationOrder.ZXY, k_NotIdentityQuaternion, new fp3((fp)8.421058f, (fp)59.63881f, (fp)30.36119f)).SetName("ZXY (not identity)"),
+            new TestCaseData(math.RotationOrder.XZY, k_NotIdentityQuaternion, new fp3((fp)9.735609f, (fp)54.73561f, (fp)30f)).SetName("XZY (not identity)"),
+            new TestCaseData(math.RotationOrder.YXZ, k_NotIdentityQuaternion, new fp3((fp)30f, (fp)54.73561f, (fp)9.735609f)).SetName("YXZ (not identity)"),
+            new TestCaseData(math.RotationOrder.ZYX, k_NotIdentityQuaternion, new fp3((fp)16.32495f, (fp)58.60028f, (fp)16.32495f)).SetName("ZYX (not identity)")
         };
 
         [TestCaseSource(nameof(k_TestCases))]
         public void SetValue_WhenRotationOrder_ReturnsExpectedValue(
-            math.RotationOrder rotationOrder, quaternion value, float3 expectedEulerAngles
+            math.RotationOrder rotationOrder, fpquaternion value, fp3 expectedEulerAngles
         )
         {
             var eulerAngles = new EulerAngles { RotationOrder = rotationOrder };
@@ -61,14 +61,14 @@ namespace Fixed.Physics.Tests.Authoring
             [Values(-90f, -45, 0f, 45, 90f)] float z
         )
         {
-            var inputEulerAngles = new EulerAngles { RotationOrder = rotationOrder, Value = new float3((sfloat)x, (sfloat)y, (sfloat)z) };
-            var inputQuaternion = (quaternion)inputEulerAngles;
-            Assume.That(math.abs(math.length(inputQuaternion.value)), Is.EqualTo(1.0f).Within(1e-05));
+            var inputEulerAngles = new EulerAngles { RotationOrder = rotationOrder, Value = new fp3((fp)x, (fp)y, (fp)z) };
+            var inputQuaternion = (fpquaternion)inputEulerAngles;
+            Assume.That(fpmath.abs(fpmath.length(inputQuaternion.value)), Is.EqualTo(1.0f).Within(1e-05));
 
             EulerAngles outputEulerAngles = new EulerAngles { RotationOrder = inputEulerAngles.RotationOrder };
             outputEulerAngles.SetValue(inputQuaternion);
-            quaternion outputQuaternion = (quaternion)outputEulerAngles;
-            Assume.That(math.abs(math.length(outputQuaternion.value)), Is.EqualTo(1.0f).Within(1e-05));
+            fpquaternion outputQuaternion = (fpquaternion)outputEulerAngles;
+            Assume.That(fpmath.abs(fpmath.length(outputQuaternion.value)), Is.EqualTo(1.0f).Within(1e-05));
 
             Assert.That(outputQuaternion, Is.OrientedEquivalentTo(inputQuaternion));
         }

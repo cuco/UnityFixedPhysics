@@ -1,7 +1,7 @@
 using System;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
-using Fixed.Mathematics;
+using Unity.Mathematics.FixedPoint;
 
 namespace Fixed.DebugDisplay
 {
@@ -45,8 +45,8 @@ namespace Fixed.DebugDisplay
 
         internal struct Instance
         {
-            internal float4 m_Begin;
-            internal float4 m_End;
+            internal fp4 m_Begin;
+            internal fp4 m_End;
         }
 
         internal UnsafeArray<Instance> m_Instance;
@@ -56,12 +56,12 @@ namespace Fixed.DebugDisplay
             m_Instance = new UnsafeArray<Instance>(kMaxLines);
         }
 
-        internal void SetLine(float3 begin, float3 end, ColorIndex colorIndex, int index)
+        internal void SetLine(fp3 begin, fp3 end, ColorIndex colorIndex, int index)
         {
             m_Instance[index] = new Instance
             {
-                m_Begin = new float4(begin.x, begin.y, begin.z, (sfloat)colorIndex.value),
-                m_End = new float4(end.x, end.y, end.z, (sfloat)colorIndex.value)
+                m_Begin = new fp4(begin.x, begin.y, begin.z, (fp)colorIndex.value),
+                m_End = new fp4(end.x, end.y, end.z, (fp)colorIndex.value)
             };
         }
 

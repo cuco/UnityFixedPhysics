@@ -1,6 +1,7 @@
 using NUnit.Framework;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
+using Unity.Mathematics.FixedPoint;
 
 namespace Fixed.Physics.Tests.Base.Containers
 {
@@ -93,7 +94,7 @@ namespace Fixed.Physics.Tests.Base.Containers
             NativeArray<Velocity> inputVelocities = new NativeArray<Velocity>(dummyWorld.NumDynamicBodies, Allocator.Temp);
 
             // Iterate over written events and make sure they are all read
-            CollisionEvents collisionEvents = new CollisionEvents(collisionEventStream, inputVelocities, (sfloat)timeStep);
+            CollisionEvents collisionEvents = new CollisionEvents(collisionEventStream, inputVelocities, (fp)timeStep);
             int readCount = 0;
             foreach (var collisionEvent in collisionEvents)
             {

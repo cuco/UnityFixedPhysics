@@ -1,8 +1,8 @@
 using System;
 using NUnit.Framework;
 using Unity.Collections;
-using Fixed.Mathematics;
-using Random = Fixed.Mathematics.Random;
+using Unity.Mathematics.FixedPoint;
+using Random = Unity.Mathematics.FixedPoint.Random;
 
 namespace Fixed.Physics.Tests.Collision.Colliders
 {
@@ -20,7 +20,7 @@ namespace Fixed.Physics.Tests.Collision.Colliders
         public void MeshCollider_Create_WhenTriangleIndexOutOfRange_Throws()
         {
             int numTriangles = 10;
-            var vertices = new NativeArray<float3>(numTriangles * 3, Allocator.Persistent);
+            var vertices = new NativeArray<fp3>(numTriangles * 3, Allocator.Persistent);
             var triangles = new NativeArray<int3>(numTriangles, Allocator.Persistent);
 
             try
@@ -29,11 +29,11 @@ namespace Fixed.Physics.Tests.Collision.Colliders
                 {
                     var firstVertexIndex = i * 3;
 
-                    vertices[firstVertexIndex]     = new float3((sfloat)firstVertexIndex    , (sfloat)1f * (sfloat)(firstVertexIndex % 2)      , (sfloat)
+                    vertices[firstVertexIndex]     = new fp3((fp)firstVertexIndex    , (fp)1f * (fp)(firstVertexIndex % 2)      , (fp)
                         (firstVertexIndex + 1));
-                    vertices[firstVertexIndex + 1] = new float3((sfloat)(firstVertexIndex + 1), (sfloat)1f * (sfloat)((firstVertexIndex + 1) % 2), (sfloat)
+                    vertices[firstVertexIndex + 1] = new fp3((fp)(firstVertexIndex + 1), (fp)1f * (fp)((firstVertexIndex + 1) % 2), (fp)
                         (firstVertexIndex + 2));
-                    vertices[firstVertexIndex + 2] = new float3((sfloat)(firstVertexIndex + 2), (sfloat)1f * (sfloat)((firstVertexIndex + 2) % 2), (sfloat)
+                    vertices[firstVertexIndex + 2] = new fp3((fp)(firstVertexIndex + 2), (fp)1f * (fp)((firstVertexIndex + 2) % 2), (fp)
                         (firstVertexIndex + 3));
                     triangles[i] = new int3(firstVertexIndex, firstVertexIndex + 1, firstVertexIndex + 2);
                 }

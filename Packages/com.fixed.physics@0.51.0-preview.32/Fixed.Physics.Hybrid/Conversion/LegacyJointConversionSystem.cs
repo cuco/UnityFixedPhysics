@@ -5,7 +5,8 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Unity.Collections;
 using Unity.Entities;
-using Fixed.Mathematics;
+using Unity.Mathematics;
+using Unity.Mathematics.FixedPoint;
 using UnityEngine;
 using FloatRange = Fixed.Physics.Math.FloatRange;
 using LegacyCharacter = UnityEngine.CharacterJoint;
@@ -23,7 +24,7 @@ namespace Fixed.Physics.Authoring
     sealed class LegacyJointConversionSystem : GameObjectConversionSystem
     {
         PhysicsJoint CreateConfigurableJoint(
-            quaternion jointFrameOrientation,
+            fpquaternion jointFrameOrientation,
             LegacyJoint joint, bool3 linearLocks, bool3 linearLimited, SoftJointLimit linearLimit, SoftJointLimitSpring linearSpring, bool3 angularFree, bool3 angularLocks,
             bool3 angularLimited, SoftJointLimit lowAngularXLimit, SoftJointLimit highAngularXLimit, SoftJointLimitSpring angularXLimitSpring, SoftJointLimit angularYLimit,
             SoftJointLimit angularZLimit, SoftJointLimitSpring angularYZLimitSpring)
@@ -34,9 +35,9 @@ namespace Fixed.Physics.Authoring
             {
                 constraints.Add(Constraint.Twist(
                     0,
-                    math.radians(new FloatRange(-(sfloat)highAngularXLimit.limit, -(sfloat)lowAngularXLimit.limit).Sorted()),
-                    CalculateSpringFrequencyFromSpringConstant((sfloat)angularXLimitSpring.spring),
-                    (sfloat)angularXLimitSpring.damper)
+                    fpmath.radians(new FloatRange(-(fp)highAngularXLimit.limit, -(fp)lowAngularXLimit.limit).Sorted()),
+                    CalculateSpringFrequencyFromSpringConstant((fp)angularXLimitSpring.spring),
+                    (fp)angularXLimitSpring.damper)
                 );
             }
 
@@ -44,18 +45,18 @@ namespace Fixed.Physics.Authoring
             {
                 constraints.Add(Constraint.Twist(
                     1,
-                    math.radians(new FloatRange(-(sfloat)angularYLimit.limit, (sfloat)angularYLimit.limit).Sorted()),
-                    CalculateSpringFrequencyFromSpringConstant((sfloat)angularYZLimitSpring.spring),
-                    (sfloat)angularYZLimitSpring.damper));
+                    fpmath.radians(new FloatRange(-(fp)angularYLimit.limit, (fp)angularYLimit.limit).Sorted()),
+                    CalculateSpringFrequencyFromSpringConstant((fp)angularYZLimitSpring.spring),
+                    (fp)angularYZLimitSpring.damper));
             }
 
             if (angularLimited[2])
             {
                 constraints.Add(Constraint.Twist(
                     2,
-                    math.radians(new FloatRange(-(sfloat)angularZLimit.limit, (sfloat)angularZLimit.limit).Sorted()),
-                    CalculateSpringFrequencyFromSpringConstant((sfloat)angularYZLimitSpring.spring),
-                    (sfloat)angularYZLimitSpring.damper));
+                    fpmath.radians(new FloatRange(-(fp)angularZLimit.limit, (fp)angularZLimit.limit).Sorted()),
+                    CalculateSpringFrequencyFromSpringConstant((fp)angularYZLimitSpring.spring),
+                    (fp)angularYZLimitSpring.damper));
             }
 
             if (math.any(linearLimited))
@@ -65,7 +66,7 @@ namespace Fixed.Physics.Authoring
                 var damping = 1.0f; //critically damped
                 if (linearSpring.spring > 0.0f)
                 {
-                    spring = (sfloat)linearSpring.spring;
+                    spring = (fp)linearSpring.spring;
                     damping = linearSpring.damper;
                 }
 
@@ -73,10 +74,10 @@ namespace Fixed.Physics.Authoring
                 {
                     ConstrainedAxes = linearLimited,
                     Type = ConstraintType.Linear,
-                    Min = sfloat.Zero,
-                    Max = (sfloat)linearLimit.limit,  //allow movement up to limit from anchor
+                    Min = fp.zero,
+                    Max = (fp)linearLimit.limit,  //allow movement up to limit from anchor
                     SpringFrequency = CalculateSpringFrequencyFromSpringConstant(spring),
-                    SpringDamping = (sfloat)damping
+                    SpringDamping = (fp)damping
                 });
             }
 
@@ -86,10 +87,10 @@ namespace Fixed.Physics.Authoring
                 {
                     ConstrainedAxes = linearLocks,
                     Type = ConstraintType.Linear,
-                    Min = (sfloat)linearLimit.limit,    //lock at distance from anchor
-                    Max = (sfloat)linearLimit.limit,
+                    Min = (fp)linearLimit.limit,    //lock at distance from anchor
+                    Max = (fp)linearLimit.limit,
                     SpringFrequency =  Constraint.DefaultSpringFrequency, //stiff spring
-                    SpringDamping = sfloat.One //critically damped
+                    SpringDamping = fp.one //critically damped
                 });
             }
 
@@ -99,37 +100,37 @@ namespace Fixed.Physics.Authoring
                 {
                     ConstrainedAxes = angularLocks,
                     Type = ConstraintType.Angular,
-                    Min = sfloat.Zero,
-                    Max = sfloat.Zero,
+                    Min = fp.zero,
+                    Max = fp.zero,
                     SpringFrequency = Constraint.DefaultSpringFrequency, //stiff spring
-                    SpringDamping = sfloat.One //critically damped
+                    SpringDamping = fp.one //critically damped
                 });
             }
 
-            RigidTransform worldFromBodyA = Math.DecomposeRigidBodyTransform(joint.transform.localToWorldMatrix);
-            RigidTransform worldFromBodyB = joint.connectedBody == null
-                ? RigidTransform.identity
+            FpRigidTransform worldFromBodyA = Math.DecomposeRigidBodyTransform(joint.transform.localToWorldMatrix);
+            FpRigidTransform worldFromBodyB = joint.connectedBody == null
+                ? FpRigidTransform.identity
                 : Math.DecomposeRigidBodyTransform(joint.connectedBody.transform.localToWorldMatrix);
 
-            var legacyWorldFromJointA = math.mul(
-                new RigidTransform(joint.transform.rotation, joint.transform.position),
-                new RigidTransform(jointFrameOrientation, joint.anchor)
+            var legacyWorldFromJointA = fpmath.mul(
+                new FpRigidTransform(joint.transform.rotation, joint.transform.position),
+                new FpRigidTransform(jointFrameOrientation, joint.anchor)
             );
-            var bodyAFromJoint = new BodyFrame(math.mul(math.inverse(worldFromBodyA), legacyWorldFromJointA));
+            var bodyAFromJoint = new BodyFrame(fpmath.mul(fpmath.inverse(worldFromBodyA), legacyWorldFromJointA));
 
             var connectedEntity = GetPrimaryEntity(joint.connectedBody);
             var isConnectedBodyConverted =
                 joint.connectedBody == null || connectedEntity != Entity.Null;
 
-            RigidTransform bFromA = isConnectedBodyConverted ? math.mul(math.inverse(worldFromBodyB), worldFromBodyA) : worldFromBodyA;
-            RigidTransform bFromBSource =
-                isConnectedBodyConverted ? RigidTransform.identity : worldFromBodyB;
+            FpRigidTransform bFromA = isConnectedBodyConverted ? fpmath.mul(fpmath.inverse(worldFromBodyB), worldFromBodyA) : worldFromBodyA;
+            FpRigidTransform bFromBSource =
+                isConnectedBodyConverted ? FpRigidTransform.identity : worldFromBodyB;
 
             var bodyBFromJoint = new BodyFrame
             {
-                Axis = math.mul(bFromA.rot, bodyAFromJoint.Axis),
-                PerpendicularAxis = math.mul(bFromA.rot, bodyAFromJoint.PerpendicularAxis),
-                Position = math.mul(bFromBSource, new float4(joint.connectedAnchor, sfloat.One)).xyz
+                Axis = fpmath.mul(bFromA.rot, bodyAFromJoint.Axis),
+                PerpendicularAxis = fpmath.mul(bFromA.rot, bodyAFromJoint.PerpendicularAxis),
+                Position = fpmath.mul(bFromBSource, new fp4(joint.connectedAnchor, fp.one)).xyz
             };
 
             var jointData = new PhysicsJoint
@@ -141,11 +142,11 @@ namespace Fixed.Physics.Authoring
             return jointData;
         }
 
-        sfloat CalculateSpringFrequencyFromSpringConstant(sfloat springConstant)
+        fp CalculateSpringFrequencyFromSpringConstant(fp springConstant)
         {
-            if (springConstant < Math.Constants.Eps) return sfloat.Zero;
+            if (springConstant < Math.Constants.Eps) return fp.zero;
 
-            return math.sqrt(springConstant) * Math.Constants.OneOverTau;
+            return fpmath.sqrt(springConstant) * Math.Constants.OneOverTau;
         }
 
         bool3 GetAxesWithMotionType(
@@ -184,7 +185,7 @@ namespace Fixed.Physics.Authoring
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static quaternion GetJointFrameOrientation(float3 axis, float3 secondaryAxis)
+        static fpquaternion GetJointFrameOrientation(fp3 axis, fp3 secondaryAxis)
         {
             // classic Unity uses a different approach than BodyFrame.ValidateAxes() for ortho-normalizing degenerate inputs
             // ortho-normalizing here ensures behavior is consistent with classic Unity
@@ -216,15 +217,15 @@ namespace Fixed.Physics.Authoring
 
         void ConvertSpringJoint(LegacySpring joint)
         {
-            var distanceRange = new FloatRange((sfloat)joint.minDistance, (sfloat)joint.maxDistance).Sorted();
+            var distanceRange = new FloatRange((fp)joint.minDistance, (fp)joint.maxDistance).Sorted();
             var constraint = new Constraint
             {
                 ConstrainedAxes = new bool3(true),
                 Type = ConstraintType.Linear,
                 Min = distanceRange.Min,
                 Max = distanceRange.Max,
-                SpringFrequency = CalculateSpringFrequencyFromSpringConstant((sfloat)joint.spring),
-                SpringDamping = (sfloat)joint.damper
+                SpringFrequency = CalculateSpringFrequencyFromSpringConstant((fp)joint.spring),
+                SpringDamping = (fp)joint.damper
             };
 
             var jointFrameA = BodyFrame.Identity;
@@ -235,11 +236,11 @@ namespace Fixed.Physics.Authoring
             var isConnectedBodyConverted =
                 joint.connectedBody == null || connectedEntity != Entity.Null;
 
-            RigidTransform bFromBSource =
-                isConnectedBodyConverted ? RigidTransform.identity : Math.DecomposeRigidBodyTransform(joint.connectedBody.transform.localToWorldMatrix);
+            FpRigidTransform bFromBSource =
+                isConnectedBodyConverted ? FpRigidTransform.identity : Math.DecomposeRigidBodyTransform(joint.connectedBody.transform.localToWorldMatrix);
 
             var jointFrameB = BodyFrame.Identity;
-            jointFrameB.Position = math.mul(bFromBSource, new float4(joint.connectedAnchor, sfloat.One)).xyz;
+            jointFrameB.Position = fpmath.mul(bFromBSource, new fp4(joint.connectedAnchor, fp.one)).xyz;
 
             var jointData = new PhysicsJoint
             {
@@ -257,19 +258,19 @@ namespace Fixed.Physics.Authoring
 
         void ConvertFixedJoint(LegacyFixed joint)
         {
-            var legacyWorldFromJointA = math.mul(
-                new RigidTransform(joint.transform.rotation, joint.transform.position),
-                new RigidTransform(quaternion.identity, joint.anchor)
+            var legacyWorldFromJointA = fpmath.mul(
+                new FpRigidTransform(joint.transform.rotation, joint.transform.position),
+                new FpRigidTransform(fpquaternion.identity, joint.anchor)
             );
 
-            RigidTransform worldFromBodyA = Math.DecomposeRigidBodyTransform(joint.transform.localToWorldMatrix);
+            FpRigidTransform worldFromBodyA = Math.DecomposeRigidBodyTransform(joint.transform.localToWorldMatrix);
             var connectedEntity = GetPrimaryEntity(joint.connectedBody);
-            RigidTransform worldFromBodyB = connectedEntity == Entity.Null
-                ? RigidTransform.identity
+            FpRigidTransform worldFromBodyB = connectedEntity == Entity.Null
+                ? FpRigidTransform.identity
                 : Math.DecomposeRigidBodyTransform(joint.connectedBody.transform.localToWorldMatrix);
 
-            var bodyAFromJoint = new BodyFrame(math.mul(math.inverse(worldFromBodyA), legacyWorldFromJointA));
-            var bodyBFromJoint = new BodyFrame(math.mul(math.inverse(worldFromBodyB), legacyWorldFromJointA));
+            var bodyAFromJoint = new BodyFrame(fpmath.mul(fpmath.inverse(worldFromBodyA), legacyWorldFromJointA));
+            var bodyBFromJoint = new BodyFrame(fpmath.mul(fpmath.inverse(worldFromBodyB), legacyWorldFromJointA));
 
             var jointData = PhysicsJoint.CreateFixed(bodyAFromJoint, bodyBFromJoint);
 
@@ -278,12 +279,12 @@ namespace Fixed.Physics.Authoring
 
         void ConvertHingeJoint(LegacyHinge joint)
         {
-            RigidTransform worldFromBodyA = Math.DecomposeRigidBodyTransform(joint.transform.localToWorldMatrix);
-            RigidTransform worldFromBodyB = joint.connectedBody == null
-                ? RigidTransform.identity
+            FpRigidTransform worldFromBodyA = Math.DecomposeRigidBodyTransform(joint.transform.localToWorldMatrix);
+            FpRigidTransform worldFromBodyB = joint.connectedBody == null
+                ? FpRigidTransform.identity
                 : Math.DecomposeRigidBodyTransform(joint.connectedBody.transform.localToWorldMatrix);
 
-            Math.CalculatePerpendicularNormalized(joint.axis, out float3 perpendicularA, out _);
+            Math.CalculatePerpendicularNormalized(joint.axis, out fp3 perpendicularA, out _);
             var bodyAFromJoint = new BodyFrame
             {
                 Axis = joint.axis,
@@ -295,18 +296,18 @@ namespace Fixed.Physics.Authoring
             var isConnectedBodyConverted =
                 joint.connectedBody == null || connectedEntity != Entity.Null;
 
-            RigidTransform bFromA = isConnectedBodyConverted ? math.mul(math.inverse(worldFromBodyB), worldFromBodyA) : worldFromBodyA;
-            RigidTransform bFromBSource =
-                isConnectedBodyConverted ? RigidTransform.identity : worldFromBodyB;
+            FpRigidTransform bFromA = isConnectedBodyConverted ? fpmath.mul(fpmath.inverse(worldFromBodyB), worldFromBodyA) : worldFromBodyA;
+            FpRigidTransform bFromBSource =
+                isConnectedBodyConverted ? FpRigidTransform.identity : worldFromBodyB;
 
             var bodyBFromJoint = new BodyFrame
             {
-                Axis = math.mul(bFromA.rot, joint.axis),
-                PerpendicularAxis = math.mul(bFromA.rot, perpendicularA),
-                Position = math.mul(bFromBSource, new float4(joint.connectedAnchor, sfloat.One)).xyz
+                Axis = fpmath.mul(bFromA.rot, joint.axis),
+                PerpendicularAxis = fpmath.mul(bFromA.rot, perpendicularA),
+                Position = fpmath.mul(bFromBSource, new fp4(joint.connectedAnchor, fp.one)).xyz
             };
 
-            var limits = math.radians(new FloatRange((sfloat)joint.limits.min, (sfloat)joint.limits.max).Sorted());
+            var limits = fpmath.radians(new FloatRange((fp)joint.limits.min, (fp)joint.limits.max).Sorted());
             var jointData = joint.useLimits
                 ? PhysicsJoint.CreateLimitedHinge(bodyAFromJoint, bodyBFromJoint, limits)
                 : PhysicsJoint.CreateHinge(bodyAFromJoint, bodyBFromJoint);

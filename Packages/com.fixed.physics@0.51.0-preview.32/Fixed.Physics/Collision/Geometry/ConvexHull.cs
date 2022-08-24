@@ -1,7 +1,8 @@
 using System;
 using System.Runtime.InteropServices;
 using Unity.Collections.LowLevel.Unsafe;
-using Fixed.Mathematics;
+using Unity.Mathematics;
+using Unity.Mathematics.FixedPoint;
 
 namespace Fixed.Physics
 {
@@ -16,8 +17,8 @@ namespace Fixed.Physics
             public byte NumVertices;             // number of vertex indices in the FaceVertexIndices array
             public byte MinHalfAngleCompressed;  // 0-255 = 0-90 degrees
 
-            static readonly sfloat k_CompressionFactor = sfloat.FromRaw(0x4322568a);//255.0f / (math.PI * 0.5f);
-            public sfloat MinHalfAngle { set => MinHalfAngleCompressed = (byte)math.min(value * k_CompressionFactor, (sfloat)255.0f); }
+            static readonly fp k_CompressionFactor = fp.FromRaw(0x4322568a);//255.0f / (fpmath.PI * 0.5f);
+            public fp MinHalfAngle { set => MinHalfAngleCompressed = (byte)fpmath.min(value * k_CompressionFactor, (fp)255.0f); }
             public bool Equals(Face other) => FirstIndex.Equals(other.FirstIndex) && NumVertices.Equals(other.NumVertices) && MinHalfAngleCompressed.Equals(other.MinHalfAngleCompressed);
         }
 
@@ -37,7 +38,7 @@ namespace Fixed.Physics
         // For spheres and capsules, this is the radius of the primitive.
         // For other convex hulls, this is typically a small value.
         // For polygons in a static mesh, this is typically zero.
-        public sfloat ConvexRadius;
+        public fp ConvexRadius;
 
         // Relative arrays of convex hull data
         internal BlobArray VerticesBlob;
@@ -51,24 +52,24 @@ namespace Fixed.Physics
         public int NumFaces => FacesBlob.Length;
 
         // Indexers for the data
-        public BlobArray.Accessor<float3> Vertices => new BlobArray.Accessor<float3>(ref VerticesBlob);
+        public BlobArray.Accessor<fp3> Vertices => new BlobArray.Accessor<fp3>(ref VerticesBlob);
         public BlobArray.Accessor<Edge> VertexEdges => new BlobArray.Accessor<Edge>(ref VertexEdgesBlob);
         public BlobArray.Accessor<Face> Faces => new BlobArray.Accessor<Face>(ref FacesBlob);
         public BlobArray.Accessor<Plane> Planes => new BlobArray.Accessor<Plane>(ref FacePlanesBlob);
         public BlobArray.Accessor<byte> FaceVertexIndices => new BlobArray.Accessor<byte>(ref FaceVertexIndicesBlob);
         public BlobArray.Accessor<Edge> FaceLinks => new BlobArray.Accessor<Edge>(ref FaceLinksBlob);
 
-        public unsafe float3* VerticesPtr => (float3*)((byte*)UnsafeUtility.AddressOf(ref VerticesBlob.Offset) + VerticesBlob.Offset);
+        public unsafe fp3* VerticesPtr => (fp3*)((byte*)UnsafeUtility.AddressOf(ref VerticesBlob.Offset) + VerticesBlob.Offset);
         public unsafe byte* FaceVertexIndicesPtr => (byte*)UnsafeUtility.AddressOf(ref FaceVertexIndicesBlob.Offset) + FaceVertexIndicesBlob.Offset;
 
         // Returns the index of the face with maximum normal dot direction
-        public int GetSupportingFace(float3 direction)
+        public int GetSupportingFace(fp3 direction)
         {
             int bestIndex = 0;
-            sfloat bestDot = math.dot(direction, Planes[0].Normal);
+            fp bestDot = fpmath.dot(direction, Planes[0].Normal);
             for (int i = 1; i < NumFaces; i++)
             {
-                sfloat dot = math.dot(direction, Planes[i].Normal);
+                fp dot = fpmath.dot(direction, Planes[i].Normal);
                 if (dot > bestDot)
                 {
                     bestDot = dot;
@@ -79,7 +80,7 @@ namespace Fixed.Physics
         }
 
         // Returns the index of the best supporting face that contains supportingVertex
-        public int GetSupportingFace(float3 direction, int supportingVertexIndex)
+        public int GetSupportingFace(fp3 direction, int supportingVertexIndex)
         {
             // Special case for for polygons or colliders without connectivity.
             // Polygons don't need to search edges because both faces contain all vertices.
@@ -91,8 +92,8 @@ namespace Fixed.Physics
             // Search the edges that contain supportingVertexIndex for the one that is most perpendicular to direction
             int bestEdgeIndex = -1;
             {
-                sfloat bestEdgeDot = sfloat.MaxValue;
-                float3 supportingVertex = Vertices[supportingVertexIndex];
+                fp bestEdgeDot = fp.max_value;
+                fp3 supportingVertex = Vertices[supportingVertexIndex];
                 Edge edge = VertexEdges[supportingVertexIndex];
                 int firstFaceIndex = edge.FaceIndex;
                 Face face = Faces[firstFaceIndex];
@@ -102,11 +103,11 @@ namespace Fixed.Physics
                     int linkedEdgeIndex = face.FirstIndex + edge.EdgeIndex;
                     edge = FaceLinks[linkedEdgeIndex];
                     face = Faces[edge.FaceIndex];
-                    float3 linkedVertex = Vertices[FaceVertexIndices[face.FirstIndex + edge.EdgeIndex]];
-                    float3 edgeDirection = linkedVertex - supportingVertex;
-                    sfloat dot = math.abs(math.dot(direction, edgeDirection)) * math.rsqrt(math.lengthsq(edgeDirection));
+                    fp3 linkedVertex = Vertices[FaceVertexIndices[face.FirstIndex + edge.EdgeIndex]];
+                    fp3 edgeDirection = linkedVertex - supportingVertex;
+                    fp dot = fpmath.abs(fpmath.dot(direction, edgeDirection)) * fpmath.rsqrt(fpmath.lengthsq(edgeDirection));
                     bestEdgeIndex = math.select(bestEdgeIndex, linkedEdgeIndex, dot < bestEdgeDot);
-                    bestEdgeDot = math.min(bestEdgeDot, dot);
+                    bestEdgeDot = fpmath.min(bestEdgeDot, dot);
 
                     // Quit after looping back to the first face
                     if (edge.FaceIndex == firstFaceIndex)
@@ -125,22 +126,22 @@ namespace Fixed.Physics
             Edge bestEdge = FaceLinks[bestEdgeIndex];
             int faceIndex0 = bestEdge.FaceIndex;
             int faceIndex1 = FaceLinks[Faces[faceIndex0].FirstIndex + bestEdge.EdgeIndex].FaceIndex;
-            float3 normal0 = Planes[faceIndex0].Normal;
-            float3 normal1 = Planes[faceIndex1].Normal;
-            return math.select(faceIndex0, faceIndex1, math.dot(direction, normal1) > math.dot(direction, normal0));
+            fp3 normal0 = Planes[faceIndex0].Normal;
+            fp3 normal1 = Planes[faceIndex1].Normal;
+            return math.select(faceIndex0, faceIndex1, fpmath.dot(direction, normal1) > fpmath.dot(direction, normal0));
         }
 
-        internal sfloat CalculateBoundingRadius(float3 pivot)
+        internal fp CalculateBoundingRadius(fp3 pivot)
         {
             // Find the furthest point from the pivot
-            sfloat maxDistanceSq = sfloat.Zero;
+            fp maxDistanceSq = fp.zero;
             for (int i = 0; i < NumVertices; i++)
             {
-                float3 vertex = Vertices[i].xyz;
-                sfloat distanceSq = math.lengthsq(vertex - pivot);
-                maxDistanceSq = math.max(maxDistanceSq, distanceSq);
+                fp3 vertex = Vertices[i].xyz;
+                fp distanceSq = fpmath.lengthsq(vertex - pivot);
+                maxDistanceSq = fpmath.max(maxDistanceSq, distanceSq);
             }
-            return math.sqrt(maxDistanceSq) + ConvexRadius;
+            return fpmath.sqrt(maxDistanceSq) + ConvexRadius;
         }
     }
 }

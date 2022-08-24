@@ -4,7 +4,7 @@ using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
 using Unity.Jobs;
 using Unity.Jobs.LowLevel.Unsafe;
-using Fixed.Mathematics;
+using Unity.Mathematics.FixedPoint;
 
 namespace Fixed.Physics
 {
@@ -103,7 +103,7 @@ namespace Fixed.Physics
 
         public int NumContacts => m_ContactJacobian->BaseJacobian.NumContacts;
 
-        public float3 Normal
+        public fp3 Normal
         {
             get => m_ContactJacobian->BaseJacobian.Normal;
             set
@@ -113,7 +113,7 @@ namespace Fixed.Physics
             }
         }
 
-        public sfloat CoefficientOfFriction
+        public fp CoefficientOfFriction
         {
             get => m_ContactJacobian->CoefficientOfFriction;
             set

@@ -2,7 +2,7 @@ using Unity.Burst;
 using Fixed.Physics.Systems;
 using Unity.Collections;
 using Unity.Entities;
-using Fixed.Mathematics;
+using Unity.Mathematics.FixedPoint;
 using Fixed.DebugDisplay;
 using Unity.Jobs;
 
@@ -32,8 +32,8 @@ namespace Fixed.Physics.Authoring
             OutputStream.End();
         }
 
-        static void GetDebugDrawEdge(ref ConvexHull hullIn, ConvexHull.Face faceIn, int edgeIndex, out float3 from,
-            out float3 to)
+        static void GetDebugDrawEdge(ref ConvexHull hullIn, ConvexHull.Face faceIn, int edgeIndex, out fp3 from,
+            out fp3 to)
         {
             byte fromIndex = hullIn.FaceVertexIndices[faceIn.FirstIndex + edgeIndex];
             byte toIndex = hullIn.FaceVertexIndices[faceIn.FirstIndex + (edgeIndex + 1) % faceIn.NumVertices];
@@ -41,13 +41,13 @@ namespace Fixed.Physics.Authoring
             to = hullIn.Vertices[toIndex];
         }
 
-        static unsafe void DrawColliderEdges(ConvexCollider* collider, RigidTransform worldFromConvex,
+        static unsafe void DrawColliderEdges(ConvexCollider* collider, FpRigidTransform worldFromConvex,
             DebugStream.Context outputStream, bool drawVertices = false)
         {
-            void WorldLine(float3 a, float3 b, ColorIndex ci)
+            void WorldLine(fp3 a, fp3 b, ColorIndex ci)
             {
-                a = math.transform(worldFromConvex, a);
-                b = math.transform(worldFromConvex, b);
+                a = fpmath.transform(worldFromConvex, a);
+                b = fpmath.transform(worldFromConvex, b);
                 outputStream.Line(a, b, ci);
             }
 
@@ -59,7 +59,7 @@ namespace Fixed.Physics.Authoring
                 {
                     for (int edgeIndex = 0; edgeIndex < face.NumVertices; edgeIndex++)
                     {
-                        GetDebugDrawEdge(ref hull, face, edgeIndex, out float3 from, out float3 to);
+                        GetDebugDrawEdge(ref hull, face, edgeIndex, out fp3 from, out fp3 to);
                         WorldLine(from, to, ColorIndex.Green);
                     }
                 }
@@ -93,7 +93,7 @@ namespace Fixed.Physics.Authoring
                         break;
                     case ColliderType.Sphere:
                         // No edges on sphere but nice to see center
-                        float3 offset = new float3(hull.ConvexRadius * (sfloat)0.5f);
+                        fp3 offset = new fp3(hull.ConvexRadius * fp.half);
                         for (int i = 0; i < 3; i++)
                         {
                             offset[i] = -offset[i];
@@ -108,22 +108,22 @@ namespace Fixed.Physics.Authoring
                 foreach (ConvexHull.Edge vertexEdge in hull.VertexEdges)
                 {
                     ConvexHull.Face face = hull.Faces[vertexEdge.FaceIndex];
-                    GetDebugDrawEdge(ref hull, face, vertexEdge.EdgeIndex, out float3 from, out float3 to);
+                    GetDebugDrawEdge(ref hull, face, vertexEdge.EdgeIndex, out fp3 from, out fp3 to);
 
                     //TODO
-                    float3 r3 = new float3((sfloat)0.01f, sfloat.Zero, sfloat.Zero);
+                    fp3 r3 = new fp3((fp)0.01f, fp.zero, fp.zero);
                     WorldLine(from - r3, from + r3, ColorIndex.Red);
                     WorldLine(from - r3.yzx, from + r3.yzx, ColorIndex.Red);
                     WorldLine(from - r3.zxy, from + r3.zxy, ColorIndex.Red);
 
 
-                    float3 direction = (to - from) * (sfloat)0.25f;
+                    fp3 direction = (to - from) * (fp)0.25f;
                     WorldLine(from, from + direction, ColorIndex.Red);
                 }
             }
         }
 
-        static unsafe void DrawColliderEdges(MeshCollider* meshCollider, RigidTransform worldFromCollider,
+        static unsafe void DrawColliderEdges(MeshCollider* meshCollider, FpRigidTransform worldFromCollider,
             DebugStream.Context outputStream)
         {
             ref Mesh mesh = ref meshCollider->Mesh;
@@ -138,10 +138,10 @@ namespace Fixed.Physics.Authoring
                     bool isTrianglePair = (flags & Mesh.PrimitiveFlags.IsTrianglePair) != 0;
                     bool isQuad = (flags & Mesh.PrimitiveFlags.IsQuad) != 0;
 
-                    var v0 = math.transform(worldFromCollider, section.Vertices[vertexIndices.A]);
-                    var v1 = math.transform(worldFromCollider, section.Vertices[vertexIndices.B]);
-                    var v2 = math.transform(worldFromCollider, section.Vertices[vertexIndices.C]);
-                    var v3 = math.transform(worldFromCollider, section.Vertices[vertexIndices.D]);
+                    var v0 = fpmath.transform(worldFromCollider, section.Vertices[vertexIndices.A]);
+                    var v1 = fpmath.transform(worldFromCollider, section.Vertices[vertexIndices.B]);
+                    var v2 = fpmath.transform(worldFromCollider, section.Vertices[vertexIndices.C]);
+                    var v3 = fpmath.transform(worldFromCollider, section.Vertices[vertexIndices.D]);
 
                     if (isQuad)
                     {
@@ -168,19 +168,19 @@ namespace Fixed.Physics.Authoring
             }
         }
 
-        static unsafe void DrawColliderEdges(CompoundCollider* compoundCollider, RigidTransform worldFromCompound,
+        static unsafe void DrawColliderEdges(CompoundCollider* compoundCollider, FpRigidTransform worldFromCompound,
             DebugStream.Context outputStream, bool drawVertices = false)
         {
             for (int i = 0; i < compoundCollider->NumChildren; i++)
             {
                 ref CompoundCollider.Child child = ref compoundCollider->Children[i];
                 var childCollider = child.Collider;
-                var worldFromChild = math.mul(worldFromCompound, child.CompoundFromChild);
+                var worldFromChild = fpmath.mul(worldFromCompound, child.CompoundFromChild);
                 DrawColliderEdges(childCollider, worldFromChild, outputStream, drawVertices);
             }
         }
 
-        static unsafe void DrawColliderEdges(Collider* collider, RigidTransform worldFromCollider, DebugStream.Context outputStream,
+        static unsafe void DrawColliderEdges(Collider* collider, FpRigidTransform worldFromCollider, DebugStream.Context outputStream,
             bool drawVertices = false)
         {
             switch (collider->CollisionType)
@@ -202,7 +202,7 @@ namespace Fixed.Physics.Authoring
             }
         }
 
-        internal unsafe static void DrawColliderEdges(BlobAssetReference<Collider> collider, RigidTransform worldFromCollider,
+        internal unsafe static void DrawColliderEdges(BlobAssetReference<Collider> collider, FpRigidTransform worldFromCollider,
             DebugStream.Context outputStream, bool drawVertices = false)
         {
             DrawColliderEdges((Collider*)collider.GetUnsafePtr(), worldFromCollider, outputStream, drawVertices);

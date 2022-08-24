@@ -4,7 +4,8 @@ using Unity.Burst;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Jobs;
-using Fixed.Mathematics;
+using Unity.Mathematics;
+using Unity.Mathematics.FixedPoint;
 using UnityEngine.Assertions;
 
 namespace Fixed.Physics
@@ -956,11 +957,11 @@ namespace Fixed.Physics
                             {
                                 int firstIndex = j * info.BatchSize;
                                 int secondIndex = k * info.BatchSize;
-                                for (int pairIndex1 = firstIndex; pairIndex1 < math.min(firstIndex + info.BatchSize, dispatchPairCount); pairIndex1++)
+                                for (int pairIndex1 = firstIndex; pairIndex1 < fpmath.min(firstIndex + info.BatchSize, dispatchPairCount); pairIndex1++)
                                 {
                                     int aIndex1 = phasedDispatchPairs[pairIndex1].BodyIndexA;
                                     int bIndex1 = phasedDispatchPairs[pairIndex1].BodyIndexB;
-                                    for (int pairIndex2 = secondIndex; pairIndex2 < math.min(secondIndex + info.BatchSize, dispatchPairCount); pairIndex2++)
+                                    for (int pairIndex2 = secondIndex; pairIndex2 < fpmath.min(secondIndex + info.BatchSize, dispatchPairCount); pairIndex2++)
                                     {
                                         int aIndex2 = phasedDispatchPairs[pairIndex2].BodyIndexA;
                                         int bIndex2 = phasedDispatchPairs[pairIndex2].BodyIndexB;

@@ -1,7 +1,7 @@
 #if LEGACY_PHYSICS
 using System;
 using NUnit.Framework;
-using Fixed.Mathematics;
+using Unity.Mathematics.FixedPoint;
 using UnityEngine;
 using LegacyCharacter = UnityEngine.CharacterJoint;
 using LegacyConfigurable = UnityEngine.ConfigurableJoint;
@@ -32,7 +32,7 @@ namespace Fixed.Physics.Tests.Authoring
             CreateHierarchy(new[] { typeof(LegacySpring) }, Array.Empty<Type>(), Array.Empty<Type>());
             Root.GetComponent<LegacySpring>().minDistance = 100f;
             var expectedMin =
-                math.min((sfloat)Root.GetComponent<LegacySpring>().minDistance, (sfloat)Root.GetComponent<LegacySpring>().maxDistance);
+                fpmath.min((fp)Root.GetComponent<LegacySpring>().minDistance, (fp)Root.GetComponent<LegacySpring>().maxDistance);
 
             TestConvertedData<PhysicsJoint>(j =>
             {
@@ -47,7 +47,7 @@ namespace Fixed.Physics.Tests.Authoring
             CreateHierarchy(new[] { typeof(LegacySpring) }, Array.Empty<Type>(), Array.Empty<Type>());
             Root.GetComponent<LegacySpring>().maxDistance = 100f;
             var expectedMax =
-                math.max((sfloat)Root.GetComponent<LegacySpring>().minDistance, (sfloat)Root.GetComponent<LegacySpring>().maxDistance);
+                fpmath.max((fp)Root.GetComponent<LegacySpring>().minDistance, (fp)Root.GetComponent<LegacySpring>().maxDistance);
 
             TestConvertedData<PhysicsJoint>(j =>
             {
@@ -67,15 +67,15 @@ namespace Fixed.Physics.Tests.Authoring
             {
                 Assume.That(j.GetConstraints().Length, Is.GreaterThanOrEqualTo(2), "HingeJoint should always produce at least 2 constraints");
                 var linearConstraint = j[j.GetConstraints().Length - 1];
-                linearConstraint.SpringDamping = linearConstraint.SpringFrequency = (sfloat)0f; // ignore spring settings
+                linearConstraint.SpringDamping = linearConstraint.SpringFrequency = (fp)0f; // ignore spring settings
                 Assert.That(
                     linearConstraint,
                     Is.EqualTo(new Constraint
                     {
                         Type = ConstraintType.Linear,
                         ConstrainedAxes = new bool3(true),
-                        Min = (sfloat)0f,
-                        Max = (sfloat)0f
+                        Min = (fp)0f,
+                        Max = (fp)0f
                     })
                 );
             });
@@ -92,15 +92,15 @@ namespace Fixed.Physics.Tests.Authoring
             {
                 Assume.That(j.GetConstraints().Length, Is.EqualTo(2), "Unlimited HingeJoint should always produce exactly 2 constraints");
                 var angularConstraint = j[0];
-                angularConstraint.SpringDamping = angularConstraint.SpringFrequency = (sfloat)0f; // ignore spring settings
+                angularConstraint.SpringDamping = angularConstraint.SpringFrequency = (fp)0f; // ignore spring settings
                 Assert.That(
                     angularConstraint,
                     Is.EqualTo(new Constraint
                     {
                         Type = ConstraintType.Angular,
                         ConstrainedAxes = new bool3 { y = true, z = true },
-                        Min = (sfloat)0f,
-                        Max = (sfloat)0f
+                        Min = (fp)0f,
+                        Max = (fp)0f
                     })
                 );
             });
@@ -112,15 +112,15 @@ namespace Fixed.Physics.Tests.Authoring
             CreateHierarchy(new[] { typeof(LegacyHinge) }, Array.Empty<Type>(), Array.Empty<Type>());
             var joint = Root.GetComponent<LegacyHinge>();
             joint.useLimits = true;
-            var limits = new float2(-(sfloat)15f, (sfloat)35f);
+            var limits = new fp2(-(fp)15f, (fp)35f);
             joint.limits = new JointLimits { min = (float)limits.x, max = (float)limits.y };
 
             TestConvertedData<PhysicsJoint>(j =>
             {
                 Assume.That(j.GetConstraints().Length, Is.EqualTo(3), "Limited HingeJoint should always produce exactly 3 constraints");
                 var angularConstraint = j[0];
-                angularConstraint.SpringDamping = angularConstraint.SpringFrequency = (sfloat)0f; // ignore spring settings
-                var expectedLimits = math.radians(limits);
+                angularConstraint.SpringDamping = angularConstraint.SpringFrequency = (fp)0f; // ignore spring settings
+                var expectedLimits = fpmath.radians(limits);
                 Assert.That(
                     angularConstraint,
                     Is.EqualTo(new Constraint
@@ -143,15 +143,15 @@ namespace Fixed.Physics.Tests.Authoring
             {
                 Assume.That(j.GetConstraints().Length, Is.EqualTo(4), "CharacterJoint should always produce exactly 4 constraints");
                 var linearConstraint = j[j.GetConstraints().Length - 1];
-                linearConstraint.SpringDamping = linearConstraint.SpringFrequency = (sfloat)0f; // ignore spring settings
+                linearConstraint.SpringDamping = linearConstraint.SpringFrequency = (fp)0f; // ignore spring settings
                 Assert.That(
                     linearConstraint,
                     Is.EqualTo(new Constraint
                     {
                         Type = ConstraintType.Linear,
                         ConstrainedAxes = new bool3(true),
-                        Min = (sfloat)0f,
-                        Max = (sfloat)0f
+                        Min = (fp)0f,
+                        Max = (fp)0f
                     })
                 );
             });
@@ -163,7 +163,7 @@ namespace Fixed.Physics.Tests.Authoring
         {
             CreateHierarchy(new[] { typeof(CharacterJoint) }, Array.Empty<Type>(), Array.Empty<Type>());
             var joint = Root.GetComponent<CharacterJoint>();
-            var limits = new float2(-(sfloat)15f, (sfloat)35f);
+            var limits = new fp2(-(fp)15f, (fp)35f);
             joint.lowTwistLimit = new SoftJointLimit { limit = (float)limits.x };
             joint.highTwistLimit = new SoftJointLimit { limit = (float)limits.y };
             joint.swing1Limit = new SoftJointLimit { limit = 0f };
@@ -173,8 +173,8 @@ namespace Fixed.Physics.Tests.Authoring
             {
                 Assume.That(j.GetConstraints().Length, Is.EqualTo(4), "CharacterJoint should always produce exactly 4 constraints");
                 var angularConstraint = j[0];
-                angularConstraint.SpringDamping = angularConstraint.SpringFrequency = (sfloat)0f; // ignore spring settings
-                var expectedLimits = -math.radians(limits).yx;
+                angularConstraint.SpringDamping = angularConstraint.SpringFrequency = (fp)0f; // ignore spring settings
+                var expectedLimits = -fpmath.radians(limits).yx;
                 Assert.That(
                     angularConstraint,
                     Is.EqualTo(new Constraint
@@ -203,8 +203,8 @@ namespace Fixed.Physics.Tests.Authoring
             {
                 Assume.That(j.GetConstraints().Length, Is.EqualTo(4), "CharacterJoint should always produce exactly 4 constraints");
                 var angularConstraint = j[1];
-                angularConstraint.SpringDamping = angularConstraint.SpringFrequency = (sfloat)0f; // ignore spring settings
-                var expectedLimits = new float2(-math.radians((sfloat)limit), math.radians((sfloat)limit));
+                angularConstraint.SpringDamping = angularConstraint.SpringFrequency = (fp)0f; // ignore spring settings
+                var expectedLimits = new fp2(-fpmath.radians((fp)limit), fpmath.radians((fp)limit));
                 Assert.That(
                     angularConstraint,
                     Is.EqualTo(new Constraint
@@ -233,8 +233,8 @@ namespace Fixed.Physics.Tests.Authoring
             {
                 Assume.That(j.GetConstraints().Length, Is.EqualTo(4), "CharacterJoint should always produce exactly 4 constraints");
                 var angularConstraint = j[2];
-                angularConstraint.SpringDamping = angularConstraint.SpringFrequency = (sfloat)0f; // ignore spring settings
-                var expectedLimits = new float2(-math.radians((sfloat)limit), math.radians((sfloat)limit));
+                angularConstraint.SpringDamping = angularConstraint.SpringFrequency = (fp)0f; // ignore spring settings
+                var expectedLimits = new fp2(-fpmath.radians((fp)limit), fpmath.radians((fp)limit));
                 Assert.That(
                     angularConstraint,
                     Is.EqualTo(new Constraint
@@ -357,7 +357,7 @@ namespace Fixed.Physics.Tests.Authoring
             joint.angularXMotion = ConfigurableJointMotion.Limited;
             joint.angularYMotion = ConfigurableJointMotion.Free;
             joint.angularZMotion = ConfigurableJointMotion.Free;
-            var limits = new float2(-(sfloat)15f, (sfloat)35f);
+            var limits = new fp2(-(fp)15f, (fp)35f);
             joint.lowAngularXLimit = new SoftJointLimit { limit = (float)limits.x };
             joint.highAngularXLimit = new SoftJointLimit { limit = (float)limits.y };
             joint.angularYLimit = new SoftJointLimit { limit = 0f };
@@ -367,8 +367,8 @@ namespace Fixed.Physics.Tests.Authoring
             {
                 Assume.That(j.GetConstraints().Length, Is.EqualTo(1), "ConfigurableJoint with limits on only one axis should produce exactly 1 constraint");
                 var angularConstraint = j[0];
-                angularConstraint.SpringDamping = angularConstraint.SpringFrequency = (sfloat)0f; // ignore spring settings
-                var expectedLimits = -math.radians(limits).yx;
+                angularConstraint.SpringDamping = angularConstraint.SpringFrequency = (fp)0f; // ignore spring settings
+                var expectedLimits = -fpmath.radians(limits).yx;
                 Assert.That(
                     angularConstraint,
                     Is.EqualTo(new Constraint
@@ -403,8 +403,8 @@ namespace Fixed.Physics.Tests.Authoring
             {
                 Assume.That(j.GetConstraints().Length, Is.EqualTo(1), "ConfigurableJoint with limits on only one axis should produce exactly 1 constraint");
                 var angularConstraint = j[0];
-                angularConstraint.SpringDamping = angularConstraint.SpringFrequency = (sfloat)0f; // ignore spring settings
-                var expectedLimits = new float2(-math.radians((sfloat)limit), math.radians((sfloat)limit));
+                angularConstraint.SpringDamping = angularConstraint.SpringFrequency = (fp)0f; // ignore spring settings
+                var expectedLimits = new fp2(-fpmath.radians((fp)limit), fpmath.radians((fp)limit));
                 Assert.That(
                     angularConstraint,
                     Is.EqualTo(new Constraint
@@ -439,8 +439,8 @@ namespace Fixed.Physics.Tests.Authoring
             {
                 Assume.That(j.GetConstraints().Length, Is.EqualTo(1), "ConfigurableJoint with limits on only one axis should produce exactly 1 constraint");
                 var angularConstraint = j[0];
-                angularConstraint.SpringDamping = angularConstraint.SpringFrequency = (sfloat)0f; // ignore spring settings
-                var expectedLimits = new float2(-math.radians((sfloat)limit), math.radians((sfloat)limit));
+                angularConstraint.SpringDamping = angularConstraint.SpringFrequency = (fp)0f; // ignore spring settings
+                var expectedLimits = new fp2(-fpmath.radians((fp)limit), fpmath.radians((fp)limit));
                 Assert.That(
                     angularConstraint,
                     Is.EqualTo(new Constraint

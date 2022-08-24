@@ -1,5 +1,6 @@
 using System;
-using Fixed.Mathematics;
+using Unity.Mathematics;
+using Unity.Mathematics.FixedPoint;
 using UnityEditor;
 using UnityEditor.IMGUI.Controls;
 using UnityEngine;
@@ -42,7 +43,7 @@ namespace Fixed.Physics.Editor
             }
 
             var cameraPosition = float3.zero;
-            var cameraForward = new float3 { z = sfloat.One };
+            var cameraForward = new float3 { z = 1 };
             if (Camera.current != null)
             {
                 cameraPosition = Camera.current.transform.position;
@@ -52,20 +53,20 @@ namespace Fixed.Physics.Editor
             var bounds = new Bounds(this.center, this.size);
             bool isCameraInsideBox = Camera.current != null && bounds.Contains(Handles.inverseMatrix.MultiplyPoint(cameraPosition));
             var bevelRadius = this.bevelRadius;
-            var origin      = (float3)this.center;
-            var size        = (float3)this.size;
+            var origin      = (fp3)this.center;
+            var size        = (fp3)this.size;
 
-            PhysicsBoundsHandleUtility.DrawFace(origin, size * new float3(sfloat.One,  sfloat.One,  sfloat.One), bevelRadius, 0, axes, isCameraInsideBox);
-            PhysicsBoundsHandleUtility.DrawFace(origin, size * new float3(sfloat.MinusOne,  sfloat.One,  sfloat.One), bevelRadius, 0, axes, isCameraInsideBox);
-            PhysicsBoundsHandleUtility.DrawFace(origin, size * new float3(sfloat.One,  sfloat.One,  sfloat.One), bevelRadius, 1, axes, isCameraInsideBox);
-            PhysicsBoundsHandleUtility.DrawFace(origin, size * new float3(sfloat.One, sfloat.MinusOne,  sfloat.One), bevelRadius, 1, axes, isCameraInsideBox);
-            PhysicsBoundsHandleUtility.DrawFace(origin, size * new float3(sfloat.One,  sfloat.One,  sfloat.One), bevelRadius, 2, axes, isCameraInsideBox);
-            PhysicsBoundsHandleUtility.DrawFace(origin, size * new float3(sfloat.One,  sfloat.One, sfloat.MinusOne), bevelRadius, 2, axes, isCameraInsideBox);
+            PhysicsBoundsHandleUtility.DrawFace(origin, size * new fp3(fp.one,  fp.one,  fp.one), bevelRadius, 0, axes, isCameraInsideBox);
+            PhysicsBoundsHandleUtility.DrawFace(origin, size * new fp3(fp.minusOne,  fp.one,  fp.one), bevelRadius, 0, axes, isCameraInsideBox);
+            PhysicsBoundsHandleUtility.DrawFace(origin, size * new fp3(fp.one,  fp.one,  fp.one), bevelRadius, 1, axes, isCameraInsideBox);
+            PhysicsBoundsHandleUtility.DrawFace(origin, size * new fp3(fp.one, fp.minusOne,  fp.one), bevelRadius, 1, axes, isCameraInsideBox);
+            PhysicsBoundsHandleUtility.DrawFace(origin, size * new fp3(fp.one,  fp.one,  fp.one), bevelRadius, 2, axes, isCameraInsideBox);
+            PhysicsBoundsHandleUtility.DrawFace(origin, size * new fp3(fp.one,  fp.one, fp.minusOne), bevelRadius, 2, axes, isCameraInsideBox);
 
-            var corner = (sfloat)0.5f * size - new float3(sfloat.One) * (sfloat)bevelRadius;
-            var axisx = new float3(sfloat.One, sfloat.Zero, sfloat.Zero);
-            var axisy = new float3(sfloat.Zero, sfloat.One, sfloat.Zero);
-            var axisz = new float3(sfloat.Zero, sfloat.Zero, sfloat.One);
+            var corner = fp.half * size - new fp3(fp.one) * (fp)bevelRadius;
+            var axisx = new fp3(fp.one, fp.zero, fp.zero);
+            var axisy = new fp3(fp.zero, fp.one, fp.zero);
+            var axisz = new fp3(fp.zero, fp.zero, fp.one);
 
             // Since the geometry is transformed by Handles.matrix during rendering, we transform the camera position
             // by the inverse matrix so that the two-shaded wireframe will have the proper orientation.
@@ -74,15 +75,15 @@ namespace Fixed.Physics.Editor
             cameraForward   = invMatrix.MultiplyVector(cameraForward);
             var cameraOrtho = Camera.current == null || Camera.current.orthographic;
 
-            PhysicsBoundsHandleUtility.CalculateCornerHorizon(origin + corner * new float3(sfloat.MinusOne,  sfloat.One, sfloat.MinusOne), quaternion.LookRotation(-axisz,  axisy), cameraPosition, cameraForward, cameraOrtho, bevelRadius, out s_Corners[0]);
-            PhysicsBoundsHandleUtility.CalculateCornerHorizon(origin + corner * new float3(sfloat.MinusOne,  sfloat.One,  sfloat.One), quaternion.LookRotation(-axisx,  axisy), cameraPosition, cameraForward, cameraOrtho, bevelRadius, out s_Corners[1]);
-            PhysicsBoundsHandleUtility.CalculateCornerHorizon(origin + corner * new float3(sfloat.One,  sfloat.One,  sfloat.One), quaternion.LookRotation(axisz,  axisy), cameraPosition, cameraForward, cameraOrtho, bevelRadius, out s_Corners[2]);
-            PhysicsBoundsHandleUtility.CalculateCornerHorizon(origin + corner * new float3(sfloat.One,  sfloat.One, sfloat.MinusOne), quaternion.LookRotation(axisx,  axisy), cameraPosition, cameraForward, cameraOrtho, bevelRadius, out s_Corners[3]);
+            PhysicsBoundsHandleUtility.CalculateCornerHorizon(origin + corner * new fp3(fp.minusOne,  fp.one, fp.minusOne), fpquaternion.LookRotation(-axisz,  axisy), cameraPosition, cameraForward, cameraOrtho, bevelRadius, out s_Corners[0]);
+            PhysicsBoundsHandleUtility.CalculateCornerHorizon(origin + corner * new fp3(fp.minusOne,  fp.one,  fp.one), fpquaternion.LookRotation(-axisx,  axisy), cameraPosition, cameraForward, cameraOrtho, bevelRadius, out s_Corners[1]);
+            PhysicsBoundsHandleUtility.CalculateCornerHorizon(origin + corner * new fp3(fp.one,  fp.one,  fp.one), fpquaternion.LookRotation(axisz,  axisy), cameraPosition, cameraForward, cameraOrtho, bevelRadius, out s_Corners[2]);
+            PhysicsBoundsHandleUtility.CalculateCornerHorizon(origin + corner * new fp3(fp.one,  fp.one, fp.minusOne), fpquaternion.LookRotation(axisx,  axisy), cameraPosition, cameraForward, cameraOrtho, bevelRadius, out s_Corners[3]);
 
-            PhysicsBoundsHandleUtility.CalculateCornerHorizon(origin + corner * new float3(sfloat.MinusOne, sfloat.MinusOne, sfloat.MinusOne), quaternion.LookRotation(-axisx, -axisy), cameraPosition, cameraForward, cameraOrtho, bevelRadius, out s_Corners[4]);
-            PhysicsBoundsHandleUtility.CalculateCornerHorizon(origin + corner * new float3(sfloat.MinusOne, sfloat.MinusOne,  sfloat.One), quaternion.LookRotation(axisz, -axisy), cameraPosition, cameraForward, cameraOrtho, bevelRadius, out s_Corners[5]);
-            PhysicsBoundsHandleUtility.CalculateCornerHorizon(origin + corner * new float3(sfloat.One, sfloat.MinusOne,  sfloat.One), quaternion.LookRotation(axisx, -axisy), cameraPosition, cameraForward, cameraOrtho, bevelRadius, out s_Corners[6]);
-            PhysicsBoundsHandleUtility.CalculateCornerHorizon(origin + corner * new float3(sfloat.One, sfloat.MinusOne, sfloat.MinusOne), quaternion.LookRotation(-axisz, -axisy), cameraPosition, cameraForward, cameraOrtho, bevelRadius, out s_Corners[7]);
+            PhysicsBoundsHandleUtility.CalculateCornerHorizon(origin + corner * new fp3(fp.minusOne, fp.minusOne, fp.minusOne), fpquaternion.LookRotation(-axisx, -axisy), cameraPosition, cameraForward, cameraOrtho, bevelRadius, out s_Corners[4]);
+            PhysicsBoundsHandleUtility.CalculateCornerHorizon(origin + corner * new fp3(fp.minusOne, fp.minusOne,  fp.one), fpquaternion.LookRotation(axisz, -axisy), cameraPosition, cameraForward, cameraOrtho, bevelRadius, out s_Corners[5]);
+            PhysicsBoundsHandleUtility.CalculateCornerHorizon(origin + corner * new fp3(fp.one, fp.minusOne,  fp.one), fpquaternion.LookRotation(axisx, -axisy), cameraPosition, cameraForward, cameraOrtho, bevelRadius, out s_Corners[6]);
+            PhysicsBoundsHandleUtility.CalculateCornerHorizon(origin + corner * new fp3(fp.one, fp.minusOne, fp.minusOne), fpquaternion.LookRotation(-axisz, -axisy), cameraPosition, cameraForward, cameraOrtho, bevelRadius, out s_Corners[7]);
 
             for (int i = 0; i < s_Corners.Length; i++)
                 PhysicsBoundsHandleUtility.DrawCorner(s_Corners[i], true);

@@ -3,7 +3,7 @@ using NUnit.Framework;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
-using Fixed.Mathematics;
+using Unity.Mathematics.FixedPoint;
 using Fixed.Transforms;
 using UnityEngine;
 using Assert = UnityEngine.Assertions.Assert;
@@ -30,7 +30,7 @@ namespace Fixed.Physics.Tests.Collision.PhysicsWorld
                 Center = pos,
                 Orientation = orientation,
                 Size = size,
-                BevelRadius = (sfloat)0.01f
+                BevelRadius = (fp)0.01f
             });
             rb.Collider = collider;
             staticBodies[index] = rb;
@@ -47,7 +47,7 @@ namespace Fixed.Physics.Tests.Collision.PhysicsWorld
                 Center = pos,
                 Orientation = orientation,
                 Size = size,
-                BevelRadius = (sfloat)0.01f
+                BevelRadius = (fp)0.01f
             });
             rb.Collider = collider;
             dynamicBodies[index] = rb;
@@ -73,7 +73,7 @@ namespace Fixed.Physics.Tests.Collision.PhysicsWorld
                 var handle = new JobHandle();
                 var buildStaticTree = new NativeArray<int>(1, Allocator.TempJob);
                 buildStaticTree[0] = 1;
-                JobHandle result = world.CollisionWorld.Broadphase.ScheduleBuildJobs(ref world, (sfloat)1 / (sfloat)60, -(sfloat)9.81f * math.up(), buildStaticTree, handle, numThreads == 1);
+                JobHandle result = world.CollisionWorld.Broadphase.ScheduleBuildJobs(ref world, (fp)1 / (fp)60, -(fp)9.81f * fpmath.up(), buildStaticTree, handle, numThreads == 1);
                 result.Complete();
                 Assert.IsTrue(result.IsCompleted);
                 world.Dispose();
@@ -95,7 +95,7 @@ namespace Fixed.Physics.Tests.Collision.PhysicsWorld
                 var handle = new JobHandle();
                 var buildStaticTree = new NativeArray<int>(1, Allocator.TempJob);
                 buildStaticTree[0] = 1;
-                JobHandle result = world.CollisionWorld.Broadphase.ScheduleBuildJobs(ref world, (sfloat)1 / (sfloat)60, -(sfloat)9.81f * math.up(), buildStaticTree, handle, numThreads == 1);
+                JobHandle result = world.CollisionWorld.Broadphase.ScheduleBuildJobs(ref world, (fp)1 / (fp)60, -(fp)9.81f * fpmath.up(), buildStaticTree, handle, numThreads == 1);
 
                 result.Complete();
                 Assert.IsTrue(result.IsCompleted);
@@ -118,7 +118,7 @@ namespace Fixed.Physics.Tests.Collision.PhysicsWorld
                 var handle = new JobHandle();
                 var buildStaticTree = new NativeArray<int>(1, Allocator.TempJob);
                 buildStaticTree[0] = 1;
-                JobHandle result = world.CollisionWorld.Broadphase.ScheduleBuildJobs(ref world, (sfloat)1 / (sfloat)60, -(sfloat)9.81f * math.up(), buildStaticTree, handle, numThreads == 1);
+                JobHandle result = world.CollisionWorld.Broadphase.ScheduleBuildJobs(ref world, (fp)1 / (fp)60, -(fp)9.81f * fpmath.up(), buildStaticTree, handle, numThreads == 1);
                 result.Complete();
                 Assert.IsTrue(result.IsCompleted);
                 world.Dispose();
@@ -133,7 +133,7 @@ namespace Fixed.Physics.Tests.Collision.PhysicsWorld
             Physics.PhysicsWorld world = createTestWorld(1);
             addStaticBoxToWorld(world, 0, new Vector3(0, 0, 0), Quaternion.identity, new Vector3(10, 0.1f, 10));
             world.CollisionWorld.Broadphase.Build(world.StaticBodies, world.DynamicBodies, world.MotionVelocities,
-                world.CollisionWorld.CollisionTolerance, (sfloat)1 / (sfloat)60, -(sfloat)9.81f * math.up());
+                world.CollisionWorld.CollisionTolerance, (fp)1 / (fp)60, -(fp)9.81f * fpmath.up());
             world.Dispose();
         }
 
@@ -147,7 +147,7 @@ namespace Fixed.Physics.Tests.Collision.PhysicsWorld
                 addStaticBoxToWorld(world, i, new Vector3(i * 11, 0, 0), Quaternion.identity, new Vector3(10, 0.1f, 10));
             }
             world.CollisionWorld.Broadphase.Build(world.StaticBodies, world.DynamicBodies, world.MotionVelocities,
-                world.CollisionWorld.CollisionTolerance, (sfloat)1 / (sfloat)60, -(sfloat)9.81f * math.up());
+                world.CollisionWorld.CollisionTolerance, (fp)1 / (fp)60, -(fp)9.81f * fpmath.up());
             world.Dispose();
         }
 
@@ -161,7 +161,7 @@ namespace Fixed.Physics.Tests.Collision.PhysicsWorld
                 addStaticBoxToWorld(world, i, new Vector3(i * 11, 0, 0), Quaternion.identity, new Vector3(10, 0.1f, 10));
             }
             world.CollisionWorld.Broadphase.Build(world.StaticBodies, world.DynamicBodies, world.MotionVelocities,
-                world.CollisionWorld.CollisionTolerance, (sfloat)1 / (sfloat)60, -(sfloat)9.81f * math.up());
+                world.CollisionWorld.CollisionTolerance, (fp)1 / (fp)60, -(fp)9.81f * fpmath.up());
             world.Dispose();
         }
 
@@ -176,7 +176,7 @@ namespace Fixed.Physics.Tests.Collision.PhysicsWorld
                 var handle = new JobHandle();
                 var buildStaticTree = new NativeArray<int>(1, Allocator.TempJob);
                 buildStaticTree[0] = 1;
-                JobHandle result = world.CollisionWorld.Broadphase.ScheduleBuildJobs(ref world, (sfloat)1 / (sfloat)60, -(sfloat)9.81f * math.up(), buildStaticTree, handle, numThreads == 1);
+                JobHandle result = world.CollisionWorld.Broadphase.ScheduleBuildJobs(ref world, (fp)1 / (fp)60, -(fp)9.81f * fpmath.up(), buildStaticTree, handle, numThreads == 1);
                 result.Complete();
                 Assert.IsTrue(result.IsCompleted);
                 world.Dispose();
@@ -198,7 +198,7 @@ namespace Fixed.Physics.Tests.Collision.PhysicsWorld
                 var handle = new JobHandle();
                 var buildStaticTree = new NativeArray<int>(1, Allocator.TempJob);
                 buildStaticTree[0] = 1;
-                JobHandle result = world.CollisionWorld.Broadphase.ScheduleBuildJobs(ref world, (sfloat)1 / (sfloat)60, -(sfloat)9.81f * math.up(), buildStaticTree, handle, numThreads == 1);
+                JobHandle result = world.CollisionWorld.Broadphase.ScheduleBuildJobs(ref world, (fp)1 / (fp)60, -(fp)9.81f * fpmath.up(), buildStaticTree, handle, numThreads == 1);
                 result.Complete();
                 Assert.IsTrue(result.IsCompleted);
                 world.Dispose();
@@ -220,7 +220,7 @@ namespace Fixed.Physics.Tests.Collision.PhysicsWorld
                 var handle = new JobHandle();
                 var buildStaticTree = new NativeArray<int>(1, Allocator.TempJob);
                 buildStaticTree[0] = 1;
-                JobHandle result = world.CollisionWorld.Broadphase.ScheduleBuildJobs(ref world, (sfloat)1 / (sfloat)60, -(sfloat)9.81f * math.up(), buildStaticTree, handle, numThreads == 1);
+                JobHandle result = world.CollisionWorld.Broadphase.ScheduleBuildJobs(ref world, (fp)1 / (fp)60, -(fp)9.81f * fpmath.up(), buildStaticTree, handle, numThreads == 1);
                 result.Complete();
                 Assert.IsTrue(result.IsCompleted);
                 world.Dispose();
@@ -235,7 +235,7 @@ namespace Fixed.Physics.Tests.Collision.PhysicsWorld
             Physics.PhysicsWorld world = createTestWorld(0, 1);
             addDynamicBoxToWorld(world, 0, new Vector3(0, 0, 0), Quaternion.identity, new Vector3(10, 10, 10));
             world.CollisionWorld.Broadphase.Build(world.StaticBodies, world.DynamicBodies, world.MotionVelocities,
-                world.CollisionWorld.CollisionTolerance, (sfloat)1 / (sfloat)60, -(sfloat)9.81f * math.up());
+                world.CollisionWorld.CollisionTolerance, (fp)1 / (fp)60, -(fp)9.81f * fpmath.up());
             world.Dispose();
         }
 
@@ -249,7 +249,7 @@ namespace Fixed.Physics.Tests.Collision.PhysicsWorld
                 addDynamicBoxToWorld(world, i, new Vector3(i * 11, 0, 0), Quaternion.identity, new Vector3(10, 10, 10));
             }
             world.CollisionWorld.Broadphase.Build(world.StaticBodies, world.DynamicBodies, world.MotionVelocities,
-                world.CollisionWorld.CollisionTolerance, (sfloat)1 / (sfloat)60, -(sfloat)9.81f * math.up());
+                world.CollisionWorld.CollisionTolerance, (fp)1 / (fp)60, -(fp)9.81f * fpmath.up());
             world.Dispose();
         }
 
@@ -263,7 +263,7 @@ namespace Fixed.Physics.Tests.Collision.PhysicsWorld
                 addDynamicBoxToWorld(world, i, new Vector3(i * 11, 0, 0), Quaternion.identity, new Vector3(10, 10, 10));
             }
             world.CollisionWorld.Broadphase.Build(world.StaticBodies, world.DynamicBodies, world.MotionVelocities,
-                world.CollisionWorld.CollisionTolerance, (sfloat)1 / (sfloat)60, -(sfloat)9.81f * math.up());
+                world.CollisionWorld.CollisionTolerance, (fp)1 / (fp)60, -(fp)9.81f * fpmath.up());
             world.Dispose();
         }
 
@@ -281,7 +281,7 @@ namespace Fixed.Physics.Tests.Collision.PhysicsWorld
                 var handle = new JobHandle();
                 var buildStaticTree = new NativeArray<int>(1, Allocator.TempJob);
                 buildStaticTree[0] = 1;
-                JobHandle result = world.CollisionWorld.Broadphase.ScheduleBuildJobs(ref world, (sfloat)1 / (sfloat)60, -(sfloat)9.81f * math.up(), buildStaticTree, handle, numThreads == 1);
+                JobHandle result = world.CollisionWorld.Broadphase.ScheduleBuildJobs(ref world, (fp)1 / (fp)60, -(fp)9.81f * fpmath.up(), buildStaticTree, handle, numThreads == 1);
                 result.Complete();
                 Assert.IsTrue(result.IsCompleted);
                 world.Dispose();
@@ -299,7 +299,7 @@ namespace Fixed.Physics.Tests.Collision.PhysicsWorld
                 addDynamicBoxToWorld(world, i, new Vector3(i * 11, 5, 0), Quaternion.identity, new Vector3(1, 1, 1));
             }
             world.CollisionWorld.Broadphase.Build(world.StaticBodies, world.DynamicBodies, world.MotionVelocities,
-                world.CollisionWorld.CollisionTolerance, (sfloat)1 / (sfloat)60, -(sfloat)9.81f * math.up());
+                world.CollisionWorld.CollisionTolerance, (fp)1 / (fp)60, -(fp)9.81f * fpmath.up());
             world.Dispose();
         }
 
@@ -313,7 +313,7 @@ namespace Fixed.Physics.Tests.Collision.PhysicsWorld
                 var handle = new JobHandle();
                 var buildStaticTree = new NativeArray<int>(1, Allocator.TempJob);
                 buildStaticTree[0] = 1;
-                JobHandle result = world.CollisionWorld.Broadphase.ScheduleBuildJobs(ref world, (sfloat)1 / (sfloat)60, -(sfloat)9.81f * math.up(), buildStaticTree, handle, numThreads == 1);
+                JobHandle result = world.CollisionWorld.Broadphase.ScheduleBuildJobs(ref world, (fp)1 / (fp)60, -(fp)9.81f * fpmath.up(), buildStaticTree, handle, numThreads == 1);
                 result.Complete();
                 world.Dispose();
                 buildStaticTree.Dispose();
@@ -326,7 +326,7 @@ namespace Fixed.Physics.Tests.Collision.PhysicsWorld
         {
             Physics.PhysicsWorld world = createTestWorld();
             world.CollisionWorld.Broadphase.Build(world.StaticBodies, world.DynamicBodies, world.MotionVelocities,
-                world.CollisionWorld.CollisionTolerance, (sfloat)1 / (sfloat)60, -(sfloat)9.81f * math.up());
+                world.CollisionWorld.CollisionTolerance, (fp)1 / (fp)60, -(fp)9.81f * fpmath.up());
             world.Dispose();
         }
     }

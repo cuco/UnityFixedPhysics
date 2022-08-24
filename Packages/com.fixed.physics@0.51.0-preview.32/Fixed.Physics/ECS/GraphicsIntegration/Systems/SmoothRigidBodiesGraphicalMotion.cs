@@ -3,7 +3,7 @@ using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
-using Fixed.Mathematics;
+using Unity.Mathematics.FixedPoint;
 using Fixed.Physics.Systems;
 using Fixed.Transforms;
 
@@ -50,11 +50,11 @@ namespace Fixed.Physics.GraphicsIntegration
 
         protected override void OnUpdate()
         {
-            var timeAhead = (sfloat)((sfloat)Time.ElapsedTime - m_RecordMostRecentFixedTime.MostRecentElapsedTime);
-            var timeStep = (sfloat)m_RecordMostRecentFixedTime.MostRecentDeltaTime;
-            if (timeAhead < sfloat.Zero || timeStep == sfloat.Zero)
+            var timeAhead = (fp)((fp)Time.ElapsedTime - m_RecordMostRecentFixedTime.MostRecentElapsedTime);
+            var timeStep = (fp)m_RecordMostRecentFixedTime.MostRecentDeltaTime;
+            if (timeAhead < fp.zero || timeStep == fp.zero)
                 return;
-            var normalizedTimeAhead = math.clamp(timeAhead / timeStep, sfloat.Zero, sfloat.One);
+            var normalizedTimeAhead = fpmath.clamp(timeAhead / timeStep, fp.zero, fp.one);
 
             Dependency = new SmoothMotionJob
             {
@@ -84,8 +84,8 @@ namespace Fixed.Physics.GraphicsIntegration
             [ReadOnly] public ComponentTypeHandle<PhysicsGraphicalInterpolationBuffer> InterpolationBufferType;
             public ComponentTypeHandle<PhysicsGraphicalSmoothing> PhysicsGraphicalSmoothingType;
             public ComponentTypeHandle<LocalToWorld> LocalToWorldType;
-            public sfloat TimeAhead;
-            public sfloat NormalizedTimeAhead;
+            public fp TimeAhead;
+            public fp NormalizedTimeAhead;
 
             public void Execute(ArchetypeChunk batchInChunk, int batchIndex)
             {
@@ -112,11 +112,11 @@ namespace Fixed.Physics.GraphicsIntegration
                     var smoothing = physicsGraphicalSmoothings[i];
                     var currentVelocity = smoothing.CurrentVelocity;
 
-                    var currentTransform = new RigidTransform(orientations[i].Value, positions[i].Value);
-                    RigidTransform smoothedTransform;
+                    var currentTransform = new FpRigidTransform(orientations[i].Value, positions[i].Value);
+                    FpRigidTransform smoothedTransform;
 
                     // apply no smoothing (i.e., teleported bodies)
-                    if (smoothing.ApplySmoothing == 0 || TimeAhead == sfloat.Zero)
+                    if (smoothing.ApplySmoothing == 0 || TimeAhead == fp.zero)
                     {
                         smoothedTransform = currentTransform;
                     }

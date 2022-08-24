@@ -1,6 +1,7 @@
 using System.Collections.Generic;
-using Fixed.Mathematics;
+using Unity.Mathematics.FixedPoint;
 using Fixed.Physics.Authoring;
+using Unity.Mathematics;
 using UnityEditor;
 using UnityEngine;
 

@@ -1,6 +1,7 @@
 using System;
 using Unity.Entities;
-using Fixed.Mathematics;
+using Unity.Mathematics;
+using Unity.Mathematics.FixedPoint;
 using UnityEngine.Assertions;
 using static Fixed.Physics.BoundingVolumeHierarchy;
 using static Fixed.Physics.Math;
@@ -10,8 +11,8 @@ namespace Fixed.Physics
     // The input to point distance queries
     public struct PointDistanceInput
     {
-        public float3 Position;
-        public sfloat MaxDistance;
+        public fp3 Position;
+        public fp MaxDistance;
         public CollisionFilter Filter;
 
         internal QueryContext QueryContext;
@@ -21,12 +22,12 @@ namespace Fixed.Physics
     public struct ColliderDistanceInput
     {
         public unsafe Collider* Collider;
-        public RigidTransform Transform;
-        public sfloat MaxDistance;
+        public FpRigidTransform Transform;
+        public fp MaxDistance;
 
         internal QueryContext QueryContext;
 
-        public ColliderDistanceInput(BlobAssetReference<Collider> collider, RigidTransform transform, sfloat maxDistance)
+        public ColliderDistanceInput(BlobAssetReference<Collider> collider, FpRigidTransform transform, fp maxDistance)
         {
             unsafe
             {
@@ -46,7 +47,7 @@ namespace Fixed.Physics
         /// NOT the percentage of max distance
         /// </summary>
         /// <value> Distance at which the hit occurred. </value>
-        public sfloat Fraction { get; set; }
+        public fp Fraction { get; set; }
 
         /// <summary>
         ///
@@ -76,19 +77,19 @@ namespace Fixed.Physics
         /// The point in query space where the hit occurred.
         /// </summary>
         /// <value> Returns the position of the point where the hit occurred. </value>
-        public float3 Position { get; set; }
+        public fp3 Position { get; set; }
 
         /// <summary>
         ///
         /// </summary>
         /// <value> Returns the normal of the point where the hit occurred. </value>
-        public float3 SurfaceNormal { get; set; }
+        public fp3 SurfaceNormal { get; set; }
 
         /// <summary>
         ///
         /// </summary>
         /// <value> Distance at which the hit occurred. </value>
-        public sfloat Distance => Fraction;
+        public fp Distance => Fraction;
 
         /// <summary>
         /// Collider key of the query collider
@@ -110,7 +111,7 @@ namespace Fixed.Physics
             MTransform targetFromQuery = new MTransform(input.Transform);
 
             var worldFromQuery = Mul(input.QueryContext.WorldFromLocalTransform, targetFromQuery);
-            var queryFromTarget = math.inverse(input.Transform);
+            var queryFromTarget = fpmath.inverse(input.Transform);
 
             input.QueryContext.WorldFromLocalTransform = worldFromQuery;
             input.Transform = queryFromTarget;
@@ -128,15 +129,15 @@ namespace Fixed.Physics
         // Additionally, with floating point numbers there are often numerical accuracy problems near distance = 0.  Some routines handle this with special
         // cases where distance^2 < distanceEpsSq, which is expected to be rare in normal usage.  distanceEpsSq is not an exact value, but chosen to be small
         // enough that at typical simulation scale the difference between distance = distanceEps and distance = 0 is negligible.
-        private static sfloat distanceEpsSq => sfloat.FromRaw(0x322bcc77);
+        private static fp distanceEpsSq => fp.FromRaw(0x322bcc77);
 
         public struct Result
         {
-            public float3 PositionOnAinA;
-            public float3 NormalInA;
-            public sfloat Distance;
+            public fp3 PositionOnAinA;
+            public fp3 NormalInA;
+            public fp Distance;
 
-            public float3 PositionOnBinA => PositionOnAinA - NormalInA * Distance;
+            public fp3 PositionOnBinA => PositionOnAinA - NormalInA * Distance;
         }
 
         public static unsafe Result ConvexConvex(ref ConvexHull convexA, ref ConvexHull convexB, MTransform aFromB)
@@ -148,8 +149,8 @@ namespace Fixed.Physics
         }
 
         public static unsafe Result ConvexConvex(
-            float3* verticesA, int numVerticesA, sfloat convexRadiusA,
-            float3* verticesB, int numVerticesB, sfloat convexRadiusB,
+            fp3* verticesA, int numVerticesA, fp convexRadiusA,
+            fp3* verticesB, int numVerticesB, fp convexRadiusB,
             MTransform aFromB)
         {
             ConvexConvexDistanceQueries.Result result = ConvexConvexDistanceQueries.ConvexConvex(
@@ -161,12 +162,12 @@ namespace Fixed.Physics
             return result.ClosestPoints;
         }
 
-        private static Result PointPoint(float3 pointB, float3 diff, sfloat coreDistanceSq, sfloat radiusA, sfloat sumRadii)
+        private static Result PointPoint(fp3 pointB, fp3 diff, fp coreDistanceSq, fp radiusA, fp sumRadii)
         {
-            bool distanceZero = coreDistanceSq.IsZero();
-            sfloat invCoreDistance = math.select(math.rsqrt(coreDistanceSq), sfloat.Zero, distanceZero);
-            float3 normal = math.select(diff * invCoreDistance, new float3(sfloat.Zero, sfloat.One, sfloat.Zero), distanceZero); // choose an arbitrary normal when the distance is zero
-            sfloat distance = coreDistanceSq * invCoreDistance;
+            bool distanceZero = coreDistanceSq == fp.zero;
+            fp invCoreDistance = fpmath.select(fpmath.rsqrt(coreDistanceSq), fp.zero, distanceZero);
+            fp3 normal = fpmath.select(diff * invCoreDistance, new fp3(fp.zero, fp.one, fp.zero), distanceZero); // choose an arbitrary normal when the distance is zero
+            fp distance = coreDistanceSq * invCoreDistance;
             return new Result
             {
                 NormalInA = normal,
@@ -175,62 +176,62 @@ namespace Fixed.Physics
             };
         }
 
-        public static Result PointPoint(float3 pointA, float3 pointB, sfloat radiusA, sfloat sumRadii)
+        public static Result PointPoint(fp3 pointA, fp3 pointB, fp radiusA, fp sumRadii)
         {
-            float3 diff = pointA - pointB;
-            sfloat coreDistanceSq = math.lengthsq(diff);
+            fp3 diff = pointA - pointB;
+            fp coreDistanceSq = fpmath.lengthsq(diff);
             return PointPoint(pointB, diff, coreDistanceSq, radiusA, sumRadii);
         }
 
         public static unsafe Result SphereSphere(SphereCollider* sphereA, SphereCollider* sphereB, MTransform aFromB)
         {
-            float3 posBinA = Mul(aFromB, sphereB->Center);
+            fp3 posBinA = Mul(aFromB, sphereB->Center);
             return PointPoint(sphereA->Center, posBinA, sphereA->Radius, sphereA->Radius + sphereB->Radius);
         }
 
         public static unsafe Result BoxSphere(BoxCollider* boxA, SphereCollider* sphereB, MTransform aFromB)
         {
             MTransform aFromBoxA = new MTransform(boxA->Orientation, boxA->Center);
-            float3 posBinA = Mul(aFromB, sphereB->Center);
-            float3 posBinBoxA = Mul(Inverse(aFromBoxA), posBinA);
-            float3 innerHalfExtents = boxA->Size * (sfloat)0.5f - boxA->BevelRadius;
-            float3 normalInBoxA;
-            sfloat distance;
+            fp3 posBinA = Mul(aFromB, sphereB->Center);
+            fp3 posBinBoxA = Mul(Inverse(aFromBoxA), posBinA);
+            fp3 innerHalfExtents = boxA->Size * fp.half - boxA->BevelRadius;
+            fp3 normalInBoxA;
+            fp distance;
             {
                 // from hkAabb::signedDistanceToPoint(), can optimize a lot
-                float3 projection = math.min(posBinBoxA, innerHalfExtents);
-                projection = math.max(projection, -innerHalfExtents);
-                float3 difference = projection - posBinBoxA;
-                sfloat distanceSquared = math.lengthsq(difference);
+                fp3 projection = fpmath.min(posBinBoxA, innerHalfExtents);
+                projection = fpmath.max(projection, -innerHalfExtents);
+                fp3 difference = projection - posBinBoxA;
+                fp distanceSquared = fpmath.lengthsq(difference);
 
                 // Check if the sphere center is inside the box
-                if (distanceSquared < sfloat.FromRaw(0x358637bd))
+                if (distanceSquared < fp.FromRaw(0x358637bd))
                 {
-                    float3 projectionLocal = projection;
-                    float3 absProjectionLocal = math.abs(projectionLocal);
-                    float3 del = absProjectionLocal - innerHalfExtents;
-                    int axis = IndexOfMaxComponent(new float4(del, -sfloat.MaxValue));
+                    fp3 projectionLocal = projection;
+                    fp3 absProjectionLocal = fpmath.abs(projectionLocal);
+                    fp3 del = absProjectionLocal - innerHalfExtents;
+                    int axis = IndexOfMaxComponent(new fp4(del, -fp.max_value));
                     switch (axis)
                     {
-                        case 0: normalInBoxA = new float3(projectionLocal.x < sfloat.Zero ? sfloat.One : -sfloat.One, sfloat.Zero, sfloat.Zero); break;
-                        case 1: normalInBoxA = new float3(sfloat.Zero, projectionLocal.y < sfloat.Zero ? sfloat.One : -sfloat.One, sfloat.Zero); break;
-                        case 2: normalInBoxA = new float3(sfloat.Zero, sfloat.Zero, projectionLocal.z < sfloat.Zero ? sfloat.One : -sfloat.One); break;
+                        case 0: normalInBoxA = new fp3(projectionLocal.x < fp.zero ? fp.one : fp.minusOne, fp.zero, fp.zero); break;
+                        case 1: normalInBoxA = new fp3(fp.zero, projectionLocal.y < fp.zero ? fp.one : fp.minusOne, fp.zero); break;
+                        case 2: normalInBoxA = new fp3(fp.zero, fp.zero, projectionLocal.z < fp.zero ? fp.one : fp.minusOne); break;
                         default:
-                            normalInBoxA = new float3(sfloat.One, sfloat.Zero, sfloat.Zero);
+                            normalInBoxA = new fp3(fp.one, fp.zero, fp.zero);
                             Assert.IsTrue(false);
                             break;
                     }
-                    distance = math.max(del.x, math.max(del.y, del.z));
+                    distance = fpmath.max(del.x, fpmath.max(del.y, del.z));
                 }
                 else
                 {
-                    sfloat invDistance = math.rsqrt(distanceSquared);
+                    fp invDistance = fpmath.rsqrt(distanceSquared);
                     normalInBoxA = difference * invDistance;
                     distance = distanceSquared * invDistance;
                 }
             }
 
-            float3 normalInA = math.mul(aFromBoxA.Rotation, normalInBoxA);
+            fp3 normalInA = fpmath.mul(aFromBoxA.Rotation, normalInBoxA);
             return new Result
             {
                 NormalInA = normalInA,
@@ -240,56 +241,56 @@ namespace Fixed.Physics
         }
 
         public static Result CapsuleSphere(
-            float3 capsuleVertex0, float3 capsuleVertex1, sfloat capsuleRadius,
-            float3 sphereCenter, sfloat sphereRadius,
+            fp3 capsuleVertex0, fp3 capsuleVertex1, fp capsuleRadius,
+            fp3 sphereCenter, fp sphereRadius,
             MTransform aFromB)
         {
             // Transform the sphere into capsule space
-            float3 centerB = Mul(aFromB, sphereCenter);
+            fp3 centerB = Mul(aFromB, sphereCenter);
 
             // Point-segment distance
-            float3 edgeA = capsuleVertex1 - capsuleVertex0;
-            sfloat dot = math.dot(edgeA, centerB - capsuleVertex0);
-            sfloat edgeLengthSquared = math.lengthsq(edgeA);
-            dot = math.max(dot, sfloat.Zero);
-            dot = math.min(dot, edgeLengthSquared);
-            sfloat invEdgeLengthSquared = sfloat.One / edgeLengthSquared;
-            sfloat frac = dot * invEdgeLengthSquared;
-            float3 pointOnA = capsuleVertex0 + edgeA * frac;
+            fp3 edgeA = capsuleVertex1 - capsuleVertex0;
+            fp dot = fpmath.dot(edgeA, centerB - capsuleVertex0);
+            fp edgeLengthSquared = fpmath.lengthsq(edgeA);
+            dot = fpmath.max(dot, fp.zero);
+            dot = fpmath.min(dot, edgeLengthSquared);
+            fp invEdgeLengthSquared = fp.one / edgeLengthSquared;
+            fp frac = dot * invEdgeLengthSquared;
+            fp3 pointOnA = capsuleVertex0 + edgeA * frac;
             return PointPoint(pointOnA, centerB, capsuleRadius, capsuleRadius + sphereRadius);
         }
 
         // Find the closest points on a pair of line segments
-        private static void SegmentSegment(float3 pointA, float3 edgeA, float3 pointB, float3 edgeB, out float3 closestAOut, out float3 closestBOut)
+        private static void SegmentSegment(fp3 pointA, fp3 edgeA, fp3 pointB, fp3 edgeB, out fp3 closestAOut, out fp3 closestBOut)
         {
             // Find the closest point on edge A to the line containing edge B
-            float3 diff = pointB - pointA;
+            fp3 diff = pointB - pointA;
 
-            sfloat r = math.dot(edgeA, edgeB);
-            sfloat s1 = math.dot(edgeA, diff);
-            sfloat s2 = math.dot(edgeB, diff);
-            sfloat lengthASq = math.lengthsq(edgeA);
-            sfloat lengthBSq = math.lengthsq(edgeB);
+            fp r = fpmath.dot(edgeA, edgeB);
+            fp s1 = fpmath.dot(edgeA, diff);
+            fp s2 = fpmath.dot(edgeB, diff);
+            fp lengthASq = fpmath.lengthsq(edgeA);
+            fp lengthBSq = fpmath.lengthsq(edgeB);
 
-            sfloat invDenom, invLengthASq, invLengthBSq;
+            fp invDenom, invLengthASq, invLengthBSq;
             {
-                sfloat denom = lengthASq * lengthBSq - r * r;
-                float3 inv = sfloat.One / new float3(denom, lengthASq, lengthBSq);
+                fp denom = lengthASq * lengthBSq - r * r;
+                fp3 inv = fp.one / new fp3(denom, lengthASq, lengthBSq);
                 invDenom = inv.x;
                 invLengthASq = inv.y;
                 invLengthBSq = inv.z;
             }
 
-            sfloat fracA = (s1 * lengthBSq - s2 * r) * invDenom;
-            fracA = math.clamp(fracA, sfloat.Zero, sfloat.One);
+            fp fracA = (s1 * lengthBSq - s2 * r) * invDenom;
+            fracA = fpmath.clamp(fracA, fp.zero, fp.one);
 
             // Find the closest point on edge B to the point on A just found
-            sfloat fracB = fracA * (invLengthBSq * r) - invLengthBSq * s2;
-            fracB = math.clamp(fracB, sfloat.Zero, sfloat.One);
+            fp fracB = fracA * (invLengthBSq * r) - invLengthBSq * s2;
+            fracB = fpmath.clamp(fracB, fp.zero, fp.one);
 
             // If the point on B was clamped then there may be a closer point on A to the edge
             fracA = fracB * (invLengthASq * r) + invLengthASq * s1;
-            fracA = math.clamp(fracA, sfloat.Zero, sfloat.One);
+            fracA = fpmath.clamp(fracA, fp.zero, fp.one);
 
             closestAOut = pointA + fracA * edgeA;
             closestBOut = pointB + fracB * edgeB;
@@ -298,29 +299,29 @@ namespace Fixed.Physics
         public static unsafe Result CapsuleCapsule(CapsuleCollider* capsuleA, CapsuleCollider* capsuleB, MTransform aFromB)
         {
             // Transform capsule B into A-space
-            float3 pointB = Mul(aFromB, capsuleB->Vertex0);
-            float3 edgeB = math.mul(aFromB.Rotation, capsuleB->Vertex1 - capsuleB->Vertex0);
+            fp3 pointB = Mul(aFromB, capsuleB->Vertex0);
+            fp3 edgeB = fpmath.mul(aFromB.Rotation, capsuleB->Vertex1 - capsuleB->Vertex0);
 
             // Get point and edge of A
-            float3 pointA = capsuleA->Vertex0;
-            float3 edgeA = capsuleA->Vertex1 - capsuleA->Vertex0;
+            fp3 pointA = capsuleA->Vertex0;
+            fp3 edgeA = capsuleA->Vertex1 - capsuleA->Vertex0;
 
             // Get the closest points on the capsules
-            SegmentSegment(pointA, edgeA, pointB, edgeB, out float3 closestA, out float3 closestB);
-            float3 diff = closestA - closestB;
-            sfloat coreDistanceSq = math.lengthsq(diff);
+            SegmentSegment(pointA, edgeA, pointB, edgeB, out fp3 closestA, out fp3 closestB);
+            fp3 diff = closestA - closestB;
+            fp coreDistanceSq = fpmath.lengthsq(diff);
             if (coreDistanceSq < distanceEpsSq)
             {
                 // Special case for extremely small distances, should be rare
-                float3 normal = math.cross(edgeA, edgeB);
-                if (math.lengthsq(normal) < sfloat.FromRaw(0x3727c5ac))
+                fp3 normal = fpmath.cross(edgeA, edgeB);
+                if (fpmath.lengthsq(normal) < fp.FromRaw(0x3727c5ac))
                 {
-                    float3 edge = math.normalizesafe(edgeA, math.normalizesafe(edgeB, new float3(sfloat.One, sfloat.Zero, sfloat.Zero))); // edges are parallel or one of the capsules is a sphere
-                    Math.CalculatePerpendicularNormalized(edge, out normal, out float3 unused); // normal is anything perpendicular to edge
+                    fp3 edge = fpmath.normalizesafe(edgeA, fpmath.normalizesafe(edgeB, new fp3(fp.one, fp.zero, fp.zero))); // edges are parallel or one of the capsules is a sphere
+                    Math.CalculatePerpendicularNormalized(edge, out normal, out fp3 unused); // normal is anything perpendicular to edge
                 }
                 else
                 {
-                    normal = math.normalize(normal); // normal is cross of edges, sign doesn't matter
+                    normal = fpmath.normalize(normal); // normal is cross of edges, sign doesn't matter
                 }
                 return new Result
                 {
@@ -332,7 +333,7 @@ namespace Fixed.Physics
             return PointPoint(closestA, closestB, capsuleA->Radius, capsuleA->Radius + capsuleB->Radius);
         }
 
-        private static void CalcTrianglePlanes(float3 v0, float3 v1, float3 v2, float3 normalDirection,
+        private static void CalcTrianglePlanes(fp3 v0, fp3 v1, fp3 v2, fp3 normalDirection,
             out FourTransposedPoints verts, out FourTransposedPoints edges, out FourTransposedPoints perps)
         {
             verts = new FourTransposedPoints(v0, v1, v2, v0);
@@ -341,30 +342,30 @@ namespace Fixed.Physics
         }
 
         // Checks if the closest point on the triangle is on its face.  If so returns true and sets signedDistance to the distance along the normal, otherwise returns false
-        private static bool PointTriangleFace(float3 point, float3 v0, float3 normal,
-            FourTransposedPoints verts, FourTransposedPoints edges, FourTransposedPoints perps, FourTransposedPoints rels, out sfloat signedDistance)
+        private static bool PointTriangleFace(fp3 point, fp3 v0, fp3 normal,
+            FourTransposedPoints verts, FourTransposedPoints edges, FourTransposedPoints perps, FourTransposedPoints rels, out fp signedDistance)
         {
-            float4 dots = perps.Dot(rels);
-            float4 dotsSq = dots * math.abs(dots);
-            float4 perpLengthSq = perps.Dot(perps);
+            fp4 dots = perps.Dot(rels);
+            fp4 dotsSq = dots * fpmath.abs(dots);
+            fp4 perpLengthSq = perps.Dot(perps);
             if (math.all(dotsSq <= perpLengthSq * distanceEpsSq))
             {
                 // Closest point on face
-                signedDistance = math.dot(v0 - point, normal);
+                signedDistance = fpmath.dot(v0 - point, normal);
                 return true;
             }
 
-            signedDistance = sfloat.MaxValue;
+            signedDistance = fp.max_value;
             return false;
         }
 
         public static Result TriangleSphere(
-            float3 vertex0, float3 vertex1, float3 vertex2, float3 normal,
-            float3 sphereCenter, sfloat sphereRadius,
+            fp3 vertex0, fp3 vertex1, fp3 vertex2, fp3 normal,
+            fp3 sphereCenter, fp sphereRadius,
             MTransform aFromB)
         {
             // Sphere center in A-space (TODO.ma should probably work in sphere space, typical for triangle verts to be far from the origin in its local space)
-            float3 pointB = Mul(aFromB, sphereCenter);
+            fp3 pointB = Mul(aFromB, sphereCenter);
 
             // Calculate triangle edges and edge planes
             FourTransposedPoints vertsA;
@@ -374,43 +375,43 @@ namespace Fixed.Physics
 
             // Check if the closest point is on the triangle face
             FourTransposedPoints rels = new FourTransposedPoints(pointB) - vertsA;
-            if (PointTriangleFace(pointB, vertex0, normal, vertsA, edgesA, perpsA, rels, out sfloat signedDistance))
+            if (PointTriangleFace(pointB, vertex0, normal, vertsA, edgesA, perpsA, rels, out fp signedDistance))
             {
                 return new Result
                 {
                     PositionOnAinA = pointB + normal * signedDistance,
-                    NormalInA = math.select(normal, -normal, signedDistance < sfloat.Zero),
-                    Distance = math.abs(signedDistance) - sphereRadius
+                    NormalInA = fpmath.select(normal, -normal, signedDistance < fp.zero),
+                    Distance = fpmath.abs(signedDistance) - sphereRadius
                 };
             }
 
             // Find the closest point on the triangle edges - project point onto the line through each edge, then clamp to the edge
-            float4 nums = rels.Dot(edgesA);
-            float4 dens = edgesA.Dot(edgesA);
-            float4 sols = math.clamp(nums / dens, sfloat.Zero, sfloat.One); // fraction along the edge TODO.ma see how it handles inf/nan from divide by zero
+            fp4 nums = rels.Dot(edgesA);
+            fp4 dens = edgesA.Dot(edgesA);
+            fp4 sols = fpmath.clamp(nums / dens, fp.zero, fp.one); // fraction along the edge TODO.ma see how it handles inf/nan from divide by zero
             FourTransposedPoints projs = edgesA.MulT(sols) - rels;
-            float4 distancesSq = projs.Dot(projs);
+            fp4 distancesSq = projs.Dot(projs);
 
-            float3 proj0 = projs.GetPoint(0);
-            float3 proj1 = projs.GetPoint(1);
-            float3 proj2 = projs.GetPoint(2);
+            fp3 proj0 = projs.GetPoint(0);
+            fp3 proj1 = projs.GetPoint(1);
+            fp3 proj2 = projs.GetPoint(2);
 
             // Find the closest projected point
             bool less1 = distancesSq.x < distancesSq.y;
-            float3 direction = math.select(proj1, proj0, less1);
-            sfloat distanceSq = math.select(distancesSq.y, distancesSq.x, less1);
+            fp3 direction = fpmath.select(proj1, proj0, less1);
+            fp distanceSq = fpmath.select(distancesSq.y, distancesSq.x, less1);
 
             bool less2 = distanceSq < distancesSq.z;
-            direction = math.select(proj2, direction, less2);
-            distanceSq = math.select(distancesSq.z, distanceSq, less2);
+            direction = fpmath.select(proj2, direction, less2);
+            distanceSq = fpmath.select(distancesSq.z, distanceSq, less2);
 
-            sfloat triangleConvexRadius = sfloat.Zero;
+            fp triangleConvexRadius = fp.zero;
             return PointPoint(pointB, direction, distanceSq, triangleConvexRadius, sphereRadius);
         }
 
         public static Result QuadSphere(
-            float3 vertex0, float3 vertex1, float3 vertex2, float3 vertex3, float3 normalDirection,
-            float3 sphereCenter, sfloat sphereRadius,
+            fp3 vertex0, fp3 vertex1, fp3 vertex2, fp3 vertex3, fp3 normalDirection,
+            fp3 sphereCenter, fp sphereRadius,
             MTransform aFromB)
         {
             // TODO: Do this in one pass
@@ -420,30 +421,30 @@ namespace Fixed.Physics
         }
 
         // given two (normal, distance) pairs, select the one with smaller distance
-        private static void SelectMin(ref float3 dirInOut, ref sfloat distInOut, ref float3 posInOut, float3 newDir, sfloat newDist, float3 newPos)
+        private static void SelectMin(ref fp3 dirInOut, ref fp distInOut, ref fp3 posInOut, fp3 newDir, fp newDist, fp3 newPos)
         {
             bool less = newDist < distInOut;
-            dirInOut = math.select(dirInOut, newDir, less);
-            distInOut = math.select(distInOut, newDist, less);
-            posInOut = math.select(posInOut, newPos, less);
+            dirInOut = fpmath.select(dirInOut, newDir, less);
+            distInOut = fpmath.select(distInOut, newDist, less);
+            posInOut = fpmath.select(posInOut, newPos, less);
         }
 
         public static unsafe Result CapsuleTriangle(CapsuleCollider* capsuleA, PolygonCollider* triangleB, MTransform aFromB)
         {
             // Get vertices
-            float3 c0 = capsuleA->Vertex0;
-            float3 c1 = capsuleA->Vertex1;
-            float3 t0 = Mul(aFromB, triangleB->ConvexHull.Vertices[0]);
-            float3 t1 = Mul(aFromB, triangleB->ConvexHull.Vertices[1]);
-            float3 t2 = Mul(aFromB, triangleB->ConvexHull.Vertices[2]);
+            fp3 c0 = capsuleA->Vertex0;
+            fp3 c1 = capsuleA->Vertex1;
+            fp3 t0 = Mul(aFromB, triangleB->ConvexHull.Vertices[0]);
+            fp3 t1 = Mul(aFromB, triangleB->ConvexHull.Vertices[1]);
+            fp3 t2 = Mul(aFromB, triangleB->ConvexHull.Vertices[2]);
 
-            float3 direction;
-            sfloat distanceSq;
-            float3 pointCapsule;
-            sfloat sign = sfloat.One; // negated if penetrating
+            fp3 direction;
+            fp distanceSq;
+            fp3 pointCapsule;
+            fp sign = fp.one; // negated if penetrating
             {
                 // Calculate triangle edges and edge planes
-                float3 faceNormal = math.mul(aFromB.Rotation, triangleB->ConvexHull.Planes[0].Normal);
+                fp3 faceNormal = fpmath.mul(aFromB.Rotation, triangleB->ConvexHull.Planes[0].Normal);
                 FourTransposedPoints vertsB;
                 FourTransposedPoints edgesB;
                 FourTransposedPoints perpsB;
@@ -452,7 +453,7 @@ namespace Fixed.Physics
                 // c0 against triangle face
                 {
                     FourTransposedPoints rels = new FourTransposedPoints(c0) - vertsB;
-                    PointTriangleFace(c0, t0, faceNormal, vertsB, edgesB, perpsB, rels, out sfloat signedDistance);
+                    PointTriangleFace(c0, t0, faceNormal, vertsB, edgesB, perpsB, rels, out fp signedDistance);
                     distanceSq = signedDistance * signedDistance;
                     if (distanceSq > distanceEpsSq)
                     {
@@ -460,7 +461,7 @@ namespace Fixed.Physics
                     }
                     else
                     {
-                        direction = math.select(faceNormal, -faceNormal, math.dot(c1 - c0, faceNormal) < sfloat.Zero); // rare case, capsule point is exactly on the triangle face
+                        direction = fpmath.select(faceNormal, -faceNormal, fpmath.dot(c1 - c0, faceNormal) < fp.zero); // rare case, capsule point is exactly on the triangle face
                     }
                     pointCapsule = c0;
                 }
@@ -468,66 +469,66 @@ namespace Fixed.Physics
                 // c1 against triangle face
                 {
                     FourTransposedPoints rels = new FourTransposedPoints(c1) - vertsB;
-                    PointTriangleFace(c1, t0, faceNormal, vertsB, edgesB, perpsB, rels, out sfloat signedDistance);
-                    sfloat distanceSq1 = signedDistance * signedDistance;
-                    float3 direction1;
+                    PointTriangleFace(c1, t0, faceNormal, vertsB, edgesB, perpsB, rels, out fp signedDistance);
+                    fp distanceSq1 = signedDistance * signedDistance;
+                    fp3 direction1;
                     if (distanceSq1 > distanceEpsSq)
                     {
                         direction1 = -faceNormal * signedDistance;
                     }
                     else
                     {
-                        direction1 = math.select(faceNormal, -faceNormal, math.dot(c0 - c1, faceNormal) < sfloat.Zero); // rare case, capsule point is exactly on the triangle face
+                        direction1 = fpmath.select(faceNormal, -faceNormal, fpmath.dot(c0 - c1, faceNormal) < fp.zero); // rare case, capsule point is exactly on the triangle face
                     }
                     SelectMin(ref direction, ref distanceSq, ref pointCapsule, direction1, distanceSq1, c1);
                 }
 
                 // axis against triangle edges
-                float3 axis = c1 - c0;
+                fp3 axis = c1 - c0;
                 for (int i = 0; i < 3; i++)
                 {
-                    float3 closestOnCapsule, closestOnTriangle;
+                    fp3 closestOnCapsule, closestOnTriangle;
                     SegmentSegment(c0, axis, vertsB.GetPoint(i), edgesB.GetPoint(i), out closestOnCapsule, out closestOnTriangle);
-                    float3 edgeDiff = closestOnCapsule - closestOnTriangle;
-                    sfloat edgeDistanceSq = math.lengthsq(edgeDiff);
-                    edgeDiff = math.select(edgeDiff, perpsB.GetPoint(i), edgeDistanceSq < distanceEpsSq); // use edge plane if the capsule axis intersects the edge
+                    fp3 edgeDiff = closestOnCapsule - closestOnTriangle;
+                    fp edgeDistanceSq = fpmath.lengthsq(edgeDiff);
+                    edgeDiff = fpmath.select(edgeDiff, perpsB.GetPoint(i), edgeDistanceSq < distanceEpsSq); // use edge plane if the capsule axis intersects the edge
                     SelectMin(ref direction, ref distanceSq, ref pointCapsule, edgeDiff, edgeDistanceSq, closestOnCapsule);
                 }
 
                 // axis against triangle face
                 {
                     // Find the intersection of the axis with the triangle plane
-                    sfloat axisDot = math.dot(axis, faceNormal);
-                    sfloat dist0 = math.dot(t0 - c0, faceNormal); // distance from c0 to the plane along the normal
-                    sfloat t = dist0 * math.select(math.rcp(axisDot), sfloat.Zero, axisDot.IsZero());
-                    if (t > sfloat.Zero && t < sfloat.One)
+                    fp axisDot = fpmath.dot(axis, faceNormal);
+                    fp dist0 = fpmath.dot(t0 - c0, faceNormal); // distance from c0 to the plane along the normal
+                    fp t = dist0 * fpmath.select(fpmath.rcp(axisDot), fp.zero, axisDot == fp.zero);
+                    if (t > fp.zero && t < fp.one)
                     {
                         // If they intersect, check if the intersection is inside the triangle
                         FourTransposedPoints rels = new FourTransposedPoints(c0 + axis * t) - vertsB;
-                        float4 dots = perpsB.Dot(rels);
-                        if (math.all(dots <= float4.zero))
+                        fp4 dots = perpsB.Dot(rels);
+                        if (math.all(dots <= fp4.zero))
                         {
                             // Axis intersects the triangle, choose the separating direction
-                            sfloat dist1 = axisDot - dist0;
-                            bool use1 = math.abs(dist1) < math.abs(dist0);
-                            sfloat dist = math.select(-dist0, dist1, use1);
-                            float3 closestOnCapsule = math.select(c0, c1, use1);
+                            fp dist1 = axisDot - dist0;
+                            bool use1 = fpmath.abs(dist1) < fpmath.abs(dist0);
+                            fp dist = fpmath.select(-dist0, dist1, use1);
+                            fp3 closestOnCapsule = fpmath.select(c0, c1, use1);
                             SelectMin(ref direction, ref distanceSq, ref pointCapsule, dist * faceNormal, dist * dist, closestOnCapsule);
 
                             // Even if the edge is closer than the face, we now know that the edge hit was penetrating
-                            sign = -sfloat.One;
+                            sign = fp.minusOne;
                         }
                     }
                 }
             }
 
-            sfloat invDistance = math.rsqrt(distanceSq);
-            sfloat distance;
-            float3 normal;
+            fp invDistance = fpmath.rsqrt(distanceSq);
+            fp distance;
+            fp3 normal;
             if (distanceSq < distanceEpsSq)
             {
-                normal = math.normalize(direction); // rare case, capsule axis almost exactly touches the triangle
-                distance = sfloat.Zero;
+                normal = fpmath.normalize(direction); // rare case, capsule axis almost exactly touches the triangle
+                distance = fp.zero;
             }
             else
             {
@@ -672,7 +673,7 @@ namespace Fixed.Physics
             if (flip)
             {
                 result.PositionOnAinA = Mul(aFromB, result.PositionOnBinA);
-                result.NormalInA = math.mul(aFromB.Rotation, -result.NormalInA);
+                result.NormalInA = fpmath.mul(aFromB.Rotation, -result.NormalInA);
             }
 
             return result;
@@ -704,28 +705,28 @@ namespace Fixed.Physics
                     break;
                 case ColliderType.Capsule:
                     var capsule = (CapsuleCollider*)target;
-                    result = CapsuleSphere(capsule->Vertex0, capsule->Vertex1, capsule->Radius, input.Position, sfloat.Zero, MTransform.Identity);
+                    result = CapsuleSphere(capsule->Vertex0, capsule->Vertex1, capsule->Radius, input.Position, fp.zero, MTransform.Identity);
                     material = capsule->Material;
                     break;
                 case ColliderType.Triangle:
                     var triangle = (PolygonCollider*)target;
                     result = TriangleSphere(
                         triangle->Vertices[0], triangle->Vertices[1], triangle->Vertices[2], triangle->Planes[0].Normal,
-                        input.Position, sfloat.Zero, MTransform.Identity);
+                        input.Position, fp.zero, MTransform.Identity);
                     material = triangle->Material;
                     break;
                 case ColliderType.Quad:
                     var quad = (PolygonCollider*)target;
                     result = QuadSphere(
                         quad->Vertices[0], quad->Vertices[1], quad->Vertices[2], quad->Vertices[3], quad->Planes[0].Normal,
-                        input.Position, sfloat.Zero, MTransform.Identity);
+                        input.Position, fp.zero, MTransform.Identity);
                     material = quad->Material;
                     break;
                 case ColliderType.Convex:
                 case ColliderType.Box:
                 case ColliderType.Cylinder:
                     ref ConvexHull hull = ref ((ConvexCollider*)target)->ConvexHull;
-                    result = ConvexConvex(hull.VerticesPtr, hull.NumVertices, hull.ConvexRadius, &input.Position, 1, sfloat.Zero, MTransform.Identity);
+                    result = ConvexConvex(hull.VerticesPtr, hull.NumVertices, hull.ConvexRadius, &input.Position, 1, fp.zero, MTransform.Identity);
                     material = ((ConvexColliderHeader*)target)->Material;
                     break;
                 case ColliderType.Mesh:
@@ -744,7 +745,7 @@ namespace Fixed.Physics
                 var hit = new DistanceHit
                 {
                     Fraction = result.Distance,
-                    SurfaceNormal = math.mul(input.QueryContext.WorldFromLocalTransform.Rotation, -result.NormalInA),
+                    SurfaceNormal = fpmath.mul(input.QueryContext.WorldFromLocalTransform.Rotation, -result.NormalInA),
                     Position = Mul(input.QueryContext.WorldFromLocalTransform, result.PositionOnAinA),
                     ColliderKey = input.QueryContext.ColliderKey,
                     QueryColliderKey = ColliderKey.Empty,
@@ -790,7 +791,7 @@ namespace Fixed.Physics
                                 var hit = new DistanceHit
                                 {
                                     Fraction = result.Distance,
-                                    SurfaceNormal = math.mul(input.QueryContext.WorldFromLocalTransform.Rotation, -result.NormalInA),
+                                    SurfaceNormal = fpmath.mul(input.QueryContext.WorldFromLocalTransform.Rotation, -result.NormalInA),
                                     Position = Mul(input.QueryContext.WorldFromLocalTransform, result.PositionOnAinA),
                                     RigidBodyIndex = input.QueryContext.RigidBodyIndex,
                                     QueryColliderKey = ColliderKey.Empty,
@@ -912,7 +913,7 @@ namespace Fixed.Physics
                         var hit = new DistanceHit
                         {
                             Fraction = result.Distance,
-                            SurfaceNormal = math.mul(input.QueryContext.WorldFromLocalTransform.Rotation, -result.NormalInA),
+                            SurfaceNormal = fpmath.mul(input.QueryContext.WorldFromLocalTransform.Rotation, -result.NormalInA),
                             Position = Mul(input.QueryContext.WorldFromLocalTransform, result.PositionOnAinA),
                             RigidBodyIndex = input.QueryContext.RigidBodyIndex,
                             ColliderKey = input.QueryContext.ColliderKey,
@@ -940,7 +941,7 @@ namespace Fixed.Physics
         {
             unsafe bool Dispatch<T>(ColliderDistanceInput input, ConvexCollider* polygon, ref T collector, uint numColliderKeyBits, uint subKey)
                 where T : struct, ICollector<DistanceHit>;
-            void Init(RigidTransform targtFromQuery);
+            void Init(FpRigidTransform targtFromQuery);
         }
 
         internal struct CompoundConvexDispatcher : IColliderDistanceDispatcher
@@ -952,7 +953,7 @@ namespace Fixed.Physics
                 return CompoundConvex(input, polygon, ref collector);
             }
 
-            public void Init(RigidTransform targetFromQuery) {}
+            public void Init(FpRigidTransform targetFromQuery) {}
         }
 
         internal struct MeshConvexDispatcher : IColliderDistanceDispatcher
@@ -964,7 +965,7 @@ namespace Fixed.Physics
                 return MeshConvex(input, polygon, ref collector);
             }
 
-            public void Init(RigidTransform targetFromQuery) {}
+            public void Init(FpRigidTransform targetFromQuery) {}
         }
 
         internal struct TerrainConvexDispatcher : IColliderDistanceDispatcher
@@ -976,7 +977,7 @@ namespace Fixed.Physics
                 return TerrainConvex(input, polygon, ref collector);
             }
 
-            public void Init(RigidTransform targetFromQuery) {}
+            public void Init(FpRigidTransform targetFromQuery) {}
         }
 
         internal struct ConvexConvexDispatcher : IColliderDistanceDispatcher
@@ -988,7 +989,7 @@ namespace Fixed.Physics
             {
                 ref ConvexHull inputHull = ref ((ConvexCollider*)input.Collider)->ConvexHull;
 
-                Result result = ConvexConvex(polygon->ConvexHull.VerticesPtr, polygon->ConvexHull.NumVertices, sfloat.Zero, inputHull.VerticesPtr,
+                Result result = ConvexConvex(polygon->ConvexHull.VerticesPtr, polygon->ConvexHull.NumVertices, fp.zero, inputHull.VerticesPtr,
                     inputHull.NumVertices, inputHull.ConvexRadius, TargetFromQuery);
                 if (result.Distance < collector.MaxFraction)
                 {
@@ -996,7 +997,7 @@ namespace Fixed.Physics
                     {
                         Fraction = result.Distance,
                         Position = Mul(input.QueryContext.WorldFromLocalTransform, result.PositionOnAinA),
-                        SurfaceNormal = math.mul(input.QueryContext.WorldFromLocalTransform.Rotation, -result.NormalInA),
+                        SurfaceNormal = fpmath.mul(input.QueryContext.WorldFromLocalTransform.Rotation, -result.NormalInA),
                         RigidBodyIndex = input.QueryContext.RigidBodyIndex,
                         ColliderKey = input.QueryContext.SetSubKey(numColliderKeyBits, subKey),
                         Material = polygon->Material,
@@ -1008,7 +1009,7 @@ namespace Fixed.Physics
                 return false;
             }
 
-            public void Init(RigidTransform targetFromQuery)
+            public void Init(FpRigidTransform targetFromQuery)
             {
                 TargetFromQuery = new MTransform(targetFromQuery);
             }
@@ -1029,7 +1030,7 @@ namespace Fixed.Physics
             public bool DistanceLeaf<T>(ColliderDistanceInput input, int primitiveKey, ref T collector)
                 where T : struct, ICollector<DistanceHit>
             {
-                m_Mesh->GetPrimitive(primitiveKey, out float3x4 vertices, out Mesh.PrimitiveFlags flags, out CollisionFilter filter, out Material material);
+                m_Mesh->GetPrimitive(primitiveKey, out fp3x4 vertices, out Mesh.PrimitiveFlags flags, out CollisionFilter filter, out Material material);
 
                 // Todo: work with filters
                 if (!CollisionFilter.IsCollisionEnabled(input.Collider->Filter, filter)) // TODO: could do this check within GetPrimitive()
@@ -1079,7 +1080,7 @@ namespace Fixed.Physics
             public bool DistanceLeaf<T>(PointDistanceInput input, int primitiveKey, ref T collector)
                 where T : struct, ICollector<DistanceHit>
             {
-                m_Mesh->GetPrimitive(primitiveKey, out float3x4 vertices, out Mesh.PrimitiveFlags flags, out CollisionFilter filter, out Material material);
+                m_Mesh->GetPrimitive(primitiveKey, out fp3x4 vertices, out Mesh.PrimitiveFlags flags, out CollisionFilter filter, out Material material);
 
                 if (!CollisionFilter.IsCollisionEnabled(input.Filter, filter)) // TODO: could do this check within GetPrimitive()
                 {
@@ -1089,7 +1090,7 @@ namespace Fixed.Physics
                 int numPolygons = Mesh.GetNumPolygonsInPrimitive(flags);
                 bool isQuad = Mesh.IsPrimitiveFlagSet(flags, Mesh.PrimitiveFlags.IsQuad);
 
-                float3 triangleNormal = math.normalize(math.cross(vertices[1] - vertices[0], vertices[2] - vertices[0]));
+                fp3 triangleNormal = fpmath.normalize(fpmath.cross(vertices[1] - vertices[0], vertices[2] - vertices[0]));
                 bool acceptHit = false;
 
                 for (int polygonIndex = 0; polygonIndex < numPolygons; polygonIndex++)
@@ -1099,13 +1100,13 @@ namespace Fixed.Physics
                     {
                         result = QuadSphere(
                             vertices[0], vertices[1], vertices[2], vertices[3], triangleNormal,
-                            input.Position, sfloat.Zero, MTransform.Identity);
+                            input.Position, fp.zero, MTransform.Identity);
                     }
                     else
                     {
                         result = TriangleSphere(
                             vertices[0], vertices[1], vertices[2], triangleNormal,
-                            input.Position, sfloat.Zero, MTransform.Identity);
+                            input.Position, fp.zero, MTransform.Identity);
                     }
 
                     if (result.Distance < collector.MaxFraction)
@@ -1114,7 +1115,7 @@ namespace Fixed.Physics
                         {
                             Fraction = result.Distance,
                             Position = Mul(input.QueryContext.WorldFromLocalTransform, result.PositionOnAinA),
-                            SurfaceNormal = math.mul(input.QueryContext.WorldFromLocalTransform.Rotation, -result.NormalInA),
+                            SurfaceNormal = fpmath.mul(input.QueryContext.WorldFromLocalTransform.Rotation, -result.NormalInA),
                             RigidBodyIndex = input.QueryContext.RigidBodyIndex,
                             ColliderKey = input.QueryContext.SetSubKey(m_NumColliderKeyBits, (uint)(primitiveKey << 1 | polygonIndex)),
                             Material = material,
@@ -1243,7 +1244,7 @@ namespace Fixed.Physics
                 inputLs.QueryContext.WorldFromLocalTransform = Mul(input.QueryContext.WorldFromLocalTransform, new MTransform(child.CompoundFromChild));
 
                 // Transform the query into child space
-                inputLs.Transform = math.mul(math.inverse(child.CompoundFromChild), input.Transform);
+                inputLs.Transform = fpmath.mul(fpmath.inverse(child.CompoundFromChild), input.Transform);
 
                 D dispatcher = new D();
 
@@ -1318,16 +1319,16 @@ namespace Fixed.Physics
                 };
                 walker = new Terrain.QuadTreeWalker(&terrainCollider->Terrain, queryAabb);
             }
-            sfloat maxDistanceSquared = collector.MaxFraction * collector.MaxFraction;
+            fp maxDistanceSquared = collector.MaxFraction * collector.MaxFraction;
 
             D dispatcher = new D();
             dispatcher.Init(input.Transform);
 
             // Traverse the tree
-            float3* vertices = stackalloc float3[4];
+            fp3* vertices = stackalloc fp3[4];
             while (walker.Pop())
             {
-                float4 distanceToNodesSquared = walker.Bounds.DistanceFromAabbSquared(ref aabbT, terrain.Scale);
+                fp4 distanceToNodesSquared = walker.Bounds.DistanceFromAabbSquared(ref aabbT, terrain.Scale);
                 bool4 hitMask = (walker.Bounds.Ly <= walker.Bounds.Hy) & (distanceToNodesSquared <= maxDistanceSquared);
                 if (walker.IsLeaf)
                 {
@@ -1372,8 +1373,8 @@ namespace Fixed.Physics
             bool hadHit = false;
 
             // Get the point in heightfield space
-            float3 position = input.Position * terrain.InverseScale;
-            sfloat maxDistanceSquared = collector.MaxFraction * collector.MaxFraction;
+            fp3 position = input.Position * terrain.InverseScale;
+            fp maxDistanceSquared = collector.MaxFraction * collector.MaxFraction;
             Terrain.QuadTreeWalker walker;
             {
                 var queryAabb = new Aabb
@@ -1388,7 +1389,7 @@ namespace Fixed.Physics
             while (walker.Pop())
             {
                 var position4 = new FourTransposedPoints(position);
-                float4 distanceToNodesSquared = walker.Bounds.DistanceFromPointSquared(ref position4, terrain.Scale);
+                fp4 distanceToNodesSquared = walker.Bounds.DistanceFromPointSquared(ref position4, terrain.Scale);
                 bool4 hitMask = (walker.Bounds.Ly <= walker.Bounds.Hy) & (distanceToNodesSquared <= maxDistanceSquared);
                 if (walker.IsLeaf)
                 {
@@ -1398,7 +1399,7 @@ namespace Fixed.Physics
                     for (int iHit = 0; iHit < hitCount; iHit++)
                     {
                         // Get the quad vertices
-                        walker.GetQuad(hitIndex[iHit], out int2 quadIndex, out float3 a, out float3 b, out float3 c, out float3 d);
+                        walker.GetQuad(hitIndex[iHit], out int2 quadIndex, out fp3 a, out fp3 b, out fp3 c, out fp3 d);
 
                         // Test each triangle in the quad
                         var polygon = new PolygonCollider();
@@ -1407,15 +1408,15 @@ namespace Fixed.Physics
                         {
                             // Point-triangle
                             polygon.SetAsTriangle(a, b, c);
-                            float3 triangleNormal = math.normalize(math.cross(b - a, c - a));
-                            Result result = TriangleSphere(a, b, c, triangleNormal, input.Position, sfloat.Zero, MTransform.Identity);
+                            fp3 triangleNormal = fpmath.normalize(fpmath.cross(b - a, c - a));
+                            Result result = TriangleSphere(a, b, c, triangleNormal, input.Position, fp.zero, MTransform.Identity);
                             if (result.Distance < collector.MaxFraction)
                             {
                                 var hit = new DistanceHit
                                 {
                                     Fraction = result.Distance,
                                     Position = Mul(input.QueryContext.WorldFromLocalTransform, result.PositionOnAinA),
-                                    SurfaceNormal = math.mul(input.QueryContext.WorldFromLocalTransform.Rotation, -result.NormalInA),
+                                    SurfaceNormal = fpmath.mul(input.QueryContext.WorldFromLocalTransform.Rotation, -result.NormalInA),
                                     RigidBodyIndex = input.QueryContext.RigidBodyIndex,
                                     ColliderKey = input.QueryContext.SetSubKey(terrain.NumColliderKeyBits, terrain.GetSubKey(quadIndex, iTriangle)),
                                     Material = material,

@@ -4,7 +4,7 @@ using Fixed.Physics.Systems;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
-using Fixed.Mathematics;
+using Unity.Mathematics.FixedPoint;
 using static Fixed.Physics.Math;
 
 namespace Fixed.Physics.Authoring
@@ -18,7 +18,7 @@ namespace Fixed.Physics.Authoring
         [BurstCompile]
         protected struct DisplayJointsJob : IJob
         {
-            static readonly sfloat k_Scale = (sfloat)0.5f;
+            static readonly fp k_Scale = fp.half;
 
             public DebugStream.Context OutputStream;
             [ReadOnly] public NativeArray<RigidBody> Bodies;
@@ -53,11 +53,11 @@ namespace Fixed.Physics.Authoring
                         worldFromJointB = Mul(worldFromB, joint.BFromJoint);
                     }
 
-                    float3 pivotA = worldFromJointA.Translation;
-                    float3 pivotB = worldFromJointB.Translation;
+                    fp3 pivotA = worldFromJointA.Translation;
+                    fp3 pivotB = worldFromJointB.Translation;
 
                     //TODO
-                    sfloat ep = (sfloat)1e-5;
+                    fp ep = (fp)1e-5;
 
                     for (var i = 0; i < joint.Constraints.Length; i++)
                     {
@@ -66,38 +66,38 @@ namespace Fixed.Physics.Authoring
                         {
                             case ConstraintType.Linear:
 
-                                float3 diff = pivotA - pivotB;
+                                fp3 diff = pivotA - pivotB;
 
                                 // Draw the feature on B and find the range for A
-                                float3 rangeOrigin;
-                                float3 rangeDirection;
-                                sfloat rangeDistance;
+                                fp3 rangeOrigin;
+                                fp3 rangeDirection;
+                                fp rangeDistance;
                                 switch (constraint.Dimension)
                                 {
                                     case 0:
                                         continue;
                                     case 1:
-                                        float3 normal = worldFromJointB.Rotation[constraint.ConstrainedAxis1D];
+                                        fp3 normal = worldFromJointB.Rotation[constraint.ConstrainedAxis1D];
                                         OutputStream.Plane(pivotB, normal * k_Scale, colorB);
-                                        rangeDistance = math.dot(normal, diff);
+                                        rangeDistance = fpmath.dot(normal, diff);
                                         rangeOrigin = pivotA - normal * rangeDistance;
                                         rangeDirection = normal;
                                         break;
                                     case 2:
-                                        float3 direction = worldFromJointB.Rotation[constraint.FreeAxis2D];
+                                        fp3 direction = worldFromJointB.Rotation[constraint.FreeAxis2D];
                                         OutputStream.Line(pivotB - direction * k_Scale, pivotB + direction * k_Scale, colorB);
-                                        sfloat dot = math.dot(direction, diff);
+                                        fp dot = fpmath.dot(direction, diff);
                                         rangeOrigin = pivotB + direction * dot;
                                         rangeDirection = diff - direction * dot;
-                                        rangeDistance = math.length(rangeDirection);
+                                        rangeDistance = fpmath.length(rangeDirection);
                                         //TODO
-                                        rangeDirection = math.select(rangeDirection / rangeDistance, float3.zero, rangeDistance < ep);
+                                        rangeDirection = fpmath.select(rangeDirection / rangeDistance, fp3.zero, rangeDistance < ep);
                                         break;
                                     case 3:
                                         OutputStream.Point(pivotB, k_Scale, colorB);
                                         rangeOrigin = pivotB;
-                                        rangeDistance = math.length(diff);
-                                        rangeDirection = math.select(diff / rangeDistance, float3.zero, rangeDistance < ep);
+                                        rangeDistance = fpmath.length(diff);
+                                        rangeDirection = fpmath.select(diff / rangeDistance, fp3.zero, rangeDistance < ep);
                                         break;
                                     default:
                                         SafetyChecks.ThrowNotImplementedException();
@@ -108,9 +108,9 @@ namespace Fixed.Physics.Authoring
                                 OutputStream.Point(pivotA, k_Scale, colorA);
 
                                 // Draw error
-                                float3 rangeA = rangeOrigin + rangeDistance * rangeDirection;
-                                float3 rangeMin = rangeOrigin + constraint.Min * rangeDirection;
-                                float3 rangeMax = rangeOrigin + constraint.Max * rangeDirection;
+                                fp3 rangeA = rangeOrigin + rangeDistance * rangeDirection;
+                                fp3 rangeMin = rangeOrigin + constraint.Min * rangeDirection;
+                                fp3 rangeMax = rangeOrigin + constraint.Max * rangeDirection;
                                 if (rangeDistance < constraint.Min)
                                 {
                                     OutputStream.Line(rangeA, rangeMin, colorError);
@@ -119,7 +119,7 @@ namespace Fixed.Physics.Authoring
                                 {
                                     OutputStream.Line(rangeA, rangeMax, colorError);
                                 }
-                                if (math.length(rangeA - pivotA) > ep)
+                                if (fpmath.length(rangeA - pivotA) > ep)
                                 {
                                     OutputStream.Line(rangeA, pivotA, colorError);
                                 }
@@ -139,32 +139,32 @@ namespace Fixed.Physics.Authoring
                                     case 1:
                                         // Get the limited axis and perpendicular in joint space
                                         int constrainedAxis = constraint.ConstrainedAxis1D;
-                                        float3 axisInWorld = worldFromJointA.Rotation[constrainedAxis];
-                                        float3 perpendicularInWorld = worldFromJointA.Rotation[(constrainedAxis + 1) % 3] * k_Scale;
+                                        fp3 axisInWorld = worldFromJointA.Rotation[constrainedAxis];
+                                        fp3 perpendicularInWorld = worldFromJointA.Rotation[(constrainedAxis + 1) % 3] * k_Scale;
 
                                         // Draw the angle of A
                                         OutputStream.Line(pivotA, pivotA + perpendicularInWorld, colorA);
 
                                         // Calculate the relative angle
-                                        sfloat angle;
+                                        fp angle;
                                         {
-                                            float3x3 jointBFromA = math.mul(math.inverse(worldFromJointB.Rotation), worldFromJointA.Rotation);
-                                            angle = CalculateTwistAngle(new quaternion(jointBFromA), constrainedAxis);
+                                            fp3x3 jointBFromA = fpmath.mul(fpmath.inverse(worldFromJointB.Rotation), worldFromJointA.Rotation);
+                                            angle = CalculateTwistAngle(new fpquaternion(jointBFromA), constrainedAxis);
                                         }
 
                                         // Draw the range in B
-                                        float3 axis = worldFromJointA.Rotation[constraint.ConstrainedAxis1D];
-                                        OutputStream.Arc(pivotB, axis, math.mul(quaternion.AxisAngle(axis, constraint.Min - angle), perpendicularInWorld), constraint.Max - constraint.Min, colorB);
+                                        fp3 axis = worldFromJointA.Rotation[constraint.ConstrainedAxis1D];
+                                        OutputStream.Arc(pivotB, axis, fpmath.mul(fpquaternion.AxisAngle(axis, constraint.Min - angle), perpendicularInWorld), constraint.Max - constraint.Min, colorB);
 
                                         break;
                                     case 2:
                                         // Get axes in world space
                                         int axisIndex = constraint.FreeAxis2D;
-                                        float3 axisA = worldFromJointA.Rotation[axisIndex];
-                                        float3 axisB = worldFromJointB.Rotation[axisIndex];
+                                        fp3 axisA = worldFromJointA.Rotation[axisIndex];
+                                        fp3 axisB = worldFromJointB.Rotation[axisIndex];
 
                                         // Draw the cones in B
-                                        if (constraint.Min == sfloat.Zero)
+                                        if (constraint.Min == fp.zero)
                                         {
                                             OutputStream.Line(pivotB, pivotB + axisB * k_Scale, colorB);
                                         }

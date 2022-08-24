@@ -3,7 +3,7 @@ using NUnit.Framework;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
-using Fixed.Mathematics;
+using Unity.Mathematics.FixedPoint;
 
 namespace Fixed.Physics.Tests.Collision.Colliders
 {
@@ -18,8 +18,8 @@ namespace Fixed.Physics.Tests.Collision.Colliders
 
             public void Execute()
             {
-                var heights = new NativeArray<sfloat>(16, Allocator.Temp);
-                TerrainCollider.Create(heights, new int2(4, 4), new float3((sfloat)1f), CollisionMethod).Dispose();
+                var heights = new NativeArray<fp>(16, Allocator.Temp);
+                TerrainCollider.Create(heights, new int2(4, 4), new fp3((fp)1f), CollisionMethod).Dispose();
             }
         }
 
@@ -46,7 +46,7 @@ namespace Fixed.Physics.Tests.Collision.Colliders
             [Values(float.PositiveInfinity, float.NegativeInfinity, float.NaN)] float errantValue
         )
         {
-            var ex = Assert.Throws<ArgumentOutOfRangeException>(() => TerrainCollider.Create(default, new int2(2), new float3((sfloat)errantValue), default));
+            var ex = Assert.Throws<ArgumentOutOfRangeException>(() => TerrainCollider.Create(default, new int2(2), new fp3((fp)errantValue), default));
             Assert.That(ex.ParamName, Is.EqualTo("scale"));
         }
 

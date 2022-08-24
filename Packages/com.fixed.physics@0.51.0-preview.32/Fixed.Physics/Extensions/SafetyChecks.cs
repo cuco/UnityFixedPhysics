@@ -3,7 +3,8 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Unity.Collections;
 using Unity.Entities;
-using Fixed.Mathematics;
+using Unity.Mathematics;
+using Unity.Mathematics.FixedPoint;
 
 [assembly: RegisterGenericComponentType(typeof(Fixed.Physics.DummyColliderFakesComponent<Fixed.Physics.Collider>))]
 [assembly: RegisterGenericComponentType(typeof(Fixed.Physics.DummyColliderFakesComponent<Fixed.Physics.BoxCollider>))]
@@ -111,16 +112,16 @@ namespace Fixed.Physics
         }
 
         [Conditional(CompilationSymbols.SafetyChecksSymbol)]
-        public static void CheckFiniteAndThrow(float3 value, FixedString32Bytes paramName)
+        public static void CheckFiniteAndThrow(fp3 value, FixedString32Bytes paramName)
         {
-            if (math.any(!math.isfinite(value)))
+            if (math.any(!fpmath.isfinite(value)))
                 throw new ArgumentException($"{value} was not finite.", $"{paramName}");
         }
 
         [Conditional(CompilationSymbols.SafetyChecksSymbol)]
-        public static void CheckFiniteAndPositiveAndThrow(float3 value, in FixedString32Bytes paramName)
+        public static void CheckFiniteAndPositiveAndThrow(fp3 value, in FixedString32Bytes paramName)
         {
-            if (math.any(value < sfloat.Zero) || math.any(!math.isfinite(value)))
+            if (math.any(value < fp.zero) || math.any(!fpmath.isfinite(value)))
                 throw new ArgumentOutOfRangeException($"{paramName}", $"{value} is not positive and finite.");
         }
 
@@ -148,10 +149,10 @@ namespace Fixed.Physics
         #region Geometry Validation
 
         [Conditional(CompilationSymbols.SafetyChecksSymbol)]
-        public static void CheckCoplanarAndThrow(float3 vertex0, float3 vertex1, float3 vertex2, float3 vertex3, in FixedString32Bytes paramName)
+        public static void CheckCoplanarAndThrow(fp3 vertex0, fp3 vertex1, fp3 vertex2, fp3 vertex3, in FixedString32Bytes paramName)
         {
-            var normal = math.normalize(math.cross(vertex1 - vertex0, vertex2 - vertex0));
-            if (math.abs(math.dot(normal, vertex3 - vertex0)) > sfloat.FromRaw(0x3a83126f))
+            var normal = fpmath.normalize(fpmath.cross(vertex1 - vertex0, vertex2 - vertex0));
+            if (fpmath.abs(fpmath.dot(normal, vertex3 - vertex0)) > fp.FromRaw(0x3a83126f))
                 throw new ArgumentException("Vertices are not co-planar", $"{paramName}");
         }
 
@@ -166,35 +167,35 @@ namespace Fixed.Physics
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static void Geometry_CheckFiniteAndThrow(float3 value, in FixedString32Bytes paramName, in FixedString32Bytes propertyName)
+        static void Geometry_CheckFiniteAndThrow(fp3 value, in FixedString32Bytes paramName, in FixedString32Bytes propertyName)
         {
-            if (math.any(!math.isfinite(value)))
+            if (math.any(!fpmath.isfinite(value)))
                 throw new ArgumentException($"{propertyName} {value} was not finite.", $"{paramName}");
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static void Geometry_CheckFiniteAndPositiveAndThrow(sfloat value, in FixedString32Bytes paramName, in FixedString32Bytes propertyName)
+        static void Geometry_CheckFiniteAndPositiveAndThrow(fp value, in FixedString32Bytes paramName, in FixedString32Bytes propertyName)
         {
-            if (value < sfloat.Zero || !math.isfinite(value))
+            if (value < fp.zero || !fpmath.isfinite(value))
                 throw new ArgumentException($"{propertyName} {value} is not positive.", $"{paramName}");
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static void Geometry_CheckFiniteAndPositiveAndThrow(float3 value, in FixedString32Bytes paramName, in FixedString32Bytes propertyName)
+        static void Geometry_CheckFiniteAndPositiveAndThrow(fp3 value, in FixedString32Bytes paramName, in FixedString32Bytes propertyName)
         {
-            if (math.any(value < sfloat.Zero) || math.any(!math.isfinite(value)))
+            if (math.any(value < fp.zero) || math.any(!fpmath.isfinite(value)))
                 throw new ArgumentException($"{paramName}", $"{propertyName} {value} is not positive.");
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static void Geometry_CheckValidAndThrow(quaternion q, in FixedString32Bytes paramName, in FixedString32Bytes propertyName)
+        static void Geometry_CheckValidAndThrow(fpquaternion q, in FixedString32Bytes paramName, in FixedString32Bytes propertyName)
         {
-            if (q.Equals(default) || math.any(!math.isfinite(q.value)))
+            if (q.Equals(default) || math.any(!fpmath.isfinite(q.value)))
                 throw new ArgumentException($"{propertyName} {q} is not valid.", $"{paramName}");
         }
 
         [Conditional(CompilationSymbols.SafetyChecksSymbol)]
-        public static void CheckValidAndThrow(NativeArray<float3> points, in FixedString32Bytes pointsName, in ConvexHullGenerationParameters generationParameters, in FixedString32Bytes paramName)
+        public static void CheckValidAndThrow(NativeArray<fp3> points, in FixedString32Bytes pointsName, in ConvexHullGenerationParameters generationParameters, in FixedString32Bytes paramName)
         {
             Geometry_CheckFiniteAndPositiveAndThrow(generationParameters.BevelRadius, paramName, nameof(ConvexHullGenerationParameters.BevelRadius));
 
@@ -209,7 +210,7 @@ namespace Fixed.Physics
             Geometry_CheckValidAndThrow(geometry.Orientation, paramName, nameof(BoxGeometry.Orientation));
             Geometry_CheckFiniteAndPositiveAndThrow(geometry.Size, paramName, nameof(BoxGeometry.Size));
             Geometry_CheckFiniteAndPositiveAndThrow(geometry.BevelRadius, paramName, nameof(BoxGeometry.BevelRadius));
-            if (geometry.BevelRadius < sfloat.Zero || geometry.BevelRadius > math.cmin(geometry.Size) * (sfloat)0.5f)
+            if (geometry.BevelRadius < fp.zero || geometry.BevelRadius > fpmath.cmin(geometry.Size) * fp.half)
                 throw new ArgumentException($"{paramName}", $"{nameof(BoxGeometry.BevelRadius)} must be greater than or equal to and);less than or equal to half the smallest size dimension.");
         }
 
@@ -229,7 +230,7 @@ namespace Fixed.Physics
             Geometry_CheckFiniteAndPositiveAndThrow(geometry.Height, paramName, nameof(CylinderGeometry.Height));
             Geometry_CheckFiniteAndPositiveAndThrow(geometry.Radius, paramName, nameof(CylinderGeometry.Radius));
             Geometry_CheckFiniteAndPositiveAndThrow(geometry.BevelRadius, paramName, nameof(CylinderGeometry.BevelRadius));
-            if (geometry.BevelRadius < sfloat.Zero || geometry.BevelRadius > math.min(geometry.Height * (sfloat)0.5f, geometry.Radius))
+            if (geometry.BevelRadius < fp.zero || geometry.BevelRadius > fpmath.min(geometry.Height * fp.half, geometry.Radius))
                 throw new ArgumentException($"{paramName}", $"{nameof(CylinderGeometry.BevelRadius)} must be greater than or equal to 0 and less than or equal to half the smallest size dimension.");
             if (geometry.SideCount < CylinderGeometry.MinSideCount || geometry.SideCount > CylinderGeometry.MaxSideCount)
                 throw new ArgumentException($"{paramName}", $"{nameof(CylinderGeometry.SideCount)} must be greater than or equal to {CylinderGeometry.MinSideCount} and less than or equal to {CylinderGeometry.MaxSideCount}.");

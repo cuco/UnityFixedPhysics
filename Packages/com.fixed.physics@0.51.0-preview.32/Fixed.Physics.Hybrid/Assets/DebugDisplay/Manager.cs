@@ -4,8 +4,9 @@ using Unity.Collections.LowLevel.Unsafe;
 using System.IO;
 using System;
 using Unity.Burst;
-using Fixed.Mathematics;
-using Fixed.Physics.Authoring; //for meshes
+using Unity.Mathematics.FixedPoint;
+using Fixed.Physics.Authoring;
+using Unity.Mathematics; //for meshes
 using UnityEditor;
 
 namespace Fixed.DebugDisplay
@@ -47,7 +48,7 @@ namespace Fixed.DebugDisplay
 
         internal bool initialized;
 
-        internal UnsafeArray<float4> m_ColorData;
+        internal UnsafeArray<fp4> m_ColorData;
 
         unsafe internal void Initialize()
         {
@@ -120,9 +121,9 @@ namespace Fixed.DebugDisplay
                     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
                     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
                 };
-                m_ColorData = new UnsafeArray<float4>(kMaxColors);
+                m_ColorData = new UnsafeArray<fp4>(kMaxColors);
                 for (var i = 0; i < kMaxColors; ++i)
-                    m_ColorData[i] = new float4((sfloat)(int)pal[i * 3 + 2],  (sfloat)(int)pal[i * 3 + 1], (sfloat)(int)pal[i * 3 + 0], (sfloat)255.0f) / (sfloat)255.0f;
+                    m_ColorData[i] = new fp4((fp)(int)pal[i * 3 + 2],  (fp)(int)pal[i * 3 + 1], (fp)(int)pal[i * 3 + 0], (fp)255.0f) / (fp)255.0f;
                 m_TextBuffer.Initialize();
                 m_GraphBuffer.Initialize();
                 m_LineBuffer.Initialize();
@@ -168,8 +169,8 @@ namespace Fixed.DebugDisplay
         internal static int PixelsWide => Screen.width;
         internal static int PixelsTall => Screen.height;
 
-        internal static sfloat FractionalCellsWide => (sfloat)PixelsWide / (sfloat)Cell.kPixelsWide;
-        internal static sfloat FractionalCellsTall => (sfloat)PixelsTall / (sfloat)Cell.kPixelsTall;
+        internal static fp FractionalCellsWide => (fp)PixelsWide / (fp)Cell.kPixelsWide;
+        internal static fp FractionalCellsTall => (fp)PixelsTall / (fp)Cell.kPixelsTall;
         internal static int IntegralCellsWide => (PixelsWide + Cell.kPixelsWide - 1) / Cell.kPixelsWide;
         internal static int IntegralCellsTall => (PixelsTall + Cell.kPixelsTall - 1) / Cell.kPixelsTall;
 
@@ -235,7 +236,7 @@ namespace Fixed.DebugDisplay
                     m_ColorBuffer = null;
                 }
 
-                m_ColorBuffer = new ComputeBuffer(Unmanaged.Instance.Data.m_ColorData.Length, UnsafeUtility.SizeOf<float4>());
+                m_ColorBuffer = new ComputeBuffer(Unmanaged.Instance.Data.m_ColorData.Length, UnsafeUtility.SizeOf<fp4>());
                 resources.textMaterial.SetBuffer("colorBuffer", m_ColorBuffer);
                 resources.graphMaterial.SetBuffer("colorBuffer", m_ColorBuffer);
                 resources.lineMaterial.SetBuffer("colorBuffer", m_ColorBuffer);
@@ -288,7 +289,7 @@ namespace Fixed.DebugDisplay
                 }
 
                 m_GraphSampleBuffer =
-                    new ComputeBuffer(Unmanaged.Instance.Data.m_GraphBuffer.m_Data.Length, UnsafeUtility.SizeOf<sfloat>());
+                    new ComputeBuffer(Unmanaged.Instance.Data.m_GraphBuffer.m_Data.Length, UnsafeUtility.SizeOf<fp>());
                 resources.graphMaterial.SetBuffer("sampleBuffer", m_GraphSampleBuffer);
             }
 
@@ -318,7 +319,7 @@ namespace Fixed.DebugDisplay
             m_TextInstanceBuffer.SetData(Unmanaged.Instance.Data.m_TextBuffer.m_Instance.ToNativeArray(), 0, 0, m_NumTextBoxesToDraw);
             m_LineVertexBuffer.SetData(Unmanaged.Instance.Data.m_LineBuffer.m_Instance.ToNativeArray(), 0, 0, m_NumLinesToDraw);
 
-            var scales = new float4(sfloat.One / FractionalCellsWide, sfloat.One / FractionalCellsTall, sfloat.One / (sfloat)PixelsWide, sfloat.One / (sfloat)PixelsTall);
+            var scales = new fp4(fp.one / FractionalCellsWide, fp.one / FractionalCellsTall, fp.one / (fp)PixelsWide, fp.one / (fp)PixelsTall);
             resources.textMaterial.SetVector("scales", scales);
             resources.graphMaterial.SetVector("scales", scales);
             resources.lineMaterial.SetVector("scales", scales);

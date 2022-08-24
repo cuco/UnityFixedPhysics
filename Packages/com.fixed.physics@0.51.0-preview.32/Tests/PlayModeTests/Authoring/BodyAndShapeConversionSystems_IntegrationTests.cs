@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using NUnit.Framework;
 using Fixed.Physics.Authoring;
+using Unity.Mathematics.FixedPoint;
 using UnityEngine;
 #if LEGACY_PHYSICS
 using LegacyRigidBody = UnityEngine.Rigidbody;
@@ -16,20 +17,20 @@ namespace Fixed.Physics.Tests.Authoring
         public void ConversionSystems_WhenGOHasPhysicsBodyAndLegacyRigidBody_EntityUsesPhysicsBodyMass()
         {
             CreateHierarchy(new[] { typeof(LegacyRigidBody), typeof(PhysicsBodyAuthoring) }, Array.Empty<Type>(), Array.Empty<Type>());
-            Root.GetComponent<PhysicsBodyAuthoring>().Mass = (sfloat)100f;
+            Root.GetComponent<PhysicsBodyAuthoring>().Mass = (fp)100f;
             Root.GetComponent<LegacyRigidBody>().mass = 50f;
 
-            TestConvertedData<PhysicsMass>(mass => Assert.That(mass.InverseMass, Is.EqualTo((sfloat)0.01f)));
+            TestConvertedData<PhysicsMass>(mass => Assert.That(mass.InverseMass, Is.EqualTo((fp)0.01f)));
         }
 
         [Test]
         public void ConversionSystems_WhenGOHasPhysicsBodyAndLegacyRigidBody_EntityUsesPhysicsBodyDamping()
         {
             CreateHierarchy(new[] { typeof(LegacyRigidBody), typeof(PhysicsBodyAuthoring) }, Array.Empty<Type>(), Array.Empty<Type>());
-            Root.GetComponent<PhysicsBodyAuthoring>().LinearDamping = (sfloat)1f;
+            Root.GetComponent<PhysicsBodyAuthoring>().LinearDamping = (fp)1f;
             Root.GetComponent<LegacyRigidBody>().drag = 0.5f;
 
-            TestConvertedData<PhysicsDamping>(damping => Assert.That(damping.Linear, Is.EqualTo((sfloat)1f)));
+            TestConvertedData<PhysicsDamping>(damping => Assert.That(damping.Linear, Is.EqualTo((fp)1f)));
         }
 
         [Test]
@@ -37,10 +38,10 @@ namespace Fixed.Physics.Tests.Authoring
         {
             CreateHierarchy(new[] { typeof(LegacyRigidBody), typeof(PhysicsBodyAuthoring) }, Array.Empty<Type>(), Array.Empty<Type>());
             Root.GetComponent<PhysicsBodyAuthoring>().MotionType = BodyMotionType.Dynamic;
-            Root.GetComponent<PhysicsBodyAuthoring>().GravityFactor = (sfloat)2f;
+            Root.GetComponent<PhysicsBodyAuthoring>().GravityFactor = (fp)2f;
             Root.GetComponent<LegacyRigidBody>().isKinematic = true;
 
-            TestConvertedData<PhysicsGravityFactor>(gravity => Assert.That(gravity.Value, Is.EqualTo((sfloat)2f)));
+            TestConvertedData<PhysicsGravityFactor>(gravity => Assert.That(gravity.Value, Is.EqualTo((fp)2f)));
         }
 
         [Test]
@@ -50,7 +51,7 @@ namespace Fixed.Physics.Tests.Authoring
             Root.GetComponent<PhysicsBodyAuthoring>().MotionType = BodyMotionType.Kinematic;
             Root.GetComponent<LegacyRigidBody>().isKinematic = false;
 
-            TestConvertedData<PhysicsGravityFactor>(gravity => Assert.That(gravity.Value, Is.EqualTo((sfloat)0f)));
+            TestConvertedData<PhysicsGravityFactor>(gravity => Assert.That(gravity.Value, Is.EqualTo((fp)0f)));
         }
 
         [Test]
@@ -68,7 +69,7 @@ namespace Fixed.Physics.Tests.Authoring
         {
             CreateHierarchy(new[] { typeof(LegacyRigidBody), typeof(PhysicsBodyAuthoring) }, Array.Empty<Type>(), Array.Empty<Type>());
             Root.GetComponent<PhysicsBodyAuthoring>().MotionType = BodyMotionType.Dynamic;
-            Root.GetComponent<PhysicsBodyAuthoring>().Mass = (sfloat)100f;
+            Root.GetComponent<PhysicsBodyAuthoring>().Mass = (fp)100f;
             Root.GetComponent<LegacyRigidBody>().isKinematic = false;
             Root.GetComponent<LegacyRigidBody>().mass = 50f;
 
@@ -80,11 +81,11 @@ namespace Fixed.Physics.Tests.Authoring
         {
             CreateHierarchy(new[] { typeof(LegacyRigidBody), typeof(PhysicsBodyAuthoring) }, Array.Empty<Type>(), Array.Empty<Type>());
             Root.GetComponent<PhysicsBodyAuthoring>().MotionType = BodyMotionType.Dynamic;
-            Root.GetComponent<PhysicsBodyAuthoring>().Mass = (sfloat)100f;
+            Root.GetComponent<PhysicsBodyAuthoring>().Mass = (fp)100f;
             Root.GetComponent<LegacyRigidBody>().isKinematic = true;
             Root.GetComponent<LegacyRigidBody>().mass = 50f;
 
-            TestConvertedData<PhysicsMass>(mass => Assert.That(mass.InverseMass, Is.EqualTo((sfloat)0.01f)));
+            TestConvertedData<PhysicsMass>(mass => Assert.That(mass.InverseMass, Is.EqualTo((fp)0.01f)));
         }
 
         [Test]
@@ -92,11 +93,11 @@ namespace Fixed.Physics.Tests.Authoring
         {
             CreateHierarchy(new[] { typeof(LegacyRigidBody), typeof(PhysicsBodyAuthoring) }, Array.Empty<Type>(), Array.Empty<Type>());
             Root.GetComponent<PhysicsBodyAuthoring>().MotionType = BodyMotionType.Kinematic;
-            Root.GetComponent<PhysicsBodyAuthoring>().Mass = (sfloat)100f;
+            Root.GetComponent<PhysicsBodyAuthoring>().Mass = (fp)100f;
             Root.GetComponent<LegacyRigidBody>().isKinematic = false;
             Root.GetComponent<LegacyRigidBody>().mass = 50f;
 
-            TestConvertedData<PhysicsMass>(mass => Assert.That(mass.InverseMass, Is.EqualTo((sfloat)0f)));
+            TestConvertedData<PhysicsMass>(mass => Assert.That(mass.InverseMass, Is.EqualTo((fp)0f)));
         }
 
         [Test]

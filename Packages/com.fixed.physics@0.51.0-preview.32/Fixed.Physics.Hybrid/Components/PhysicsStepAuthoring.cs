@@ -1,6 +1,7 @@
 using UnityEngine;
 using Unity.Entities;
-using Fixed.Mathematics;
+using Unity.Mathematics;
+using Unity.Mathematics.FixedPoint;
 using static Fixed.Physics.PhysicsStep;
 
 namespace Fixed.Physics.Authoring
@@ -21,13 +22,13 @@ namespace Fixed.Physics.Authoring
         [Tooltip("Specifies the type of the physics simulation to be executed.")]
         SimulationType m_SimulationType = Default.SimulationType;
 
-        public float3 Gravity
+        public fp3 Gravity
         {
             get => m_Gravity;
             set => m_Gravity = value;
         }
         [SerializeField]
-        float3 m_Gravity = Default.Gravity;
+        fp3 m_Gravity = Default.Gravity;
 
         public int SolverIterationCount
         {

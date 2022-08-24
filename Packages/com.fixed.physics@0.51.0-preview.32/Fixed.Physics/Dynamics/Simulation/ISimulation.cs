@@ -1,7 +1,7 @@
 using System;
 using Unity.Collections;
 using Unity.Jobs;
-using Fixed.Mathematics;
+using Unity.Mathematics.FixedPoint;
 
 namespace Fixed.Physics
 {
@@ -17,8 +17,8 @@ namespace Fixed.Physics
     public struct SimulationStepInput
     {
         public PhysicsWorld World; // Physics world to be stepped
-        public sfloat TimeStep; // Portion of time to step the physics world for
-        public float3 Gravity; // Gravity in the physics world
+        public fp TimeStep; // Portion of time to step the physics world for
+        public fp3 Gravity; // Gravity in the physics world
         public int NumSolverIterations; // Number of iterations to perform while solving constraints
         public bool SynchronizeCollisionWorld; // Whether to update the collision world after the step for more precise queries
         public Solver.StabilizationHeuristicSettings SolverStabilizationHeuristicSettings; // Settings for solver stabilization heuristic in Fixed.Physics

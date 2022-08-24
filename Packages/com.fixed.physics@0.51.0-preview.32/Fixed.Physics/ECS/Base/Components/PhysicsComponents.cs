@@ -2,9 +2,10 @@ using System;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
-using Fixed.Mathematics;
+using Unity.Mathematics.FixedPoint;
 using Fixed.Physics.Extensions;
 using Fixed.Transforms;
+using Unity.Mathematics;
 
 namespace Fixed.Physics
 {
@@ -63,27 +64,27 @@ namespace Fixed.Physics
     // If not present, the rigid body has infinite mass and inertia.
     public struct PhysicsMass : IComponentData
     {
-        public RigidTransform Transform;        // center of mass and orientation of principal axes
-        public sfloat InverseMass;               // zero is allowed, for infinite mass
-        public float3 InverseInertia;           // zero is allowed, for infinite inertia
-        public sfloat AngularExpansionFactor;    // see MassProperties.AngularExpansionFactor
+        public FpRigidTransform Transform;        // center of mass and orientation of principal axes
+        public fp InverseMass;               // zero is allowed, for infinite mass
+        public fp3 InverseInertia;           // zero is allowed, for infinite inertia
+        public fp AngularExpansionFactor;    // see MassProperties.AngularExpansionFactor
 
-        public float3 CenterOfMass { get => Transform.pos; set => Transform.pos = value; }
-        public quaternion InertiaOrientation { get => Transform.rot; set => Transform.rot = value; }
+        public fp3 CenterOfMass { get => Transform.pos; set => Transform.pos = value; }
+        public fpquaternion InertiaOrientation { get => Transform.rot; set => Transform.rot = value; }
 
-        public bool HasInfiniteMass => InverseMass == sfloat.Zero;
-        public bool HasInfiniteInertia => !math.any(InverseInertia);
+        public bool HasInfiniteMass => InverseMass == fp.zero;
+        public bool HasInfiniteInertia => !fpmath.any(InverseInertia);
         public bool IsKinematic => HasInfiniteMass && HasInfiniteInertia;
 
-        public static PhysicsMass CreateDynamic(MassProperties massProperties, sfloat mass)
+        public static PhysicsMass CreateDynamic(MassProperties massProperties, fp mass)
         {
             SafetyChecks.CheckFiniteAndPositiveAndThrow(mass, nameof(mass));
 
             return new PhysicsMass
             {
                 Transform = massProperties.MassDistribution.Transform,
-                InverseMass = math.rcp(mass),
-                InverseInertia = math.rcp(massProperties.MassDistribution.InertiaTensor * mass),
+                InverseMass = fpmath.rcp(mass),
+                InverseInertia = fpmath.rcp(massProperties.MassDistribution.InertiaTensor * mass),
                 AngularExpansionFactor = massProperties.AngularExpansionFactor
             };
         }
@@ -93,8 +94,8 @@ namespace Fixed.Physics
             return new PhysicsMass
             {
                 Transform = massProperties.MassDistribution.Transform,
-                InverseMass = sfloat.Zero,
-                InverseInertia = float3.zero,
+                InverseMass = fp.zero,
+                InverseInertia = fp3.zero,
                 AngularExpansionFactor = massProperties.AngularExpansionFactor
             };
         }
@@ -122,12 +123,12 @@ namespace Fixed.Physics
         /// <summary>
         /// The body's world-space linear velocity in units per second.
         /// </summary>
-        public float3 Linear;
+        public fp3 Linear;
         /// <summary>
         /// The body's angular velocity in radians per second about each principal axis specified by <see cref="PhysicsMass.Transform"/>.
         /// In order to get or set world-space values, use <see cref="ComponentExtensions.GetAngularVelocityWorldSpace"/> and <see cref="ComponentExtensions.SetAngularVelocityWorldSpace"/>, respectively.
         /// </summary>
-        public float3 Angular;
+        public fp3 Angular;
 
         /// <summary>
         /// Create a <see cref="PhysicsVelocity"/> required to move a body to a target position and orientation.
@@ -141,14 +142,14 @@ namespace Fixed.Physics
         /// <param name="stepFrequency">The step frequency in the simulation where the body's motion is solved (i.e., 1 / FixedDeltaTime).</param>
         public static PhysicsVelocity CalculateVelocityToTarget(
             in PhysicsMass bodyMass, in Translation bodyPosition, in Rotation bodyOrientation,
-            in RigidTransform targetTransform, in sfloat stepFrequency
+            in FpRigidTransform targetTransform, in fp stepFrequency
         )
         {
             var velocity = new PhysicsVelocity();
-            var worldFromBody = new RigidTransform(bodyOrientation.Value, bodyPosition.Value);
-            var worldFromMotion = math.mul(worldFromBody, bodyMass.Transform);
+            var worldFromBody = new FpRigidTransform(bodyOrientation.Value, bodyPosition.Value);
+            var worldFromMotion = fpmath.mul(worldFromBody, bodyMass.Transform);
             PhysicsWorldExtensions.CalculateVelocityToTargetImpl(
-                worldFromBody, math.inverse(worldFromMotion.rot), bodyMass.Transform.pos, targetTransform, stepFrequency,
+                worldFromBody, fpmath.inverse(worldFromMotion.rot), bodyMass.Transform.pos, targetTransform, stepFrequency,
                 out velocity.Linear, out velocity.Angular
             );
             return velocity;
@@ -156,18 +157,18 @@ namespace Fixed.Physics
     }
 
     // Optional damping applied to the rigid body velocities during each simulation step.
-    // This scales the velocities using: math.clamp(1 - damping * Timestep, 0, 1)
+    // This scales the velocities using: fpmath.clamp(1 - damping * Timestep, 0, 1)
     public struct PhysicsDamping : IComponentData
     {
-        public sfloat Linear;     // damping applied to the linear velocity
-        public sfloat Angular;    // damping applied to the angular velocity
+        public fp Linear;     // damping applied to the linear velocity
+        public fp Angular;    // damping applied to the angular velocity
     }
 
     // Optional gravity factor applied to a rigid body during each simulation step.
     // This scales the gravity vector supplied to the simulation step.
     public struct PhysicsGravityFactor : IComponentData
     {
-        public sfloat Value;
+        public fp Value;
     }
 
     // Optional custom tags attached to a rigid body.
@@ -183,7 +184,7 @@ namespace Fixed.Physics
     public struct PhysicsStep : IComponentData
     {
         public SimulationType SimulationType;
-        public float3 Gravity;
+        public fp3 Gravity;
         public int SolverIterationCount;
         public Solver.StabilizationHeuristicSettings SolverStabilizationHeuristicSettings;
 
@@ -199,7 +200,7 @@ namespace Fixed.Physics
         public static readonly PhysicsStep Default = new PhysicsStep
         {
             SimulationType = SimulationType.UnityPhysics,
-            Gravity = new float3(sfloat.Zero, sfloat.FromRaw(0xc11cf5c3), sfloat.Zero),
+            Gravity = new fp3(fp.zero, fp.FromRaw(0xc11cf5c3), fp.zero),
             SolverIterationCount = 4,
             SolverStabilizationHeuristicSettings = Solver.StabilizationHeuristicSettings.Default,
             MultiThreaded = 1,

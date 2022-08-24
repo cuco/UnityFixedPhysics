@@ -14,25 +14,34 @@ namespace Unity.Mathematics.FixedPoint
         long m_rawValue;
 
         // Precision of this type is 2^-32, that is 2,3283064365386962890625E-10
-        public static readonly decimal precision = new fp(1L);//0.00000000023283064365386962890625m;
-        public static readonly fp max_value = new fp(MAX_VALUE);
-        public static readonly fp min_value = new fp(MIN_VALUE);
-        public static readonly fp one = new fp(ONE);
-        public static readonly fp minusOne = new fp(-ONE);
-        public static readonly fp half = new fp(1L << (FRACTIONAL_PLACES - 1));
-        public static readonly fp quarter = new fp(1L << (FRACTIONAL_PLACES - 2));
-        public static readonly fp eighth = new fp(1L << (FRACTIONAL_PLACES - 3));
-        public static readonly fp two = new fp(1L << (FRACTIONAL_PLACES + 1));
-        public static readonly fp epsilon = new fp(1L);
-        public static readonly fp zero = new fp();
+        public static decimal precision => new fp(1L);//0.00000000023283064365386962890625m;
+        public static fp max_value => new fp(MAX_VALUE);
+        public static fp min_value => new fp(MIN_VALUE);
+        public static fp one => new fp(ONE);
+        public static fp minusOne => new fp(-ONE);
+        public static fp half => new fp(1L << (FRACTIONAL_PLACES - 1));
+        public static fp quarter => new fp(1L << (FRACTIONAL_PLACES - 2));
+        public static fp eighth => new fp(1L << (FRACTIONAL_PLACES - 3));
+        public static fp two => new fp(1L << (FRACTIONAL_PLACES + 1));
+        public static fp epsilon => new fp(1L);
+        public static fp zero => new fp();
 
-        public static readonly fp Pi = new fp(PI);
-        public static readonly fp PiOver2 = new fp(PI_OVER_2);
-        public static readonly fp Log2Max = new fp(LOG2MAX);
-        public static readonly fp Log2Min = new fp(LOG2MIN);
-        public static readonly fp Ln2 = new fp(LN2);
+        public static fp fp_1e_1f => new fp(0, 1, 10);
+        public static fp fp_1e_2f => new fp(0, 1, 100);
+        public static fp fp_1e_3f => new fp(0, 1, 1000);
+        public static fp fp_1e_4f => new fp(0, 1, 10000);
+        public static fp fp_1e_5f => new fp(0, 1, 100000);
+        public static fp fp_1e_6f => new fp(0, 1, 1000000);
+        public static fp fp_1e_10f => (fp)1e-10f; //TODO
 
-        static readonly fp LutInterval = (fp)(LUT_SIZE - 1) / PiOver2;
+        public static fp Pi => new fp(PI);
+        public static fp TwoPi => new fp(PI_TIMES_2);
+        public static fp PiOver2 => new fp(PI_OVER_2);
+        public static fp Log2Max => new fp(LOG2MAX);
+        public static fp Log2Min => new fp(LOG2MIN);
+        public static fp Ln2 => new fp(LN2);
+
+        static  fp LutInterval => (fp)(LUT_SIZE - 1) / PiOver2;
         const long MAX_VALUE = long.MaxValue;
         const long MIN_VALUE = long.MinValue;
         const int NUM_BITS = 64;
@@ -774,7 +783,7 @@ namespace Unity.Mathematics.FixedPoint
         /// Returns the cosine of x.
         /// The relative error is less than 1E-10 for x in [-2PI, 2PI], and less than 1E-7 in the worst case.
         /// </summary>
-        internal static fp Cos(fp x)
+        public static fp Cos(fp x)
         {
             var xl = x.m_rawValue;
             var rawAngle = xl + (xl > 0 ? -PI - PI_OVER_2 : PI_OVER_2);
@@ -785,7 +794,7 @@ namespace Unity.Mathematics.FixedPoint
         /// Returns a rough approximation of the cosine of x.
         /// See FastSin for more details.
         /// </summary>
-        internal static fp FastCos(fp x)
+        public static fp FastCos(fp x)
         {
             var xl = x.m_rawValue;
             var rawAngle = xl + (xl > 0 ? -PI - PI_OVER_2 : PI_OVER_2);
@@ -798,7 +807,7 @@ namespace Unity.Mathematics.FixedPoint
         /// <remarks>
         /// This function is not well-tested. It may be wildly inaccurate.
         /// </remarks>
-        internal static fp Tan(fp x)
+        public static fp Tan(fp x)
         {
             var clampedPi = x.m_rawValue % PI;
             var flip = false;
@@ -833,7 +842,7 @@ namespace Unity.Mathematics.FixedPoint
         /// Returns the arccos of of the specified number, calculated using Atan and Sqrt
         /// This function has at least 7 decimals of accuracy.
         /// </summary>
-        internal static fp Acos(fp x)
+        public static fp Acos(fp x)
         {
             if (x < -one || x > one)
             {
@@ -853,7 +862,7 @@ namespace Unity.Mathematics.FixedPoint
         /// Returns the arctan of of the specified number, calculated using Euler series
         /// This function has at least 7 decimals of accuracy.
         /// </summary>
-        internal static fp Atan(fp z)
+        public static fp Atan(fp z)
         {
             if (z.m_rawValue == 0)
             {
@@ -916,7 +925,7 @@ namespace Unity.Mathematics.FixedPoint
             return result;
         }
 
-        internal static fp Atan2(fp y, fp x)
+        public static fp Atan2(fp y, fp x)
         {
             var yl = y.m_rawValue;
             var xl = x.m_rawValue;

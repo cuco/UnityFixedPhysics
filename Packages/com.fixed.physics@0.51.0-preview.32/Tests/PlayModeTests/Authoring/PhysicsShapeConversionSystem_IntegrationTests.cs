@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using NUnit.Framework;
-using Fixed.Mathematics;
+using Unity.Mathematics.FixedPoint;
 using Fixed.Physics.Authoring;
 using UnityEditor;
 using UnityEngine;
@@ -81,7 +81,7 @@ namespace Fixed.Physics.Tests.Authoring
                 Array.Empty<Type>(),
                 Array.Empty<Type>()
             );
-            Root.GetComponent<PhysicsShapeAuthoring>().SetBox(new BoxGeometry { Size = (sfloat)1f, Orientation = quaternion.identity });
+            Root.GetComponent<PhysicsShapeAuthoring>().SetBox(new BoxGeometry { Size = (fp)1f, Orientation = fpquaternion.identity });
 
             TestConvertedSharedData<PhysicsCollider, PhysicsWorldIndex>(c => Assert.That(c.Value.Value.Type, Is.EqualTo(ColliderType.Box)), k_DefaultWorldIndex);
         }
@@ -94,7 +94,7 @@ namespace Fixed.Physics.Tests.Authoring
                 new[] { typeof(PhysicsShapeAuthoring) },
                 Array.Empty<Type>()
             );
-            Parent.GetComponent<PhysicsShapeAuthoring>().SetBox(new BoxGeometry { Size = (sfloat)1f, Orientation = quaternion.identity });
+            Parent.GetComponent<PhysicsShapeAuthoring>().SetBox(new BoxGeometry { Size = (fp)1f, Orientation = fpquaternion.identity });
 
             TestConvertedSharedData<PhysicsCollider, PhysicsWorldIndex>(
                 c =>
@@ -119,7 +119,7 @@ namespace Fixed.Physics.Tests.Authoring
                 new[] { typeof(PhysicsShapeAuthoring) },
                 Array.Empty<Type>()
             );
-            Parent.GetComponent<PhysicsShapeAuthoring>().SetBox(new BoxGeometry { Size = (sfloat)1f, Orientation = quaternion.identity });
+            Parent.GetComponent<PhysicsShapeAuthoring>().SetBox(new BoxGeometry { Size = (fp)1f, Orientation = fpquaternion.identity });
             Parent.GetComponent<PhysicsShapeAuthoring>().CollisionResponse = CollisionResponsePolicy.RaiseTriggerEvents;
 
             TestConvertedSharedData<PhysicsCollider, PhysicsWorldIndex>(
@@ -133,13 +133,13 @@ namespace Fixed.Physics.Tests.Authoring
                         Assume.That(compoundCollider->Children[0].Collider->Type, Is.EqualTo(ColliderType.Box));
 
                         // Make sure compound mass properties are calculated properly
-                        Assert.That(compoundCollider->MassProperties.Volume > sfloat.Zero);
-                        Assert.That(math.all(math.isfinite(compoundCollider->MassProperties.MassDistribution.Transform.pos)));
-                        Assert.That(math.all(math.isfinite(compoundCollider->MassProperties.MassDistribution.Transform.rot.value)));
-                        Assert.That(math.all(math.isfinite(compoundCollider->MassProperties.MassDistribution.InertiaTensor)));
-                        Assert.That(math.all(math.isfinite(compoundCollider->MassProperties.MassDistribution.InertiaMatrix.c0)));
-                        Assert.That(math.all(math.isfinite(compoundCollider->MassProperties.MassDistribution.InertiaMatrix.c1)));
-                        Assert.That(math.all(math.isfinite(compoundCollider->MassProperties.MassDistribution.InertiaMatrix.c2)));
+                        Assert.That(compoundCollider->MassProperties.Volume > fp.zero);
+                        Assert.That(math.all(fpmath.isfinite(compoundCollider->MassProperties.MassDistribution.Transform.pos)));
+                        Assert.That(math.all(fpmath.isfinite(compoundCollider->MassProperties.MassDistribution.Transform.rot.value)));
+                        Assert.That(math.all(fpmath.isfinite(compoundCollider->MassProperties.MassDistribution.InertiaTensor)));
+                        Assert.That(math.all(fpmath.isfinite(compoundCollider->MassProperties.MassDistribution.InertiaMatrix.c0)));
+                        Assert.That(math.all(fpmath.isfinite(compoundCollider->MassProperties.MassDistribution.InertiaMatrix.c1)));
+                        Assert.That(math.all(fpmath.isfinite(compoundCollider->MassProperties.MassDistribution.InertiaMatrix.c2)));
                     }
                 },
                 k_DefaultWorldIndex
@@ -154,8 +154,8 @@ namespace Fixed.Physics.Tests.Authoring
                 new[] { typeof(PhysicsShapeAuthoring) },
                 new[] { typeof(PhysicsShapeAuthoring) }
             );
-            Parent.GetComponent<PhysicsShapeAuthoring>().SetBox(new BoxGeometry { Size = sfloat.One, Orientation = quaternion.identity });
-            Child.GetComponent<PhysicsShapeAuthoring>().SetSphere(new SphereGeometry { Radius = sfloat.One }, quaternion.identity);
+            Parent.GetComponent<PhysicsShapeAuthoring>().SetBox(new BoxGeometry { Size = fp.one, Orientation = fpquaternion.identity });
+            Child.GetComponent<PhysicsShapeAuthoring>().SetSphere(new SphereGeometry { Radius = fp.one }, fpquaternion.identity);
 
             TestConvertedSharedData<PhysicsCollider, PhysicsWorldIndex>(
                 c =>
@@ -311,13 +311,13 @@ namespace Fixed.Physics.Tests.Authoring
                     shape.SetCapsule(new CapsuleGeometryAuthoring { OrientationEuler = EulerAngles.Default });
                     break;
                 case ShapeType.Sphere:
-                    shape.SetSphere(default, quaternion.identity);
+                    shape.SetSphere(default, fpquaternion.identity);
                     break;
                 case ShapeType.Cylinder:
                     shape.SetCylinder(new CylinderGeometry { SideCount = CylinderGeometry.MaxSideCount });
                     break;
                 case ShapeType.Plane:
-                    shape.SetPlane(default, default, quaternion.identity);
+                    shape.SetPlane(default, default, fpquaternion.identity);
                     break;
                 case ShapeType.ConvexHull:
                     shape.SetConvexHull(ConvexHullGenerationParameters.Default);
@@ -327,11 +327,11 @@ namespace Fixed.Physics.Tests.Authoring
                     break;
             }
 
-            shape.FitToEnabledRenderMeshes(sfloat.Zero);
+            shape.FitToEnabledRenderMeshes(fp.zero);
         }
 
-        static readonly RigidTransform k_SharedDataChildTransformation =
-            new RigidTransform(quaternion.EulerZXY(math.PI / (sfloat)4), new float3((sfloat)1f, (sfloat)2f, (sfloat)3f));
+        static readonly FpRigidTransform k_SharedDataChildTransformation =
+            new FpRigidTransform(fpquaternion.EulerZXY(fpmath.PI / (fp)4), new fp3((fp)1f, (fp)2f, (fp)3f));
 
         [Test]
         public unsafe void ConversionSystems_WhenMultipleShapesShareInputs_CollidersShareTheSameData(
@@ -383,7 +383,7 @@ namespace Fixed.Physics.Tests.Authoring
         )
         {
             CreateHierarchy(componentTypes, Array.Empty<Type>(), Array.Empty<Type>());
-            Root.GetComponent<PhysicsShapeAuthoring>().SetBox(new BoxGeometry { Size = sfloat.One });
+            Root.GetComponent<PhysicsShapeAuthoring>().SetBox(new BoxGeometry { Size = fp.one });
 
             TestConvertedSharedData<PhysicsCollider, PhysicsWorldIndex>(
                 c =>

@@ -1,5 +1,6 @@
 using Unity.Burst;
-using Fixed.Mathematics;
+using Unity.Mathematics;
+using Unity.Mathematics.FixedPoint;
 using static Fixed.Physics.Math;
 
 namespace Fixed.Physics
@@ -9,40 +10,40 @@ namespace Fixed.Physics
     struct LinearLimitJacobian
     {
         // Pivot positions in motion space
-        public float3 PivotAinA;
-        public float3 PivotBinB;
+        public fp3 PivotAinA;
+        public fp3 PivotBinB;
 
         // Pivot distance limits
-        public sfloat MinDistance;
-        public sfloat MaxDistance;
+        public fp MinDistance;
+        public fp MaxDistance;
 
         // Motion transforms before solving
-        public RigidTransform WorldFromA;
-        public RigidTransform WorldFromB;
+        public FpRigidTransform WorldFromA;
+        public FpRigidTransform WorldFromB;
 
         // If the constraint limits 1 DOF, this is the constrained axis.
         // If the constraint limits 2 DOF, this is the free axis.
-        // If the constraint limits 3 DOF, this is unused and set to float3.zero
-        public float3 AxisInB;
+        // If the constraint limits 3 DOF, this is unused and set to fp3.zero
+        public fp3 AxisInB;
 
         // True if the jacobian limits one degree of freedom
         public bool Is1D;
 
         // Position error at the beginning of the step
-        public sfloat InitialError;
+        public fp InitialError;
 
         // Fraction of the position error to correct per step
-        public sfloat Tau;
+        public fp Tau;
 
         // Fraction of the velocity error to correct per step
-        public sfloat Damping;
+        public fp Damping;
 
         // Build the Jacobian
         public void Build(
             MTransform aFromConstraint, MTransform bFromConstraint,
             MotionVelocity velocityA, MotionVelocity velocityB,
             MotionData motionA, MotionData motionB,
-            Constraint constraint, sfloat tau, sfloat damping)
+            Constraint constraint, fp tau, fp damping)
         {
             WorldFromA = motionA.WorldFromMotion;
             WorldFromB = motionB.WorldFromMotion;
@@ -50,7 +51,7 @@ namespace Fixed.Physics
             PivotAinA = aFromConstraint.Translation;
             PivotBinB = bFromConstraint.Translation;
 
-            AxisInB = float3.zero;
+            AxisInB = fp3.zero;
             Is1D = false;
 
             MinDistance = constraint.Min;
@@ -77,15 +78,15 @@ namespace Fixed.Physics
                 Is1D = constraint.ConstrainedAxes.x ^ constraint.ConstrainedAxes.y ^ constraint.ConstrainedAxes.z;
 
                 // Project pivot A onto the line or plane in B that it is attached to
-                RigidTransform bFromA = math.mul(math.inverse(WorldFromB), WorldFromA);
-                float3 pivotAinB = math.transform(bFromA, PivotAinA);
-                float3 diff = pivotAinB - PivotBinB;
+                FpRigidTransform bFromA = fpmath.mul(fpmath.inverse(WorldFromB), WorldFromA);
+                fp3 pivotAinB = fpmath.transform(bFromA, PivotAinA);
+                fp3 diff = pivotAinB - PivotBinB;
                 for (int i = 0; i < 3; i++)
                 {
-                    float3 column = bFromConstraint.Rotation[i];
-                    AxisInB = math.select(column, AxisInB, Is1D ^ constraint.ConstrainedAxes[i]);
+                    fp3 column = bFromConstraint.Rotation[i];
+                    AxisInB = fpmath.select(column, AxisInB, Is1D ^ constraint.ConstrainedAxes[i]);
 
-                    float3 dot = math.select(math.dot(column, diff), sfloat.Zero, constraint.ConstrainedAxes[i]);
+                    fp3 dot = fpmath.select(fpmath.dot(column, diff), fp.zero, constraint.ConstrainedAxes[i]);
                     PivotBinB += column * dot;
                 }
             }
@@ -94,39 +95,39 @@ namespace Fixed.Physics
             InitialError = CalculateError(
                 new MTransform(WorldFromA.rot, WorldFromA.pos),
                 new MTransform(WorldFromB.rot, WorldFromB.pos),
-                out float3 directionUnused);
+                out fp3 directionUnused);
         }
 
-        private static void ApplyImpulse(float3 impulse, float3 ang0, float3 ang1, float3 ang2, ref MotionVelocity velocity)
+        private static void ApplyImpulse(fp3 impulse, fp3 ang0, fp3 ang1, fp3 ang2, ref MotionVelocity velocity)
         {
             velocity.ApplyLinearImpulse(impulse);
             velocity.ApplyAngularImpulse(impulse.x * ang0 + impulse.y * ang1 + impulse.z * ang2);
         }
 
         // Solve the Jacobian
-        public void Solve(ref MotionVelocity velocityA, ref MotionVelocity velocityB, sfloat timestep, sfloat invTimestep)
+        public void Solve(ref MotionVelocity velocityA, ref MotionVelocity velocityB, fp timestep, fp invTimestep)
         {
             // Predict the motions' transforms at the end of the step
             MTransform futureWorldFromA;
             MTransform futureWorldFromB;
             {
-                quaternion dqA = Integrator.IntegrateAngularVelocity(velocityA.AngularVelocity, timestep);
-                quaternion dqB = Integrator.IntegrateAngularVelocity(velocityB.AngularVelocity, timestep);
-                quaternion futureOrientationA = math.normalize(math.mul(WorldFromA.rot, dqA));
-                quaternion futureOrientationB = math.normalize(math.mul(WorldFromB.rot, dqB));
+                fpquaternion dqA = Integrator.IntegrateAngularVelocity(velocityA.AngularVelocity, timestep);
+                fpquaternion dqB = Integrator.IntegrateAngularVelocity(velocityB.AngularVelocity, timestep);
+                fpquaternion futureOrientationA = fpmath.normalize(fpmath.mul(WorldFromA.rot, dqA));
+                fpquaternion futureOrientationB = fpmath.normalize(fpmath.mul(WorldFromB.rot, dqB));
                 futureWorldFromA = new MTransform(futureOrientationA, WorldFromA.pos + velocityA.LinearVelocity * timestep);
                 futureWorldFromB = new MTransform(futureOrientationB, WorldFromB.pos + velocityB.LinearVelocity * timestep);
             }
 
             // Calculate the angulars
-            CalculateAngulars(PivotAinA, futureWorldFromA.Rotation, out float3 angA0, out float3 angA1, out float3 angA2);
-            CalculateAngulars(PivotBinB, futureWorldFromB.Rotation, out float3 angB0, out float3 angB1, out float3 angB2);
+            CalculateAngulars(PivotAinA, futureWorldFromA.Rotation, out fp3 angA0, out fp3 angA1, out fp3 angA2);
+            CalculateAngulars(PivotBinB, futureWorldFromB.Rotation, out fp3 angB0, out fp3 angB1, out fp3 angB2);
 
             // Calculate effective mass
-            float3 EffectiveMassDiag, EffectiveMassOffDiag;
+            fp3 EffectiveMassDiag, EffectiveMassOffDiag;
             {
                 // Calculate the inverse effective mass matrix
-                float3 invEffectiveMassDiag = new float3(
+                fp3 invEffectiveMassDiag = new fp3(
                     JacobianUtilities.CalculateInvEffectiveMassDiag(angA0, velocityA.InverseInertia, velocityA.InverseMass,
                         angB0, velocityB.InverseInertia, velocityB.InverseMass),
                     JacobianUtilities.CalculateInvEffectiveMassDiag(angA1, velocityA.InverseInertia, velocityA.InverseMass,
@@ -134,7 +135,7 @@ namespace Fixed.Physics
                     JacobianUtilities.CalculateInvEffectiveMassDiag(angA2, velocityA.InverseInertia, velocityA.InverseMass,
                         angB2, velocityB.InverseInertia, velocityB.InverseMass));
 
-                float3 invEffectiveMassOffDiag = new float3(
+                fp3 invEffectiveMassOffDiag = new fp3(
                     JacobianUtilities.CalculateInvEffectiveMassOffDiag(angA0, angA1, velocityA.InverseInertia, angB0, angB1, velocityB.InverseInertia),
                     JacobianUtilities.CalculateInvEffectiveMassOffDiag(angA0, angA2, velocityA.InverseInertia, angB0, angB2, velocityB.InverseInertia),
                     JacobianUtilities.CalculateInvEffectiveMassOffDiag(angA1, angA2, velocityA.InverseInertia, angB1, angB2, velocityB.InverseInertia));
@@ -144,16 +145,16 @@ namespace Fixed.Physics
             }
 
             // Predict error at the end of the step and calculate the impulse to correct it
-            float3 impulse;
+            fp3 impulse;
             {
                 // Find the difference between the future distance and the limit range, then apply tau and damping
-                sfloat futureDistanceError = CalculateError(futureWorldFromA, futureWorldFromB, out float3 futureDirection);
-                sfloat solveDistanceError = JacobianUtilities.CalculateCorrection(futureDistanceError, InitialError, Tau, Damping);
+                fp futureDistanceError = CalculateError(futureWorldFromA, futureWorldFromB, out fp3 futureDirection);
+                fp solveDistanceError = JacobianUtilities.CalculateCorrection(futureDistanceError, InitialError, Tau, Damping);
 
                 // Calculate the impulse to correct the error
-                float3 solveError = solveDistanceError * futureDirection;
-                float3x3 effectiveMass = JacobianUtilities.BuildSymmetricMatrix(EffectiveMassDiag, EffectiveMassOffDiag);
-                impulse = math.mul(effectiveMass, solveError) * invTimestep;
+                fp3 solveError = solveDistanceError * futureDirection;
+                fp3x3 effectiveMass = JacobianUtilities.BuildSymmetricMatrix(EffectiveMassDiag, EffectiveMassOffDiag);
+                impulse = fpmath.mul(effectiveMass, solveError) * invTimestep;
             }
 
             // Apply the impulse
@@ -163,27 +164,27 @@ namespace Fixed.Physics
 
         #region Helpers
 
-        private static void CalculateAngulars(float3 pivotInMotion, float3x3 worldFromMotionRotation, out float3 ang0, out float3 ang1, out float3 ang2)
+        private static void CalculateAngulars(fp3 pivotInMotion, fp3x3 worldFromMotionRotation, out fp3 ang0, out fp3 ang1, out fp3 ang2)
         {
             // Jacobian directions are i, j, k
             // Angulars are pivotInMotion x (motionFromWorld * direction)
-            float3x3 motionFromWorldRotation = math.transpose(worldFromMotionRotation);
-            ang0 = math.cross(pivotInMotion, motionFromWorldRotation.c0);
-            ang1 = math.cross(pivotInMotion, motionFromWorldRotation.c1);
-            ang2 = math.cross(pivotInMotion, motionFromWorldRotation.c2);
+            fp3x3 motionFromWorldRotation = fpmath.transpose(worldFromMotionRotation);
+            ang0 = fpmath.cross(pivotInMotion, motionFromWorldRotation.c0);
+            ang1 = fpmath.cross(pivotInMotion, motionFromWorldRotation.c1);
+            ang2 = fpmath.cross(pivotInMotion, motionFromWorldRotation.c2);
         }
 
-        private sfloat CalculateError(MTransform worldFromA, MTransform worldFromB, out float3 direction)
+        private fp CalculateError(MTransform worldFromA, MTransform worldFromB, out fp3 direction)
         {
             // Find the direction from pivot A to B and the distance between them
-            float3 pivotA = Mul(worldFromA, PivotAinA);
-            float3 pivotB = Mul(worldFromB, PivotBinB);
-            float3 axis = math.mul(worldFromB.Rotation, AxisInB);
+            fp3 pivotA = Mul(worldFromA, PivotAinA);
+            fp3 pivotB = Mul(worldFromB, PivotBinB);
+            fp3 axis = fpmath.mul(worldFromB.Rotation, AxisInB);
             direction = pivotB - pivotA;
-            sfloat dot = math.dot(direction, axis);
+            fp dot = fpmath.dot(direction, axis);
 
             // Project for lower-dimension joints
-            sfloat distance;
+            fp distance;
             if (Is1D)
             {
                 // In 1D, distance is signed and measured along the axis
@@ -194,8 +195,8 @@ namespace Fixed.Physics
             {
                 // In 2D / 3D, distance is nonnegative.  In 2D it is measured perpendicular to the axis.
                 direction -= axis * dot;
-                sfloat futureDistanceSq = math.lengthsq(direction);
-                sfloat invFutureDistance = math.select(math.rsqrt(futureDistanceSq), sfloat.Zero, futureDistanceSq == sfloat.Zero);
+                fp futureDistanceSq = fpmath.lengthsq(direction);
+                fp invFutureDistance = fpmath.select(fpmath.rsqrt(futureDistanceSq), fp.zero, futureDistanceSq == fp.zero);
                 distance = futureDistanceSq * invFutureDistance;
                 direction *= invFutureDistance;
             }

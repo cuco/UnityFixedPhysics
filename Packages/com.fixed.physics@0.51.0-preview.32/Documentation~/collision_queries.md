@@ -129,14 +129,14 @@ The `groupIndex` is not currently exposed in the Editor, but do use at runtime i
 This section lists some simple examples for various queries. The examples for Ray and Collider casts require the following namespaces:
 ```csharp
     using Unity.Entities;
-    using Fixed.Mathematics;
+    using Unity.Mathematics.FixedPoint;
     using Fixed.Physics;
 ```
 
 ## Ray casts
 
  ```csharp
-    public Entity Raycast(float3 RayFrom, float3 RayTo)
+    public Entity Raycast(fp3 RayFrom, fp3 RayTo)
     {
         var physicsWorldSystem = World.Active.GetExistingSystem<Fixed.Physics.Systems.BuildPhysicsWorld>();
         var collisionWorld = physicsWorldSystem.PhysicsWorld.CollisionWorld;
@@ -172,7 +172,7 @@ That will return the closest hit Entity along the desired ray. You can inspect t
 Collider casts are very similar to the ray casts, however you need to make a Collider (or borrow from an existing `PhysicsCollider` on a body). For more information on Collider creation process, see the [Interacting with Bodies](interacting_with_bodies.md) section.
 
 ```csharp
-  public unsafe Entity SphereCast(float3 RayFrom, float3 RayTo, float radius)
+  public unsafe Entity SphereCast(fp3 RayFrom, fp3 RayTo, float radius)
     {
         var physicsWorldSystem = World.Active.GetExistingSystem<Fixed.Physics.Systems.BuildPhysicsWorld>();
         var collisionWorld = physicsWorldSystem.PhysicsWorld.CollisionWorld;
@@ -184,13 +184,13 @@ Collider casts are very similar to the ray casts, however you need to make a Col
             GroupIndex = 0
         };
 
-        SphereGeometry sphereGeometry = new SphereGeometry() { Center = float3.zero, Radius = radius };
+        SphereGeometry sphereGeometry = new SphereGeometry() { Center = fp3.zero, Radius = radius };
         BlobAssetReference<Collider> sphereCollider = SphereCollider.Create(sphereGeometry, filter);
 
         ColliderCastInput input = new ColliderCastInput()
         {
             Collider = (Collider*)sphereCollider.GetUnsafePtr(),
-            Orientation = quaternion.identity,
+            Orientation = fpquaternion.identity,
             Start = RayFrom,
             End = RayTo
         };
@@ -222,7 +222,7 @@ Jobs can only be created in classes that inherit from `SystemBase`. Here are the
     using Unity.Collections;
     using Unity.Entities;
     using Unity.Jobs;
-    using Fixed.Mathematics;
+    using Unity.Mathematics.FixedPoint;
     using Fixed.Physics;
 ```
 

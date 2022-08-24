@@ -3,7 +3,7 @@ using NUnit.Framework;
 using Unity.Burst;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Jobs;
-using Fixed.Mathematics;
+using Unity.Mathematics.FixedPoint;
 
 namespace Fixed.Physics.Tests.Collision.Colliders
 {
@@ -16,9 +16,9 @@ namespace Fixed.Physics.Tests.Collision.Colliders
         {
             public void Execute() => CylinderCollider.Create(new CylinderGeometry
             {
-                Orientation = quaternion.identity,
-                Height = (sfloat)1f,
-                Radius = (sfloat)1f,
+                Orientation = fpquaternion.identity,
+                Height = (fp)1f,
+                Radius = (fp)1f,
                 SideCount = CylinderGeometry.MaxSideCount
             }).Dispose();
         }
@@ -31,11 +31,11 @@ namespace Fixed.Physics.Tests.Collision.Colliders
         {
             var geometry = new CylinderGeometry
             {
-                Center = new float3(-(sfloat)10.10f, (sfloat)10.12f, (sfloat)0.01f),
-                Orientation = quaternion.AxisAngle(math.normalize(new float3((sfloat)1.4f, (sfloat)0.2f, (sfloat)1.1f)), (sfloat)38.50f),
-                Height = (sfloat)2f,
-                Radius = (sfloat)0.25f,
-                BevelRadius = (sfloat)0.05f,
+                Center = new fp3(-(fp)10.10f, (fp)10.12f, (fp)0.01f),
+                Orientation = fpquaternion.AxisAngle(fpmath.normalize(new fp3((fp)1.4f, (fp)0.2f, (fp)1.1f)), (fp)38.50f),
+                Height = (fp)2f,
+                Radius = (fp)0.25f,
+                BevelRadius = (fp)0.05f,
                 SideCount = 10
             };
 
@@ -64,8 +64,8 @@ namespace Fixed.Physics.Tests.Collision.Colliders
         {
             var geometry = new CylinderGeometry
             {
-                Center = new float3((sfloat)errantValue),
-                Orientation = quaternion.identity,
+                Center = new fp3((fp)errantValue),
+                Orientation = fpquaternion.identity,
                 SideCount = CylinderGeometry.MaxSideCount
             };
 
@@ -80,7 +80,7 @@ namespace Fixed.Physics.Tests.Collision.Colliders
         {
             var geometry = new CylinderGeometry
             {
-                Orientation = new quaternion((sfloat)0f, (sfloat)0f, (sfloat)0f, (sfloat)errantValue),
+                Orientation = new fpquaternion((fp)0f, (fp)0f, (fp)0f, (fp)errantValue),
                 SideCount = CylinderGeometry.MaxSideCount
             };
 
@@ -95,8 +95,8 @@ namespace Fixed.Physics.Tests.Collision.Colliders
         {
             var geometry = new CylinderGeometry
             {
-                Height = (sfloat)errantValue,
-                Orientation = quaternion.identity,
+                Height = (fp)errantValue,
+                Orientation = fpquaternion.identity,
                 SideCount = CylinderGeometry.MaxSideCount
             };
 
@@ -111,8 +111,8 @@ namespace Fixed.Physics.Tests.Collision.Colliders
         {
             var geometry = new CylinderGeometry
             {
-                Radius = (sfloat)errantValue,
-                Orientation = quaternion.identity,
+                Radius = (fp)errantValue,
+                Orientation = fpquaternion.identity,
                 SideCount = CylinderGeometry.MaxSideCount
             };
 
@@ -127,10 +127,10 @@ namespace Fixed.Physics.Tests.Collision.Colliders
         {
             var geometry = new CylinderGeometry
             {
-                Height = (sfloat)1f,
-                Radius = (sfloat)0.5f,
-                Orientation = quaternion.identity,
-                BevelRadius = (sfloat)errantValue,
+                Height = (fp)1f,
+                Radius = fp.half,
+                Orientation = fpquaternion.identity,
+                BevelRadius = (fp)errantValue,
                 SideCount = CylinderGeometry.MaxSideCount
             };
 

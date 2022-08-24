@@ -1,6 +1,7 @@
 using System;
 using Unity.Entities;
 using Unity.Jobs;
+using Unity.Mathematics.FixedPoint;
 
 namespace Fixed.Physics.Systems
 {
@@ -81,7 +82,7 @@ namespace Fixed.Physics.Systems
                 stepComponent = GetSingleton<PhysicsStep>();
             }
 
-            sfloat timeStep = (sfloat)Time.DeltaTime;
+            fp timeStep = (fp)Time.DeltaTime;
 
             // Schedule the simulation jobs
             m_Stepper.ScheduleSimulationStepJobs(

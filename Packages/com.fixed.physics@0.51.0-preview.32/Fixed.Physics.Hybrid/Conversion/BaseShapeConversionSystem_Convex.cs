@@ -4,7 +4,7 @@ using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
 using Unity.Jobs;
-using Fixed.Mathematics;
+using Unity.Mathematics.FixedPoint;
 using Hash128 = Unity.Entities.Hash128;
 
 namespace Fixed.Physics.Authoring
@@ -21,10 +21,10 @@ namespace Fixed.Physics.Authoring
         }
 
         NativeParallelHashMap<Hash128, ConvexInput> m_ConvexColliderJobs;
-        NativeList<float3> m_ConvexColliderPoints;
+        NativeList<fp3> m_ConvexColliderPoints;
 
         static JobHandle ProduceConvexColliders(
-            NativeParallelHashMap<Hash128, ConvexInput> inputs, NativeArray<float3> points,
+            NativeParallelHashMap<Hash128, ConvexInput> inputs, NativeArray<fp3> points,
             out NativeParallelHashMap<Hash128, BlobAssetReference<Collider>> convexColliders,
             JobHandle inputDeps = default
         )
@@ -60,7 +60,7 @@ namespace Fixed.Physics.Authoring
             [DeallocateOnJobCompletion]
             [ReadOnly] public NativeArray<ConvexInput> InputValues;
             [NativeDisableUnsafePtrRestriction]
-            [ReadOnly] public NativeArray<float3> AllPoints;
+            [ReadOnly] public NativeArray<fp3> AllPoints;
 
             [NativeDisableParallelForRestriction]
             public NativeArray<KeyValuePair<Hash128, BlobAssetReference<Collider>>> Output;

@@ -5,7 +5,7 @@ using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
 using Unity.Jobs;
-using Fixed.Mathematics;
+using Unity.Mathematics.FixedPoint;
 using Fixed.Physics.Authoring;
 using Fixed.Physics.Extensions;
 using UnityEngine;
@@ -27,34 +27,34 @@ namespace Fixed.Physics.Tests.Authoring
         {
             return BoxCollider.Create(new BoxGeometry
             {
-                Center = float3.zero,
-                Orientation = quaternion.identity,
-                Size = new float3(sfloat.One, sfloat.One, sfloat.One),
-                BevelRadius = sfloat.Zero
+                Center = fp3.zero,
+                Orientation = fpquaternion.identity,
+                Size = new fp3(fp.one, fp.one, fp.one),
+                BevelRadius = fp.zero
             });
         }
 
         public static BlobAssetReference<Collider> MakeCapsule()
         {
-            return CapsuleCollider.Create(new CapsuleGeometry { Vertex0 = math.up(), Vertex1 = -math.up(), Radius = sfloat.One });
+            return CapsuleCollider.Create(new CapsuleGeometry { Vertex0 = fpmath.up(), Vertex1 = -fpmath.up(), Radius = fp.one });
         }
 
         public static BlobAssetReference<Collider> MakeCylinder()
         {
             return CylinderCollider.Create(new CylinderGeometry
             {
-                Center = float3.zero,
-                Orientation = quaternion.AxisAngle(new float3(sfloat.One, sfloat.Zero, sfloat.Zero), (sfloat)45.0f),
-                Height = (sfloat)2f,
-                Radius = (sfloat)0.25f,
-                BevelRadius = (sfloat)0.05f,
+                Center = fp3.zero,
+                Orientation = fpquaternion.AxisAngle(new fp3(fp.one, fp.zero, fp.zero), (fp)45.0f),
+                Height = (fp)2f,
+                Radius = (fp)0.25f,
+                BevelRadius = (fp)0.05f,
                 SideCount = 8
             });
         }
 
         public static BlobAssetReference<Collider> MakeSphere()
         {
-            return SphereCollider.Create(new SphereGeometry { Center = float3.zero, Radius = sfloat.One });
+            return SphereCollider.Create(new SphereGeometry { Center = fp3.zero, Radius = fp.one });
         }
 
         public static BlobAssetReference<Collider> MakeMesh()
@@ -66,7 +66,7 @@ namespace Fixed.Physics.Tests.Authoring
 
                 var vertexBuff = mesh.vertices;
                 var indexBuff = mesh.triangles;
-                var verts = new NativeArray<float3>(vertexBuff.Length, Allocator.Temp);
+                var verts = new NativeArray<fp3>(vertexBuff.Length, Allocator.Temp);
                 var tris = new NativeArray<int3>(indexBuff.Length / 3, Allocator.Temp);
 
                 fixed(int* indexPtr = indexBuff)
@@ -79,22 +79,22 @@ namespace Fixed.Physics.Tests.Authoring
 
         public static BlobAssetReference<Collider> MakeConvex()
         {
-            float3[] testPoints =
+            fp3[] testPoints =
             {
-                new float3((sfloat)1.45f, (sfloat)8.67f, (sfloat)3.45f),
-                new float3((sfloat)8.75f, (sfloat)1.23f, (sfloat)6.44f),
-                new float3((sfloat)100.34f, (sfloat)5.33f, -(sfloat)2.55f),
-                new float3((sfloat)8.76f, (sfloat)4.56f, -(sfloat)4.54f),
-                new float3((sfloat)9.75f, -(sfloat)0.45f, -(sfloat)8.99f),
-                new float3((sfloat)7.66f, (sfloat)3.44f, sfloat.Zero)
+                new fp3((fp)1.45f, (fp)8.67f, (fp)3.45f),
+                new fp3((fp)8.75f, (fp)1.23f, (fp)6.44f),
+                new fp3((fp)100.34f, (fp)5.33f, -(fp)2.55f),
+                new fp3((fp)8.76f, (fp)4.56f, -(fp)4.54f),
+                new fp3((fp)9.75f, -(fp)0.45f, -(fp)8.99f),
+                new fp3((fp)7.66f, (fp)3.44f, fp.zero)
             };
 
-            return ConvexCollider.Create(new NativeArray<float3>(testPoints, Allocator.Temp), new ConvexHullGenerationParameters { BevelRadius = (sfloat)0.125f });
+            return ConvexCollider.Create(new NativeArray<fp3>(testPoints, Allocator.Temp), new ConvexHullGenerationParameters { BevelRadius = (fp)0.125f });
         }
 
         public static BlobAssetReference<Collider> MakeTerrain()
         {
-            return TerrainCollider.Create(new NativeArray<sfloat>(16, Allocator.Temp), new int2(4, 4), new float3(sfloat.One, sfloat.One, sfloat.One), TerrainCollider.CollisionMethod.VertexSamples);
+            return TerrainCollider.Create(new NativeArray<fp>(16, Allocator.Temp), new int2(4, 4), new fp3(fp.one, fp.one, fp.one), TerrainCollider.CollisionMethod.VertexSamples);
         }
 
         public static BlobAssetReference<Collider> MakeCompound()
@@ -102,10 +102,10 @@ namespace Fixed.Physics.Tests.Authoring
             var box = MakeBox();
             var children = new NativeArray<CompoundCollider.ColliderBlobInstance>(4, Allocator.Temp)
             {
-                [0] = new CompoundCollider.ColliderBlobInstance { Collider = box, CompoundFromChild = math.mul(RigidTransform.identity, new RigidTransform(quaternion.identity, new float3((sfloat)0.5f, (sfloat)0.5f, (sfloat)0.5f))) },
-                [1] = new CompoundCollider.ColliderBlobInstance { Collider = box, CompoundFromChild = math.mul(RigidTransform.identity, new RigidTransform(quaternion.identity, new float3(-(sfloat)0.5f, (sfloat)0.5f, (sfloat)0.5f))) },
-                [2] = new CompoundCollider.ColliderBlobInstance { Collider = box, CompoundFromChild = math.mul(RigidTransform.identity, new RigidTransform(quaternion.identity, new float3((sfloat)0.5f, -(sfloat)0.5f, (sfloat)0.5f))) },
-                [3] = new CompoundCollider.ColliderBlobInstance { Collider = box, CompoundFromChild = math.mul(RigidTransform.identity, new RigidTransform(quaternion.identity, new float3((sfloat)0.5f, (sfloat)0.5f, -(sfloat)0.5f))) },
+                [0] = new CompoundCollider.ColliderBlobInstance { Collider = box, CompoundFromChild = fpmath.mul(FpRigidTransform.identity, new FpRigidTransform(fpquaternion.identity, new fp3(fp.half, fp.half, fp.half))) },
+                [1] = new CompoundCollider.ColliderBlobInstance { Collider = box, CompoundFromChild = fpmath.mul(FpRigidTransform.identity, new FpRigidTransform(fpquaternion.identity, new fp3(-fp.half, fp.half, fp.half))) },
+                [2] = new CompoundCollider.ColliderBlobInstance { Collider = box, CompoundFromChild = fpmath.mul(FpRigidTransform.identity, new FpRigidTransform(fpquaternion.identity, new fp3(fp.half, -fp.half, fp.half))) },
+                [3] = new CompoundCollider.ColliderBlobInstance { Collider = box, CompoundFromChild = fpmath.mul(FpRigidTransform.identity, new FpRigidTransform(fpquaternion.identity, new fp3(fp.half, fp.half, -fp.half))) },
             };
 
             return CompoundCollider.Create(children);
@@ -223,10 +223,10 @@ namespace Fixed.Physics.Tests.Authoring
             {
                 var col = BoxCollider.Create(new BoxGeometry
                 {
-                    Center = float3.zero,
-                    Orientation = quaternion.identity,
-                    Size = new float3(sfloat.One, sfloat.One, sfloat.One),
-                    BevelRadius = sfloat.Zero
+                    Center = fp3.zero,
+                    Orientation = fpquaternion.identity,
+                    Size = new fp3(fp.one, fp.one, fp.one),
+                    BevelRadius = fp.zero
                 });
 
                 try

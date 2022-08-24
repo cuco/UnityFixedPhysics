@@ -2,7 +2,7 @@ using NUnit.Framework;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Jobs;
-using Fixed.Mathematics;
+using Unity.Mathematics.FixedPoint;
 using Unity.PerformanceTesting;
 using Assert = UnityEngine.Assertions.Assert;
 using Random = UnityEngine.Random;
@@ -57,7 +57,7 @@ namespace Fixed.Physics.Tests.PerformanceTests
         [TestCase(100000, TestName = "PerfRadixPassOnBodyA 100 000")]
         public void PerfRadixPassOnBodyA(int count)
         {
-            int maxBodyIndex = (int)math.pow(count, 0.7f);
+            int maxBodyIndex = (int)fpmath.pow(count, 0.7f);
             int numDigits = 0;
             int val = maxBodyIndex;
             while (val > 0)
@@ -112,7 +112,7 @@ namespace Fixed.Physics.Tests.PerformanceTests
         [TestCase(100000, TestName = "PerfDefaultSortOnSubarrays 100 000")]
         public unsafe void PerfDefaultSortOnSubarrays(int count)
         {
-            int maxBodyIndex = (int)math.pow(count, 0.7f);
+            int maxBodyIndex = (int)fpmath.pow(count, 0.7f);
             int numDigits = 0;
             int val = maxBodyIndex;
             while (val > 0)

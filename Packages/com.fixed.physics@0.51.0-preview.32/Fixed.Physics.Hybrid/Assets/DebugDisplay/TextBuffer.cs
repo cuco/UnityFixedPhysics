@@ -1,6 +1,7 @@
 using System;
 using Unity.Collections;
-using Fixed.Mathematics;
+using Unity.Mathematics;
+using Unity.Mathematics.FixedPoint;
 
 namespace Fixed.DebugDisplay
 {
@@ -8,9 +9,9 @@ namespace Fixed.DebugDisplay
     {
         internal struct Instance
         {
-            internal float3 worldPosition;
-            internal float2 firstCell;
-            internal float2 cellSize;
+            internal fp3 worldPosition;
+            internal fp2 firstCell;
+            internal fp2 cellSize;
             internal uint useWorldMatrix;
         }
 
@@ -40,25 +41,25 @@ namespace Fixed.DebugDisplay
         {
             m_Instance[index] = new Instance
             {
-                worldPosition = new float3((sfloat)(cellXY.x * Cell.kPixelsWide), (sfloat)(cellXY.y * Cell.kPixelsTall), sfloat.Zero),
-                firstCell = new float2(cellXY),
-                cellSize = new float2(cellWH),
+                worldPosition = new fp3((fp)(cellXY.x * Cell.kPixelsWide), (fp)(cellXY.y * Cell.kPixelsTall), fp.zero),
+                firstCell = new fp2(cellXY),
+                cellSize = new fp2(cellWH),
                 useWorldMatrix = 0
             };
         }
 
-        internal void SetTextBoxSmooth(float3 position, int2 cellXY, int2 cellWH, int index)
+        internal void SetTextBoxSmooth(fp3 position, int2 cellXY, int2 cellWH, int index)
         {
             m_Instance[index] = new Instance
             {
                 worldPosition = position,
-                firstCell = new float2(cellXY),
-                cellSize = new float2(cellWH),
+                firstCell = new fp2(cellXY),
+                cellSize = new fp2(cellWH),
                 useWorldMatrix = 1
             };
         }
 
-        internal void SetLabel(float3 position, int2 cellXY, in FixedString128Bytes f, ColorIndex fg, ColorIndex bg,
+        internal void SetLabel(fp3 position, int2 cellXY, in FixedString128Bytes f, ColorIndex fg, ColorIndex bg,
             int index)
         {
             SetTextBoxSmooth(position, cellXY, new int2(CellSurface.WidthInCells(f), 1), index);

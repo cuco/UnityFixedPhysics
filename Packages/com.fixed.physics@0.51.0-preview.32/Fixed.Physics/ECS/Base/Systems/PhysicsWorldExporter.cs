@@ -4,8 +4,9 @@ using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
 using Unity.Jobs;
-using Fixed.Mathematics;
+using Unity.Mathematics.FixedPoint;
 using Fixed.Transforms;
+using Unity.Mathematics;
 
 namespace Fixed.Physics.Systems
 {
@@ -172,7 +173,7 @@ namespace Fixed.Physics.Systems
                 for (int i = 0, motionIndex = entityStartIndex; i < numItems; i++, motionIndex++)
                 {
                     MotionData md = MotionDatas[motionIndex];
-                    RigidTransform worldFromBody = math.mul(md.WorldFromMotion, math.inverse(md.BodyFromMotion));
+                    FpRigidTransform worldFromBody = fpmath.mul(md.WorldFromMotion, fpmath.inverse(md.BodyFromMotion));
                     chunkPositions[i] = new Translation { Value = worldFromBody.pos };
                     chunkRotations[i] = new Rotation { Value = worldFromBody.rot };
                     chunkVelocities[i] = new PhysicsVelocity
@@ -180,10 +181,10 @@ namespace Fixed.Physics.Systems
                         Linear = MotionVelocities[motionIndex].LinearVelocity,
                         Angular = MotionVelocities[motionIndex].AngularVelocity
                     };
-                    var unityPos = new Unity.Mathematics.float3((float)worldFromBody.pos.x, (float)worldFromBody.pos.y, (float)worldFromBody.pos.z);
+
+                    var unityPos = new float3((float)worldFromBody.pos.x, (float)worldFromBody.pos.y, (float)worldFromBody.pos.z);
                     var rotValue = worldFromBody.rot.value;
-                    var unityRot = new Unity.Mathematics.quaternion((float)rotValue.x, (float)rotValue.y,
-                        (float)rotValue.z, (float)rotValue.w);
+                    var unityRot = new quaternion((float)rotValue.x, (float)rotValue.y, (float)rotValue.z, (float)rotValue.w);
                     chunkUnityPositions[i] = new Unity.Transforms.Translation() {Value = unityPos};
                     chunkUnityRotations[i] = new Unity.Transforms.Rotation() {Value = unityRot};
                 }

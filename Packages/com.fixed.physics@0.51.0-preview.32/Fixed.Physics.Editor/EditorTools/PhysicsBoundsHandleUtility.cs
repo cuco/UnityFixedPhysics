@@ -1,5 +1,5 @@
 using System;
-using Fixed.Mathematics;
+using Unity.Mathematics.FixedPoint;
 using UnityEditor;
 using UnityEngine;
 using static UnityEditor.IMGUI.Controls.PrimitiveBoundsHandle;
@@ -8,20 +8,20 @@ namespace Fixed.Physics.Editor
 {
     static class PhysicsBoundsHandleUtility
     {
-        internal static readonly sfloat kBackfaceAlphaMultiplier = (sfloat)0.2f;
-        static readonly sfloat kDegreeEpsilon = (sfloat)0.001f;
-        public static readonly sfloat kDistanceEpsilon = (sfloat)0.0001f;
+        internal static readonly fp kBackfaceAlphaMultiplier = (fp)0.2f;
+        static readonly fp kDegreeEpsilon = (fp)0.001f;
+        public static readonly fp kDistanceEpsilon = (fp)0.0001f;
 
-        public static bool IsBackfaced(float3 localPos, float3 localTangent, float3 localBinormal, Axes axes, bool isCameraInsideBox)
+        public static bool IsBackfaced(fp3 localPos, fp3 localTangent, fp3 localBinormal, Axes axes, bool isCameraInsideBox)
         {
             // if inside the box then ignore back facing alpha multiplier (otherwise all handles will look disabled)
             if (isCameraInsideBox || axes != Axes.All)
                 return false;
 
             // use tangent and binormal to calculate normal in case handle matrix is skewed
-            float3 worldTangent = math.normalize(Handles.matrix.MultiplyVector(localTangent));
-            float3 worldBinormal = math.normalize(Handles.matrix.MultiplyVector(localBinormal));
-            float3 worldDir = math.normalize(math.cross(worldTangent, worldBinormal));
+            fp3 worldTangent = fpmath.normalize(Handles.matrix.MultiplyVector(localTangent));
+            fp3 worldBinormal = fpmath.normalize(Handles.matrix.MultiplyVector(localBinormal));
+            fp3 worldDir = fpmath.normalize(fpmath.cross(worldTangent, worldBinormal));
 
             // adjust color if handle is back facing
             float cosV;
@@ -29,14 +29,14 @@ namespace Fixed.Physics.Editor
             var currentCamera = Camera.current;
             if (currentCamera != null && !currentCamera.orthographic)
             {
-                float3 cameraPos = currentCamera.transform.position;
-                float3 worldPos = Handles.matrix.MultiplyPoint(localPos);
-                cosV = (float)math.dot(math.normalize(cameraPos - worldPos), worldDir);
+                fp3 cameraPos = currentCamera.transform.position;
+                fp3 worldPos = Handles.matrix.MultiplyPoint(localPos);
+                cosV = (float)fpmath.dot(fpmath.normalize(cameraPos - worldPos), worldDir);
             }
             else
             {
-                float3 cameraForward = currentCamera == null ? Vector3.forward : currentCamera.transform.forward;
-                cosV = (float)math.dot(-cameraForward, worldDir);
+                fp3 cameraForward = currentCamera == null ? Vector3.forward : currentCamera.transform.forward;
+                cosV = (float)fpmath.dot(-cameraForward, worldDir);
             }
 
             return cosV < -0.0001f;
@@ -58,7 +58,7 @@ namespace Fixed.Physics.Editor
 
         static readonly int[] k_NextAxis = { 1, 2, 0 };
 
-        public static void DrawFace(float3 center, float3 size, float cornerRadius, int normalAxis, Axes axes, bool isCameraInsideBox)
+        public static void DrawFace(fp3 center, fp3 size, float cornerRadius, int normalAxis, Axes axes, bool isCameraInsideBox)
         {
             // 0 = 0 1 2
             // 1 = 1 2 0
@@ -69,60 +69,60 @@ namespace Fixed.Physics.Editor
             int c = k_NextAxis[b];
 
             cornerRadius = Mathf.Abs(cornerRadius);
-            size *= (sfloat)0.5f;
-            var normal = new float3 { [a] = size[a] };
+            size *= fp.half;
+            var normal = new fp3 { [a] = size[a] };
             var ctr = center + normal;
-            size -= new float3((sfloat)cornerRadius);
+            size -= new fp3((fp)cornerRadius);
 
             // check if our face is a point
-            if (math.abs(size[c]) < kDistanceEpsilon &&
-                math.abs(size[b]) < kDistanceEpsilon)
+            if (fpmath.abs(size[c]) < kDistanceEpsilon &&
+                fpmath.abs(size[b]) < kDistanceEpsilon)
                 return;
 
             Vector3[] points;
             // check if our face is a line or not
-            if (math.abs(size[c]) >= kDistanceEpsilon &&
-                math.abs(size[b]) >= kDistanceEpsilon)
+            if (fpmath.abs(size[c]) >= kDistanceEpsilon &&
+                fpmath.abs(size[b]) >= kDistanceEpsilon)
             {
                 var i = 0;
-                s_FacePoints[i++] = ctr + new float3 { [b] = size[b], [c] = size[c] };
-                s_FacePoints[i++] = ctr + new float3 { [b] = -size[b], [c] = size[c] };
+                s_FacePoints[i++] = ctr + new fp3 { [b] = size[b], [c] = size[c] };
+                s_FacePoints[i++] = ctr + new fp3 { [b] = -size[b], [c] = size[c] };
 
-                s_FacePoints[i++] = ctr + new float3 { [b] = -size[b], [c] = size[c] };
-                s_FacePoints[i++] = ctr + new float3 { [b] = -size[b], [c] = -size[c] };
+                s_FacePoints[i++] = ctr + new fp3 { [b] = -size[b], [c] = size[c] };
+                s_FacePoints[i++] = ctr + new fp3 { [b] = -size[b], [c] = -size[c] };
 
-                s_FacePoints[i++] = ctr + new float3 { [b] = -size[b], [c] = -size[c] };
-                s_FacePoints[i++] = ctr + new float3 { [b] = size[b], [c] = -size[c] };
+                s_FacePoints[i++] = ctr + new fp3 { [b] = -size[b], [c] = -size[c] };
+                s_FacePoints[i++] = ctr + new fp3 { [b] = size[b], [c] = -size[c] };
 
-                s_FacePoints[i++] = ctr + new float3 { [b] = size[b], [c] = -size[c] };
-                s_FacePoints[i++] = ctr + new float3 { [b] = size[b], [c] = size[c] };
+                s_FacePoints[i++] = ctr + new fp3 { [b] = size[b], [c] = -size[c] };
+                s_FacePoints[i++] = ctr + new fp3 { [b] = size[b], [c] = size[c] };
                 points = s_FacePoints;
             }
-            else if (math.abs(size[c]) >= kDistanceEpsilon)
+            else if (fpmath.abs(size[c]) >= kDistanceEpsilon)
             {
                 var i = 0;
-                s_LinePoints[i++] = ctr + new float3 { [b] = size[b], [c] = size[c] };
-                s_LinePoints[i++] = ctr + new float3 { [b] = size[b], [c] = -size[c] };
+                s_LinePoints[i++] = ctr + new fp3 { [b] = size[b], [c] = size[c] };
+                s_LinePoints[i++] = ctr + new fp3 { [b] = size[b], [c] = -size[c] };
                 points = s_LinePoints;
             }
             else
             {
                 var i = 0;
-                s_LinePoints[i++] = ctr + new float3 { [c] = size[c], [b] = size[b] };
-                s_LinePoints[i++] = ctr + new float3 { [c] = size[c], [b] = -size[b] };
+                s_LinePoints[i++] = ctr + new fp3 { [c] = size[c], [b] = size[b] };
+                s_LinePoints[i++] = ctr + new fp3 { [c] = size[c], [b] = -size[b] };
                 points = s_LinePoints;
             }
 
-            float3 tangent, biNormal;
-            if (size[c] > sfloat.Zero)
+            fp3 tangent, biNormal;
+            if (size[c] > fp.zero)
             {
-                tangent = math.cross(normal, math.normalizesafe(new float3 { [c] = size[c] }));
-                biNormal = math.cross(normal, tangent);
+                tangent = fpmath.cross(normal, fpmath.normalizesafe(new fp3 { [c] = size[c] }));
+                biNormal = fpmath.cross(normal, tangent);
             }
             else
             {
-                tangent = math.cross(normal, math.normalizesafe(new float3 { [b] = size[b] }));
-                biNormal = math.cross(normal, tangent);
+                tangent = fpmath.cross(normal, fpmath.normalizesafe(new fp3 { [b] = size[b] }));
+                biNormal = fpmath.cross(normal, tangent);
             }
 
             using (new Handles.DrawingScope(Handles.color))
@@ -134,31 +134,31 @@ namespace Fixed.Physics.Editor
 
         public struct Corner
         {
-            public float3 angle;
-            public float3x2 intersections;
-            public float3x2 points;
-            public float3x3 axes;
-            public float3x3 normals;
+            public fp3 angle;
+            public fp3x2 intersections;
+            public fp3x2 points;
+            public fp3x3 axes;
+            public fp3x3 normals;
             public bool3x2 splitAxis;
             public int splitCount;
 
-            public float3 position;
+            public fp3 position;
             public float radius;
             public bool isBackFaced;
 
-            public float3 cameraForward;
+            public fp3 cameraForward;
         }
 
-        public static void CalculateCornerHorizon(float3 cornerPosition, quaternion orientation, float3 cameraCenter, float3 cameraForward, bool cameraOrtho, float radius, out Corner corner)
+        public static void CalculateCornerHorizon(fp3 cornerPosition, fpquaternion orientation, fp3 cameraCenter, fp3 cameraForward, bool cameraOrtho, float radius, out Corner corner)
         {
-            var axisx = new float3(sfloat.One, sfloat.Zero, sfloat.Zero);
-            var axisy = new float3(sfloat.Zero, sfloat.One, sfloat.Zero);
-            var axisz = new float3(sfloat.Zero, sfloat.Zero, sfloat.One);
+            var axisx = new fp3(fp.one, fp.zero, fp.zero);
+            var axisy = new fp3(fp.zero, fp.one, fp.zero);
+            var axisz = new fp3(fp.zero, fp.zero, fp.one);
 
             // a vector pointing away from the center of the corner
-            var cornerNormal = math.normalize(math.mul(orientation, new float3(sfloat.One, sfloat.One, sfloat.One)));
+            var cornerNormal = fpmath.normalize(fpmath.mul(orientation, new fp3(fp.one, fp.one, fp.one)));
 
-            var axes = math.mul(new float3x3(orientation), new float3x3(axisx, axisy, axisz));
+            var axes = fpmath.mul(new fp3x3(orientation), new fp3x3(axisx, axisy, axisz));
             CalculateCornerHorizon(cornerPosition,
                 axes,
                 cornerNormal,
@@ -166,26 +166,26 @@ namespace Fixed.Physics.Editor
                 radius, out corner);
         }
 
-        public static void CalculateCornerHorizon(float3 cornerPosition, float3x3 axes, float3 cornerNormal, float3 cameraCenter, float3 cameraForward, bool cameraOrtho, float radius, out Corner corner)
+        public static void CalculateCornerHorizon(fp3 cornerPosition, fp3x3 axes, fp3 cornerNormal, fp3 cameraCenter, fp3 cameraForward, bool cameraOrtho, float radius, out Corner corner)
         {
             var cameraToCenter          = cornerPosition - cameraCenter; // vector from camera to center
-            var sqrRadius               = (sfloat)(radius * radius);
-            var sqrDistCameraToCenter   = math.lengthsq(cameraToCenter);
+            var sqrRadius               = (fp)(radius * radius);
+            var sqrDistCameraToCenter   = fpmath.lengthsq(cameraToCenter);
             var sqrOffset               = (sqrRadius * sqrRadius / sqrDistCameraToCenter);  // squared distance from actual center to drawn disc center
 
             if (!cameraOrtho)
                 cameraForward = cameraToCenter;
 
-            var normals = new float3x3
+            var normals = new fp3x3
             {
-                c0 = math.normalize(math.cross(axes[1], axes[2])),
-                c1 = math.normalize(math.cross(axes[2], axes[0])),
-                c2 = math.normalize(math.cross(axes[0], axes[1]))
+                c0 = fpmath.normalize(fpmath.cross(axes[1], axes[2])),
+                c1 = fpmath.normalize(fpmath.cross(axes[2], axes[0])),
+                c2 = fpmath.normalize(fpmath.cross(axes[0], axes[1]))
             };
 
             corner = new Corner
             {
-                angle           = new float3(
+                angle           = new fp3(
                     Math.Angle(axes[0], axes[1]),
                     Math.Angle(axes[1], axes[2]),
                     Math.Angle(axes[2], axes[0])
@@ -200,11 +200,11 @@ namespace Fixed.Physics.Editor
                 position        = cornerPosition,
                 radius          = radius,
                 cameraForward   = cameraForward,
-                isBackFaced     = math.dot(cornerNormal, cameraForward) > sfloat.Zero,
+                isBackFaced     = fpmath.dot(cornerNormal, cameraForward) > fp.zero,
                 splitCount      = 0
             };
 
-            if (math.abs(sqrDistCameraToCenter) <= sqrRadius)
+            if (fpmath.abs(sqrDistCameraToCenter) <= sqrRadius)
                 return;
 
             for (int n = 0, sign = -1; n < 2; n++, sign += 2)
@@ -216,24 +216,24 @@ namespace Fixed.Physics.Editor
                     var axis3 = axes[(i + 2) % 3] * sign;
 
                     var Q = Math.Angle(cameraForward, axis1);
-                    var f = math.tan(math.radians((sfloat)90f - math.min(Q, (sfloat)180.0f - Q)));
+                    var f = fpmath.tan(fpmath.radians((fp)90f - fpmath.min(Q, (fp)180.0f - Q)));
                     var g = sqrOffset + f * f * sqrOffset;
                     if (g >= sqrRadius)
                         continue;
 
-                    var e                       = math.degrees(math.asin(math.sqrt(g) / (sfloat)radius));
-                    var vectorToPointOnHorizon  = Quaternion.AngleAxis((float)e, axis1) * math.normalize(math.cross(axis1, cameraForward));
+                    var e                       = fpmath.degrees(fp.Asin(fpmath.sqrt(g) / (fp)radius));
+                    var vectorToPointOnHorizon  = Quaternion.AngleAxis((float)e, axis1) * fpmath.normalize(fpmath.cross(axis1, cameraForward));
 
-                    vectorToPointOnHorizon = math.normalize(Math.ProjectOnPlane(vectorToPointOnHorizon, axis1));
+                    vectorToPointOnHorizon = fpmath.normalize(Math.ProjectOnPlane(vectorToPointOnHorizon, axis1));
 
                     var intersectionDirection = vectorToPointOnHorizon;
                     var angle1 = Math.SignedAngle(axis2, intersectionDirection, axis1);
                     var angle2 = Math.SignedAngle(axis3, intersectionDirection, axis1);
 
-                    if (angle1 <= sfloat.Zero || angle2 >= sfloat.Zero)
+                    if (angle1 <= fp.zero || angle2 >= fp.zero)
                         continue;
 
-                    var point = corner.position + (float3)(intersectionDirection * radius);
+                    var point = corner.position + (fp3)(intersectionDirection * radius);
 
                     if (corner.splitCount < 2)
                     {
@@ -275,7 +275,7 @@ namespace Fixed.Physics.Editor
             {
                 var angleLength = Math.SignedAngle(Math.ProjectOnPlane(intersections[0], corner.cameraForward),
                     Math.ProjectOnPlane(intersections[1], corner.cameraForward), corner.cameraForward);
-                bool reversePolarity = angleLength < sfloat.Zero;
+                bool reversePolarity = angleLength < fp.zero;
                 if (reversePolarity)
                     Handles.DrawWireArc(origin, corner.cameraForward, corner.points[1] - origin, -(float)angleLength, radius);
                 else
@@ -284,9 +284,9 @@ namespace Fixed.Physics.Editor
 
                 var backfacedColor = GetStateColor(true);
 
-                var axesBackfaced = new bool3(math.length(intersections[0] - axes[0]) < kDistanceEpsilon || math.length(intersections[1] - axes[0]) < kDistanceEpsilon,
-                    math.length(intersections[0] - axes[1]) < kDistanceEpsilon || math.length(intersections[1] - axes[1]) < kDistanceEpsilon,
-                    math.length(intersections[0] - axes[2]) < kDistanceEpsilon || math.length(intersections[1] - axes[2]) < kDistanceEpsilon);
+                var axesBackfaced = new bool3(fpmath.length(intersections[0] - axes[0]) < kDistanceEpsilon || fpmath.length(intersections[1] - axes[0]) < kDistanceEpsilon,
+                    fpmath.length(intersections[0] - axes[1]) < kDistanceEpsilon || fpmath.length(intersections[1] - axes[1]) < kDistanceEpsilon,
+                    fpmath.length(intersections[0] - axes[2]) < kDistanceEpsilon || fpmath.length(intersections[1] - axes[2]) < kDistanceEpsilon);
 
                 var color1 = reversePolarity ? color : backfacedColor;
                 var color2 = reversePolarity ? backfacedColor : color;

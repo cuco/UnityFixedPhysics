@@ -1,5 +1,5 @@
 using Unity.Burst;
-using Fixed.Mathematics;
+using Unity.Mathematics.FixedPoint;
 using static Fixed.Physics.Math;
 
 namespace Fixed.Physics
@@ -10,37 +10,37 @@ namespace Fixed.Physics
     {
         // Limited axis in motion A space
         // TODO could calculate this from AxisIndex and MotionAFromJoint
-        public float3 AxisInMotionA;
+        public fp3 AxisInMotionA;
 
         // Index of the limited axis
         public int AxisIndex;
 
         // Relative angle limits
-        public sfloat MinAngle;
-        public sfloat MaxAngle;
+        public fp MinAngle;
+        public fp MaxAngle;
 
         // Relative orientation of the motions before solving
-        public quaternion MotionBFromA;
+        public fpquaternion MotionBFromA;
 
         // Rotation to joint space from motion space
-        public quaternion MotionAFromJoint;
-        public quaternion MotionBFromJoint;
+        public fpquaternion MotionAFromJoint;
+        public fpquaternion MotionBFromJoint;
 
         // Error before solving
-        public sfloat InitialError;
+        public fp InitialError;
 
         // Fraction of the position error to correct per step
-        public sfloat Tau;
+        public fp Tau;
 
         // Fraction of the velocity error to correct per step
-        public sfloat Damping;
+        public fp Damping;
 
         // Build the Jacobian
         public void Build(
             MTransform aFromConstraint, MTransform bFromConstraint,
             MotionVelocity velocityA, MotionVelocity velocityB,
             MotionData motionA, MotionData motionB,
-            Constraint constraint, sfloat tau, sfloat damping)
+            Constraint constraint, fp tau, fp damping)
         {
             // Copy the constraint into the jacobian
             AxisIndex = constraint.ConstrainedAxis1D;
@@ -49,42 +49,42 @@ namespace Fixed.Physics
             MaxAngle = constraint.Max;
             Tau = tau;
             Damping = damping;
-            MotionBFromA = math.mul(math.inverse(motionB.WorldFromMotion.rot), motionA.WorldFromMotion.rot);
-            MotionAFromJoint = new quaternion(aFromConstraint.Rotation);
-            MotionBFromJoint = new quaternion(bFromConstraint.Rotation);
+            MotionBFromA = fpmath.mul(fpmath.inverse(motionB.WorldFromMotion.rot), motionA.WorldFromMotion.rot);
+            MotionAFromJoint = new fpquaternion(aFromConstraint.Rotation);
+            MotionBFromJoint = new fpquaternion(bFromConstraint.Rotation);
 
             // Calculate the current error
             InitialError = CalculateError(MotionBFromA);
         }
 
         // Solve the Jacobian
-        public void Solve(ref MotionVelocity velocityA, ref MotionVelocity velocityB, sfloat timestep, sfloat invTimestep)
+        public void Solve(ref MotionVelocity velocityA, ref MotionVelocity velocityB, fp timestep, fp invTimestep)
         {
             // Predict the relative orientation at the end of the step
-            quaternion futureMotionBFromA = JacobianUtilities.IntegrateOrientationBFromA(MotionBFromA, velocityA.AngularVelocity, velocityB.AngularVelocity, timestep);
+            fpquaternion futureMotionBFromA = JacobianUtilities.IntegrateOrientationBFromA(MotionBFromA, velocityA.AngularVelocity, velocityB.AngularVelocity, timestep);
 
             // Calculate the effective mass
-            float3 axisInMotionB = math.mul(futureMotionBFromA, -AxisInMotionA);
-            sfloat effectiveMass;
+            fp3 axisInMotionB = fpmath.mul(futureMotionBFromA, -AxisInMotionA);
+            fp effectiveMass;
             {
-                sfloat invEffectiveMass = math.csum(AxisInMotionA * AxisInMotionA * velocityA.InverseInertia +
+                fp invEffectiveMass = fpmath.csum(AxisInMotionA * AxisInMotionA * velocityA.InverseInertia +
                     axisInMotionB * axisInMotionB * velocityB.InverseInertia);
-                effectiveMass = math.select(sfloat.One / invEffectiveMass, sfloat.Zero, invEffectiveMass.IsZero());
+                effectiveMass = fpmath.select(fp.one / invEffectiveMass, fp.zero, invEffectiveMass == fp.zero);
             }
 
             // Calculate the error, adjust by tau and damping, and apply an impulse to correct it
-            sfloat futureError = CalculateError(futureMotionBFromA);
-            sfloat solveError = JacobianUtilities.CalculateCorrection(futureError, InitialError, Tau, Damping);
-            sfloat impulse = math.mul(effectiveMass, -solveError) * invTimestep;
+            fp futureError = CalculateError(futureMotionBFromA);
+            fp solveError = JacobianUtilities.CalculateCorrection(futureError, InitialError, Tau, Damping);
+            fp impulse = fpmath.mul(effectiveMass, -solveError) * invTimestep;
             velocityA.ApplyAngularImpulse(impulse * AxisInMotionA);
             velocityB.ApplyAngularImpulse(impulse * axisInMotionB);
         }
 
         // Helper function
-        private sfloat CalculateError(quaternion motionBFromA)
+        private fp CalculateError(fpquaternion motionBFromA)
         {
             // Calculate the relative body rotation
-            quaternion jointBFromA = math.mul(math.mul(math.inverse(MotionBFromJoint), motionBFromA), MotionAFromJoint);
+            fpquaternion jointBFromA = fpmath.mul(fpmath.mul(fpmath.inverse(MotionBFromJoint), motionBFromA), MotionAFromJoint);
 
             // Find the twist angle of the rotation.
             //
@@ -98,15 +98,15 @@ namespace Fixed.Physics
             // hinge. It works fairly well when the limited axis can only rotate a small amount, preferably less than 90
             // degrees. It works poorly at higher angles, especially near 180 degrees where it is not continuous. For systems
             // that require that kind of flexibility, the gimbals should be modeled as separate bodies.
-            sfloat angle = CalculateTwistAngle(jointBFromA, AxisIndex);
+            fp angle = CalculateTwistAngle(jointBFromA, AxisIndex);
 
             // Angle is in [-2pi, 2pi].
             // For comparison against the limits, find k so that angle + 2k * pi is as close to [min, max] as possible.
-            sfloat centerAngle = (MinAngle + MaxAngle) / (sfloat)2.0f;
-            bool above = angle > (centerAngle + math.PI);
-            bool below = angle < (centerAngle - math.PI);
-            angle = math.select(angle, angle - (sfloat)2.0f * math.PI, above);
-            angle = math.select(angle, angle + (sfloat)2.0f * math.PI, below);
+            fp centerAngle = (MinAngle + MaxAngle) / fp.two;
+            bool above = angle > (centerAngle + fpmath.PI);
+            bool below = angle < (centerAngle - fpmath.PI);
+            angle = fpmath.select(angle, angle - fp.two * fpmath.PI, above);
+            angle = fpmath.select(angle, angle + fp.two * fpmath.PI, below);
 
             // Calculate the relative angle about the twist axis
             return JacobianUtilities.CalculateError(angle, MinAngle, MaxAngle);

@@ -5,9 +5,9 @@ using Unity.Burst;
 using Unity.Collections;
 using Unity.DataFlowGraph;
 using Unity.Jobs;
-using Fixed.Mathematics;
+using Unity.Mathematics.FixedPoint;
 using Fixed.Physics.Tests.Utils;
-using Random = Fixed.Mathematics.Random;
+using Random = Unity.Mathematics.FixedPoint.Random;
 
 namespace Fixed.Physics.Tests.DFG
 {
@@ -79,13 +79,13 @@ namespace Fixed.Physics.Tests.DFG
             for (int iTest = 0; iTest < numTests; iTest++)
             {
                 // Generate common random query inputs
-                RigidTransform transform = new RigidTransform
+                FpRigidTransform transform = new FpRigidTransform
                 {
-                    pos = m_Rnd.NextFloat3(-10.0f, 10.0f),
-                    rot = (m_Rnd.NextInt(10) > 0) ? m_Rnd.NextQuaternionRotation() : quaternion.identity,
+                    pos = m_Rnd.Nextfp3(-10.0f, 10.0f),
+                    rot = (m_Rnd.NextInt(10) > 0) ? m_Rnd.NextQuaternionRotation() : fpquaternion.identity,
                 };
                 var startPos = transform.pos;
-                var endPos = startPos + m_Rnd.NextFloat3(-5.0f, 5.0f);
+                var endPos = startPos + m_Rnd.Nextfp3(-5.0f, 5.0f);
 
                 var collider = TestUtils.GenerateRandomConvex(ref m_Rnd);
                 ColliderCastInput input = new ColliderCastInput
@@ -164,9 +164,9 @@ namespace Fixed.Physics.Tests.DFG
             ColliderCastInput input = new ColliderCastInput
             {
                 Collider = (Collider*)collider.GetUnsafePtr(),
-                Start = float3.zero,
-                End = float3.zero,
-                Orientation = quaternion.identity
+                Start = fp3.zero,
+                End = fp3.zero,
+                Orientation = fpquaternion.identity
             };
 
             using (var set = new NodeSet())

@@ -3,7 +3,8 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
-using Fixed.Mathematics;
+using Unity.Mathematics;
+using Unity.Mathematics.FixedPoint;
 
 namespace Fixed.Physics
 {
@@ -362,7 +363,7 @@ namespace Fixed.Physics
             do
             {
                 Node* node = m_Nodes + *(--top);
-                bool4 hitMask = node->Bounds.Raycast(input.Ray, collector.MaxFraction, out float4 hitFractions);
+                bool4 hitMask = node->Bounds.Raycast(input.Ray, collector.MaxFraction, out fp4 hitFractions);
                 int4 hitData;
                 int hitCount = math.compress((int*)(&hitData), 0, node->Data, hitMask);
 
@@ -402,10 +403,10 @@ namespace Fixed.Physics
             where TProcessor : struct, IColliderCastLeafProcessor
             where TCollector : struct, ICollector<ColliderCastHit>
         {
-            float3 aabbExtents;
+            fp3 aabbExtents;
             Ray aabbRay;
             {
-                Aabb aabb = input.Collider->CalculateAabb(new RigidTransform(input.Orientation, input.Start));
+                Aabb aabb = input.Collider->CalculateAabb(new FpRigidTransform(input.Orientation, input.Start));
                 aabbExtents = aabb.Extents;
                 aabbRay = input.Ray;
                 aabbRay.Origin = aabb.Min;
@@ -422,7 +423,7 @@ namespace Fixed.Physics
                 bounds.Lx -= aabbExtents.x;
                 bounds.Ly -= aabbExtents.y;
                 bounds.Lz -= aabbExtents.z;
-                bool4 hitMask = bounds.Raycast(aabbRay, collector.MaxFraction, out float4 hitFractions);
+                bool4 hitMask = bounds.Raycast(aabbRay, collector.MaxFraction, out fp4 hitFractions);
                 int4 hitData;
                 int hitCount = math.compress((int*)(&hitData), 0, node->Data, hitMask);
 
@@ -471,13 +472,13 @@ namespace Fixed.Physics
             *stack++ = 1;
 
             var pointT = new Math.FourTransposedPoints(input.Position);
-            float4 maxDistanceSquared = new float4(collector.MaxFraction * collector.MaxFraction);
+            fp4 maxDistanceSquared = new fp4(collector.MaxFraction * collector.MaxFraction);
 
             do
             {
                 int nodeIndex = *(--stack);
                 Node* node = m_Nodes + nodeIndex;
-                float4 distanceToNodesSquared = node->Bounds.DistanceFromPointSquared(ref pointT);
+                fp4 distanceToNodesSquared = node->Bounds.DistanceFromPointSquared(ref pointT);
                 bool4 overlap = (node->Bounds.Lx <= node->Bounds.Hx) & (distanceToNodesSquared <= maxDistanceSquared);
                 int4 hitData;
                 int hitCount = math.compress((int*)(&hitData), 0, node->Data, overlap);
@@ -494,7 +495,7 @@ namespace Fixed.Physics
                         }
                     }
 
-                    maxDistanceSquared = new float4(collector.MaxFraction * collector.MaxFraction);
+                    maxDistanceSquared = new fp4(collector.MaxFraction * collector.MaxFraction);
                 }
                 else
                 {
@@ -532,13 +533,13 @@ namespace Fixed.Physics
             Aabb aabb = input.Collider->CalculateAabb(input.Transform);
             FourTransposedAabbs aabbT;
             (&aabbT)->SetAllAabbs(aabb);
-            float4 maxDistanceSquared = new float4(collector.MaxFraction * collector.MaxFraction);
+            fp4 maxDistanceSquared = new fp4(collector.MaxFraction * collector.MaxFraction);
 
             do
             {
                 int nodeIndex = *(--stack);
                 Node* node = m_Nodes + nodeIndex;
-                float4 distanceToNodesSquared = node->Bounds.DistanceFromAabbSquared(ref aabbT);
+                fp4 distanceToNodesSquared = node->Bounds.DistanceFromAabbSquared(ref aabbT);
                 bool4 overlap = (node->Bounds.Lx <= node->Bounds.Hx) & (distanceToNodesSquared <= maxDistanceSquared);
                 int4 hitData;
                 int hitCount = math.compress((int*)(&hitData), 0, node->Data, overlap);
@@ -553,7 +554,7 @@ namespace Fixed.Physics
                             return true;
                         }
 
-                        maxDistanceSquared = new float4(collector.MaxFraction * collector.MaxFraction);
+                        maxDistanceSquared = new fp4(collector.MaxFraction * collector.MaxFraction);
                     }
                 }
                 else

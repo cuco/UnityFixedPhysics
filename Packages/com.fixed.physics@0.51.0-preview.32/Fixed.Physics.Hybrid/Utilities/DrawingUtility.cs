@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using Fixed.Mathematics;
+using Unity.Mathematics.FixedPoint;
 using UnityEngine;
 
 namespace Fixed.Physics.Authoring
@@ -35,7 +35,7 @@ namespace Fixed.Physics.Authoring
                 for (int primitive = 0, count = section.PrimitiveVertexIndices.Length; primitive < count; ++primitive)
                 {
                     var vi = section.PrimitiveVertexIndices[primitive];
-                    var v = new float3x4(
+                    var v = new fp3x4(
                         section.Vertices[vi.A],
                         section.Vertices[vi.B],
                         section.Vertices[vi.C],

@@ -1,6 +1,6 @@
 using System;
 using NUnit.Framework;
-using Fixed.Mathematics;
+using Unity.Mathematics.FixedPoint;
 using UnityEngine;
 using Assert = UnityEngine.Assertions.Assert;
 
@@ -8,9 +8,9 @@ namespace Fixed.Physics.Tests.Collision.PhysicsWorld
 {
     class CollisionWorldTests
     {
-        private static readonly sfloat timestep = (sfloat)1 / (sfloat)(60);
+        private static readonly fp timestep = (fp)1 / (fp)(60);
 
-        private static readonly float3 gravity = -(sfloat)9.81f * math.up();
+        private static readonly fp3 gravity = -(fp)9.81f * fpmath.up();
         //Tests creating a Zero body world
         [Test]
         public void ZeroBodyInitTest()
@@ -60,7 +60,7 @@ namespace Fixed.Physics.Tests.Collision.PhysicsWorld
             for (int numThreads = 0; numThreads <= 1; numThreads++)
             {
                 Fixed.Physics.PhysicsWorld world = BroadPhaseTests.createTestWorld(1);
-                BroadPhaseTests.addStaticBoxToWorld(world, 0, Vector3.zero, quaternion.identity, new Vector3(10, .1f, 10));
+                BroadPhaseTests.addStaticBoxToWorld(world, 0, Vector3.zero, fpquaternion.identity, new Vector3(10, .1f, 10));
                 Unity.Jobs.JobHandle handle = new Unity.Jobs.JobHandle();
                 Unity.Jobs.JobHandle worldJobHandle = world.CollisionWorld.ScheduleUpdateDynamicTree(ref world, timestep, gravity, handle, numThreads == 1);
                 worldJobHandle.Complete();
@@ -74,7 +74,7 @@ namespace Fixed.Physics.Tests.Collision.PhysicsWorld
         public void UpdateWorldOneStaticBoxTest()
         {
             Fixed.Physics.PhysicsWorld world = BroadPhaseTests.createTestWorld(1);
-            BroadPhaseTests.addStaticBoxToWorld(world, 0, Vector3.zero, quaternion.identity, new Vector3(10, .1f, 10));
+            BroadPhaseTests.addStaticBoxToWorld(world, 0, Vector3.zero, fpquaternion.identity, new Vector3(10, .1f, 10));
             world.CollisionWorld.UpdateDynamicTree(ref world, timestep, gravity);
             world.Dispose();
         }
@@ -87,7 +87,7 @@ namespace Fixed.Physics.Tests.Collision.PhysicsWorld
             {
                 Physics.PhysicsWorld world = BroadPhaseTests.createTestWorld(10);
                 for (int i = 0; i < 10; ++i)
-                    BroadPhaseTests.addStaticBoxToWorld(world, i, new Vector3(11 * i, 0, 0), quaternion.identity, new Vector3(10, .1f, 10));
+                    BroadPhaseTests.addStaticBoxToWorld(world, i, new Vector3(11 * i, 0, 0), fpquaternion.identity, new Vector3(10, .1f, 10));
                 Unity.Jobs.JobHandle handle = new Unity.Jobs.JobHandle();
                 Unity.Jobs.JobHandle worldJobHandle = world.CollisionWorld.ScheduleUpdateDynamicTree(ref world, timestep, gravity, handle, numThreads == 1);
                 worldJobHandle.Complete();
@@ -102,7 +102,7 @@ namespace Fixed.Physics.Tests.Collision.PhysicsWorld
         {
             Physics.PhysicsWorld world = BroadPhaseTests.createTestWorld(10);
             for (int i = 0; i < 10; ++i)
-                BroadPhaseTests.addStaticBoxToWorld(world, i, new Vector3(11 * i, 0, 0), quaternion.identity, new Vector3(10, .1f, 10));
+                BroadPhaseTests.addStaticBoxToWorld(world, i, new Vector3(11 * i, 0, 0), fpquaternion.identity, new Vector3(10, .1f, 10));
             world.CollisionWorld.UpdateDynamicTree(ref world, timestep, gravity);
             world.Dispose();
         }
@@ -115,7 +115,7 @@ namespace Fixed.Physics.Tests.Collision.PhysicsWorld
             {
                 Physics.PhysicsWorld world = BroadPhaseTests.createTestWorld(100);
                 for (int i = 0; i < 100; ++i)
-                    BroadPhaseTests.addStaticBoxToWorld(world, i, new Vector3(11 * i, 0, 0), quaternion.identity, new Vector3(10, .1f, 10));
+                    BroadPhaseTests.addStaticBoxToWorld(world, i, new Vector3(11 * i, 0, 0), fpquaternion.identity, new Vector3(10, .1f, 10));
                 Unity.Jobs.JobHandle handle = new Unity.Jobs.JobHandle();
                 Unity.Jobs.JobHandle worldJobHandle = world.CollisionWorld.ScheduleUpdateDynamicTree(ref world, timestep, gravity, handle, numThreads == 1);
                 worldJobHandle.Complete();
@@ -130,7 +130,7 @@ namespace Fixed.Physics.Tests.Collision.PhysicsWorld
         {
             Physics.PhysicsWorld world = BroadPhaseTests.createTestWorld(100);
             for (int i = 0; i < 100; ++i)
-                BroadPhaseTests.addStaticBoxToWorld(world, i, new Vector3(11 * i, 0, 0), quaternion.identity, new Vector3(10, .1f, 10));
+                BroadPhaseTests.addStaticBoxToWorld(world, i, new Vector3(11 * i, 0, 0), fpquaternion.identity, new Vector3(10, .1f, 10));
             world.CollisionWorld.UpdateDynamicTree(ref world, timestep, gravity);
             world.Dispose();
         }
@@ -142,7 +142,7 @@ namespace Fixed.Physics.Tests.Collision.PhysicsWorld
             for (int numThreads = 0; numThreads <= 1; numThreads++)
             {
                 Physics.PhysicsWorld world = BroadPhaseTests.createTestWorld(0, 1);
-                BroadPhaseTests.addDynamicBoxToWorld(world, 0, Vector3.zero, quaternion.identity, new Vector3(10, .1f, 10));
+                BroadPhaseTests.addDynamicBoxToWorld(world, 0, Vector3.zero, fpquaternion.identity, new Vector3(10, .1f, 10));
                 Unity.Jobs.JobHandle handle = new Unity.Jobs.JobHandle();
                 Unity.Jobs.JobHandle worldJobHandle = world.CollisionWorld.ScheduleUpdateDynamicTree(ref world, timestep, gravity, handle, numThreads == 1);
                 worldJobHandle.Complete();
@@ -156,7 +156,7 @@ namespace Fixed.Physics.Tests.Collision.PhysicsWorld
         public void UpdateWorldOneDynamicBoxTest()
         {
             Physics.PhysicsWorld world = BroadPhaseTests.createTestWorld(0, 1);
-            BroadPhaseTests.addDynamicBoxToWorld(world, 0, Vector3.zero, quaternion.identity, new Vector3(10, .1f, 10));
+            BroadPhaseTests.addDynamicBoxToWorld(world, 0, Vector3.zero, fpquaternion.identity, new Vector3(10, .1f, 10));
             world.CollisionWorld.UpdateDynamicTree(ref world, timestep, gravity);
             world.Dispose();
         }
@@ -169,7 +169,7 @@ namespace Fixed.Physics.Tests.Collision.PhysicsWorld
             {
                 Physics.PhysicsWorld world = BroadPhaseTests.createTestWorld(0, 10);
                 for (int i = 0; i < 10; ++i)
-                    BroadPhaseTests.addDynamicBoxToWorld(world, i, new Vector3(11 * i, 0, 0), quaternion.identity, new Vector3(10, .1f, 10));
+                    BroadPhaseTests.addDynamicBoxToWorld(world, i, new Vector3(11 * i, 0, 0), fpquaternion.identity, new Vector3(10, .1f, 10));
                 Unity.Jobs.JobHandle handle = new Unity.Jobs.JobHandle();
                 Unity.Jobs.JobHandle worldJobHandle = world.CollisionWorld.ScheduleUpdateDynamicTree(ref world, timestep, gravity, handle, numThreads == 1);
                 worldJobHandle.Complete();
@@ -184,7 +184,7 @@ namespace Fixed.Physics.Tests.Collision.PhysicsWorld
         {
             Physics.PhysicsWorld world = BroadPhaseTests.createTestWorld(0, 10);
             for (int i = 0; i < 10; ++i)
-                BroadPhaseTests.addDynamicBoxToWorld(world, i, new Vector3(11 * i, 0, 0), quaternion.identity, new Vector3(10, .1f, 10));
+                BroadPhaseTests.addDynamicBoxToWorld(world, i, new Vector3(11 * i, 0, 0), fpquaternion.identity, new Vector3(10, .1f, 10));
             world.CollisionWorld.UpdateDynamicTree(ref world, timestep, gravity);
             world.Dispose();
         }
@@ -197,7 +197,7 @@ namespace Fixed.Physics.Tests.Collision.PhysicsWorld
             {
                 Physics.PhysicsWorld world = BroadPhaseTests.createTestWorld(0, 100);
                 for (int i = 0; i < 100; ++i)
-                    BroadPhaseTests.addDynamicBoxToWorld(world, i, new Vector3(11 * i, 0, 0), quaternion.identity, new Vector3(10, .1f, 10));
+                    BroadPhaseTests.addDynamicBoxToWorld(world, i, new Vector3(11 * i, 0, 0), fpquaternion.identity, new Vector3(10, .1f, 10));
                 Unity.Jobs.JobHandle handle = new Unity.Jobs.JobHandle();
                 Unity.Jobs.JobHandle worldJobHandle = world.CollisionWorld.ScheduleUpdateDynamicTree(ref world, timestep, gravity, handle, numThreads == 1);
                 worldJobHandle.Complete();
@@ -212,7 +212,7 @@ namespace Fixed.Physics.Tests.Collision.PhysicsWorld
         {
             Physics.PhysicsWorld world = BroadPhaseTests.createTestWorld(0, 100);
             for (int i = 0; i < 100; ++i)
-                BroadPhaseTests.addDynamicBoxToWorld(world, i, new Vector3(11 * i, 0, 0), quaternion.identity, new Vector3(10, .1f, 10));
+                BroadPhaseTests.addDynamicBoxToWorld(world, i, new Vector3(11 * i, 0, 0), fpquaternion.identity, new Vector3(10, .1f, 10));
             world.CollisionWorld.UpdateDynamicTree(ref world, timestep, gravity);
             world.Dispose();
         }
@@ -226,8 +226,8 @@ namespace Fixed.Physics.Tests.Collision.PhysicsWorld
                 Physics.PhysicsWorld world = BroadPhaseTests.createTestWorld(100, 100);
                 for (int i = 0; i < 100; ++i)
                 {
-                    BroadPhaseTests.addDynamicBoxToWorld(world, i, new Vector3(11 * i, 0, 0), quaternion.identity, new Vector3(10, .1f, 10));
-                    BroadPhaseTests.addStaticBoxToWorld(world, i, new Vector3(11 * i, 0, 0), quaternion.identity, new Vector3(10, .1f, 10));
+                    BroadPhaseTests.addDynamicBoxToWorld(world, i, new Vector3(11 * i, 0, 0), fpquaternion.identity, new Vector3(10, .1f, 10));
+                    BroadPhaseTests.addStaticBoxToWorld(world, i, new Vector3(11 * i, 0, 0), fpquaternion.identity, new Vector3(10, .1f, 10));
                 }
 
                 Unity.Jobs.JobHandle handle = new Unity.Jobs.JobHandle();
@@ -245,8 +245,8 @@ namespace Fixed.Physics.Tests.Collision.PhysicsWorld
             Physics.PhysicsWorld world = BroadPhaseTests.createTestWorld(100, 100);
             for (int i = 0; i < 100; ++i)
             {
-                BroadPhaseTests.addDynamicBoxToWorld(world, i, new Vector3(11 * i, 0, 0), quaternion.identity, new Vector3(10, .1f, 10));
-                BroadPhaseTests.addStaticBoxToWorld(world, i, new Vector3(11 * i, 0, 0), quaternion.identity, new Vector3(10, .1f, 10));
+                BroadPhaseTests.addDynamicBoxToWorld(world, i, new Vector3(11 * i, 0, 0), fpquaternion.identity, new Vector3(10, .1f, 10));
+                BroadPhaseTests.addStaticBoxToWorld(world, i, new Vector3(11 * i, 0, 0), fpquaternion.identity, new Vector3(10, .1f, 10));
             }
 
             world.CollisionWorld.UpdateDynamicTree(ref world, timestep, gravity);

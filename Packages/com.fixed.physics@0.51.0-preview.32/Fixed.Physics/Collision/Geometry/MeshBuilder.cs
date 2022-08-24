@@ -2,7 +2,8 @@ using System;
 using System.Collections.Generic;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
-using Fixed.Mathematics;
+using Unity.Mathematics;
+using Unity.Mathematics.FixedPoint;
 
 namespace Fixed.Physics
 {
@@ -23,7 +24,7 @@ namespace Fixed.Physics
         {
             public NativeList<Mesh.PrimitiveFlags>  PrimitivesFlags;
             public NativeList<Mesh.PrimitiveVertexIndices> Primitives;
-            public NativeList<float3> Vertices;
+            public NativeList<fp3> Vertices;
             public NativeList<TempSectionRanges> Ranges;
         }
 
@@ -33,7 +34,7 @@ namespace Fixed.Physics
             {
                 PrimitivesFlags = new NativeList<Mesh.PrimitiveFlags>(Allocator.Temp),
                 Primitives = new NativeList<Mesh.PrimitiveVertexIndices>(Allocator.Temp),
-                Vertices = new NativeList<float3>(Allocator.Temp),
+                Vertices = new NativeList<fp3>(Allocator.Temp),
                 Ranges = new NativeList<TempSectionRanges>(Allocator.Temp)
             };
 
@@ -54,7 +55,7 @@ namespace Fixed.Physics
 
             var subTreeIndices = new NativeList<int>(Allocator.Temp);
             var nodeIndices = new NativeList<int>(Allocator.Temp);
-            var tmpVertices = new NativeList<float3>(Allocator.Temp);
+            var tmpVertices = new NativeList<fp3>(Allocator.Temp);
             do
             {
                 int nodeIndex = nodesIndexStack[--stackSize];
@@ -146,11 +147,11 @@ namespace Fixed.Physics
                         vertexIndices[i] = i;
                     }
 
-                    NativeList<float3> uniqueVertices = MeshConnectivityBuilder.WeldVertices(vertexIndices, new NativeArray<float3>(tmpVertices, Allocator.Temp));
+                    NativeList<fp3> uniqueVertices = MeshConnectivityBuilder.WeldVertices(vertexIndices, new NativeArray<fp3>(tmpVertices, Allocator.Temp));
 
                     if (uniqueVertices.Length < Mesh.Section.MaxNumVertices)
                     {
-                        BuildSectionGeometry(tempSections, primitives, nodeIndices, nodes, new NativeArray<float3>(uniqueVertices, Allocator.Temp));
+                        BuildSectionGeometry(tempSections, primitives, nodeIndices, nodes, new NativeArray<fp3>(uniqueVertices, Allocator.Temp));
 
                         // Remove used indices
                         for (var i = 0; i < nodeIndices.Length; ++i)
@@ -196,7 +197,7 @@ namespace Fixed.Physics
         }
 
         private static unsafe void CollectAllVerticesFromSubTree(BoundingVolumeHierarchy.Node* nodes, int subTreeNodeIndex,
-            NativeList<MeshConnectivityBuilder.Primitive> primitives, NativeList<float3> vertices)
+            NativeList<MeshConnectivityBuilder.Primitive> primitives, NativeList<fp3> vertices)
         {
             int* nodesIndexStack = stackalloc int[BoundingVolumeHierarchy.Constants.UnaryStackSize];
             int stackSize = 1;
@@ -251,7 +252,7 @@ namespace Fixed.Physics
             return newFlags;
         }
 
-        private static unsafe void BuildSectionGeometry(TempSection sections, NativeList<MeshConnectivityBuilder.Primitive> primitives, NativeList<int> subTreeNodeIndices, BoundingVolumeHierarchy.Node* nodes, NativeArray<float3> vertices)
+        private static unsafe void BuildSectionGeometry(TempSection sections, NativeList<MeshConnectivityBuilder.Primitive> primitives, NativeList<int> subTreeNodeIndices, BoundingVolumeHierarchy.Node* nodes, NativeArray<fp3> vertices)
         {
             var sectionIndex = sections.Ranges.Length;
 
@@ -334,7 +335,7 @@ namespace Fixed.Physics
 
     internal struct MeshConnectivityBuilder
     {
-        static sfloat k_MergeCoplanarTrianglesTolerance => sfloat.FromRaw(0x38d1b717);
+        static fp k_MergeCoplanarTrianglesTolerance => fp.FromRaw(0x38d1b717);
 
         internal NativeArray<Vertex> Vertices;
         internal NativeArray<Triangle> Triangles;
@@ -448,7 +449,7 @@ namespace Fixed.Physics
 
         internal struct Primitive
         {
-            internal float3x4 Vertices;
+            internal fp3x4 Vertices;
             internal PrimitiveFlags Flags;
         }
 
@@ -465,14 +466,14 @@ namespace Fixed.Physics
 
         internal int GetEndVertexIndex(Edge e) => Triangles[e.Triangle].Links((e.Start + 1) % 3).Start;
 
-        internal bool IsEdgeConcaveOrFlat(Edge edge, NativeArray<int3> triangles, NativeArray<float3> vertices, NativeArray<float4> planes)
+        internal bool IsEdgeConcaveOrFlat(Edge edge, NativeArray<int3> triangles, NativeArray<fp3> vertices, NativeArray<fp4> planes)
         {
             if (IsNaked(edge))
             {
                 return false;
             }
 
-            float3 apex = vertices[GetApexVertexIndex(triangles, edge)];
+            fp3 apex = vertices[GetApexVertexIndex(triangles, edge)];
             if (Math.Dotxyz1(planes[edge.Triangle], apex) < -k_MergeCoplanarTrianglesTolerance)
             {
                 return false;
@@ -481,7 +482,7 @@ namespace Fixed.Physics
             return true;
         }
 
-        internal bool IsTriangleConcaveOrFlat(Edge edge, NativeArray<int3> triangles, NativeArray<float3> vertices, NativeArray<float4> planes)
+        internal bool IsTriangleConcaveOrFlat(Edge edge, NativeArray<int3> triangles, NativeArray<fp3> vertices, NativeArray<fp4> planes)
         {
             for (int i = 0; i < 3; i++)
             {
@@ -495,7 +496,7 @@ namespace Fixed.Physics
             return true;
         }
 
-        internal bool IsFlat(Edge edge, NativeArray<int3> triangles, NativeArray<float3> vertices, NativeArray<float4> planes)
+        internal bool IsFlat(Edge edge, NativeArray<int3> triangles, NativeArray<fp3> vertices, NativeArray<fp4> planes)
         {
             Edge link = GetLink(edge);
             if (!link.IsValid)
@@ -503,18 +504,18 @@ namespace Fixed.Physics
                 return false;
             }
 
-            float3 apex = vertices[GetApexVertexIndex(triangles, link)];
-            bool flat = math.abs(Math.Dotxyz1(planes[edge.Triangle], apex)) < k_MergeCoplanarTrianglesTolerance;
+            fp3 apex = vertices[GetApexVertexIndex(triangles, link)];
+            bool flat = fpmath.abs(Math.Dotxyz1(planes[edge.Triangle], apex)) < k_MergeCoplanarTrianglesTolerance;
 
             apex = vertices[GetApexVertexIndex(triangles, edge)];
-            flat |= math.abs(Math.Dotxyz1(planes[link.Triangle], apex)) < k_MergeCoplanarTrianglesTolerance;
+            flat |= fpmath.abs(Math.Dotxyz1(planes[link.Triangle], apex)) < k_MergeCoplanarTrianglesTolerance;
 
             return flat;
         }
 
-        internal bool IsConvexQuad(Primitive quad, Edge edge, NativeArray<float4> planes)
+        internal bool IsConvexQuad(Primitive quad, Edge edge, NativeArray<fp4> planes)
         {
-            float4x2 quadPlanes;
+            fp4x2 quadPlanes;
             quadPlanes.c0 = planes[edge.Triangle];
             quadPlanes.c1 = planes[GetLink(edge).Triangle];
             if (Math.Dotxyz1(quadPlanes[0], quad.Vertices[3]) < k_MergeCoplanarTrianglesTolerance)
@@ -524,9 +525,9 @@ namespace Fixed.Physics
                     bool convex = true;
                     for (int i = 0; convex && i < 4; i++)
                     {
-                        float3 delta = quad.Vertices[(i + 1) % 4] - quad.Vertices[i];
-                        float3 normal = math.normalize(math.cross(delta, quadPlanes[i >> 1].xyz));
-                        float4 edgePlane = new float4(normal, math.dot(-normal, quad.Vertices[i]));
+                        fp3 delta = quad.Vertices[(i + 1) % 4] - quad.Vertices[i];
+                        fp3 normal = fpmath.normalize(fpmath.cross(delta, quadPlanes[i >> 1].xyz));
+                        fp4 edgePlane = new fp4(normal, fpmath.dot(-normal, quad.Vertices[i]));
                         for (int j = 0; j < 2; j++)
                         {
                             if (Math.Dotxyz1(edgePlane, quad.Vertices[(i + j + 1) % 4]) > k_MergeCoplanarTrianglesTolerance)
@@ -543,7 +544,7 @@ namespace Fixed.Physics
             return false;
         }
 
-        internal bool CanEdgeBeDisabled(Edge e, NativeArray<PrimitiveFlags> flags, NativeArray<int3> triangles, NativeArray<float3> vertices, NativeArray<float4> planes)
+        internal bool CanEdgeBeDisabled(Edge e, NativeArray<PrimitiveFlags> flags, NativeArray<int3> triangles, NativeArray<fp3> vertices, NativeArray<fp4> planes)
         {
             if (!e.IsValid || IsEdgeConcaveOrFlat(e, triangles, vertices, planes) || (flags[e.Triangle] & PrimitiveFlags.DisableAllEdges) != 0)
             {
@@ -553,7 +554,7 @@ namespace Fixed.Physics
             return true;
         }
 
-        internal bool CanAllEdgesBeDisabled(NativeArray<Edge> edges, NativeArray<PrimitiveFlags> flags, NativeArray<int3> triangles, NativeArray<float3> vertices, NativeArray<float4> planes)
+        internal bool CanAllEdgesBeDisabled(NativeArray<Edge> edges, NativeArray<PrimitiveFlags> flags, NativeArray<int3> triangles, NativeArray<fp3> vertices, NativeArray<fp4> planes)
         {
             bool allDisabled = true;
             for (var i = 0; i < edges.Length; ++i)
@@ -574,7 +575,7 @@ namespace Fixed.Physics
 
         private struct VertexWithHash
         {
-            internal float3 Vertex;
+            internal fp3 Vertex;
             internal ulong Hash;
             internal int Index;
         }
@@ -587,12 +588,13 @@ namespace Fixed.Physics
             }
         }
 
-        private static ulong SpatialHash(float3 vertex)
+        private static ulong SpatialHash(fp3 vertex)
         {
+            //TODO
             uint x, y, z;
-            x = vertex.x.RawValue;
-            y = vertex.y.RawValue;
-            z = vertex.z.RawValue;
+            x = (uint)vertex.x.RawValue;
+            y = (uint)vertex.y.RawValue;
+            z = (uint)vertex.z.RawValue;
 
             const ulong p1 = 73856093;
             const ulong p2 = 19349663;
@@ -601,7 +603,7 @@ namespace Fixed.Physics
             return (x * p1) ^ (y * p2) ^ (z * p3);
         }
 
-        public static NativeList<float3> WeldVertices(NativeArray<int> indices, NativeArray<float3> vertices)
+        public static NativeList<fp3> WeldVertices(NativeArray<int> indices, NativeArray<fp3> vertices)
         {
             int numVertices = vertices.Length;
             var verticesAndHashes = new NativeArray<VertexWithHash>(numVertices, Allocator.Temp);
@@ -615,7 +617,7 @@ namespace Fixed.Physics
                 };
             }
 
-            var uniqueVertices = new NativeList<float3>(Allocator.Temp);
+            var uniqueVertices = new NativeList<fp3>(Allocator.Temp);
             var remap = new NativeArray<int>(numVertices, Allocator.Temp);
             verticesAndHashes.Sort(new SortVertexWithHashByHash());
 
@@ -667,22 +669,22 @@ namespace Fixed.Physics
             return uniqueVertices;
         }
 
-        public static bool IsTriangleDegenerate(float3 a, float3 b, float3 c)
+        public static bool IsTriangleDegenerate(fp3 a, fp3 b, fp3 c)
         {
-            sfloat defaultTriangleDegeneracyTolerance = sfloat.FromRaw(0x33d6bf95);
+            fp defaultTriangleDegeneracyTolerance = fp.FromRaw(0x33d6bf95);
 
             // Small area check
             {
-                float3 edge1 = a - b;
-                float3 edge2 = a - c;
-                float3 cross = math.cross(edge1, edge2);
+                fp3 edge1 = a - b;
+                fp3 edge2 = a - c;
+                fp3 cross = fpmath.cross(edge1, edge2);
 
-                float3 edge1B = b - a;
-                float3 edge2B = b - c;
-                float3 crossB = math.cross(edge1B, edge2B);
+                fp3 edge1B = b - a;
+                fp3 edge2B = b - c;
+                fp3 crossB = fpmath.cross(edge1B, edge2B);
 
-                bool cmp0 = defaultTriangleDegeneracyTolerance > math.lengthsq(cross);
-                bool cmp1 = defaultTriangleDegeneracyTolerance > math.lengthsq(crossB);
+                bool cmp0 = defaultTriangleDegeneracyTolerance > fpmath.lengthsq(cross);
+                bool cmp1 = defaultTriangleDegeneracyTolerance > fpmath.lengthsq(crossB);
                 if (cmp0 || cmp1)
                 {
                     return true;
@@ -691,22 +693,22 @@ namespace Fixed.Physics
 
             // Point triangle distance check
             {
-                float3 q = a - b;
-                float3 r = c - b;
+                fp3 q = a - b;
+                fp3 r = c - b;
 
-                sfloat qq = math.dot(q, q);
-                sfloat rr = math.dot(r, r);
-                sfloat qr = math.dot(q, r);
+                fp qq = fpmath.dot(q, q);
+                fp rr = fpmath.dot(r, r);
+                fp qr = fpmath.dot(q, r);
 
-                sfloat qqrr = qq * rr;
-                sfloat qrqr = qr * qr;
-                sfloat det = (qqrr - qrqr);
+                fp qqrr = qq * rr;
+                fp qrqr = qr * qr;
+                fp det = (qqrr - qrqr);
 
-                return det.IsZero();
+                return det == fp.zero;
             }
         }
 
-        internal unsafe MeshConnectivityBuilder(NativeArray<int3> triangles, NativeArray<float3> vertices)
+        internal unsafe MeshConnectivityBuilder(NativeArray<int3> triangles, NativeArray<fp3> vertices)
         {
             int numTriangles = triangles.Length;
             int numVertices = vertices.Length;
@@ -873,7 +875,7 @@ namespace Fixed.Physics
         private struct EdgeData : IComparable<EdgeData>
         {
             internal Edge Edge;
-            internal sfloat Value;
+            internal fp Value;
 
             public int CompareTo(EdgeData other)
             {
@@ -898,14 +900,14 @@ namespace Fixed.Physics
             return triangles[triangleIndex][(edge.Start + 2) % 3];
         }
 
-        private static sfloat CalcTwiceSurfaceArea(float3 a, float3 b, float3 c)
+        private static fp CalcTwiceSurfaceArea(fp3 a, fp3 b, fp3 c)
         {
-            float3 d0 = b - a;
-            float3 d1 = c - a;
-            return math.length(math.cross(d0, d1));
+            fp3 d0 = b - a;
+            fp3 d1 = c - a;
+            return fpmath.length(fpmath.cross(d0, d1));
         }
 
-        internal unsafe NativeList<Primitive> EnumerateQuadDominantGeometry(NativeArray<int3> triangles, NativeList<float3> vertices)
+        internal unsafe NativeList<Primitive> EnumerateQuadDominantGeometry(NativeArray<int3> triangles, NativeList<fp3> vertices)
         {
             int numTriangles = triangles.Length;
             var flags = new NativeArray<PrimitiveFlags>(numTriangles, Allocator.Temp);
@@ -913,16 +915,16 @@ namespace Fixed.Physics
             var triangleRoots = new NativeList<Edge>(Allocator.Temp);
 
             // Generate triangle planes
-            var planes = new NativeArray<float4>(numTriangles, Allocator.Temp);
+            var planes = new NativeArray<fp4>(numTriangles, Allocator.Temp);
 
             for (int i = 0; i < numTriangles; i++)
             {
-                float3 v0 = vertices[triangles[i][0]];
-                float3 v1 = vertices[triangles[i][1]];
-                float3 v2 = vertices[triangles[i][2]];
+                fp3 v0 = vertices[triangles[i][0]];
+                fp3 v1 = vertices[triangles[i][1]];
+                fp3 v2 = vertices[triangles[i][2]];
 
-                float3 normal = math.normalize(math.cross(v0 - v1, v0 - v2));
-                planes[i] = new float4(normal, -math.dot(normal, v0));
+                fp3 normal = fpmath.normalize(fpmath.cross(v0 - v1, v0 - v2));
+                planes[i] = new fp4(normal, -fpmath.dot(normal, v0));
             }
 
             var edges = new NativeArray<EdgeData>(Edges.Length, Allocator.Temp);
@@ -933,7 +935,7 @@ namespace Fixed.Physics
 
                 ref EdgeData edgeData = ref ((EdgeData*)edges.GetUnsafePtr())[i];
                 edgeData.Edge = Edge.Invalid();
-                edgeData.Value = sfloat.MaxValue;
+                edgeData.Value = fp.max_value;
 
                 if (IsBound(e))
                 {
@@ -941,14 +943,14 @@ namespace Fixed.Physics
                     int4 vis = GetVertexIndices(triangles, e);
                     vis[3] = GetApexVertexIndex(triangles, linkEdge);
 
-                    float3x4 quadVertices = new float3x4(vertices[vis[0]], vertices[vis[1]], vertices[vis[2]], vertices[vis[3]]);
+                    fp3x4 quadVertices = new fp3x4(vertices[vis[0]], vertices[vis[1]], vertices[vis[2]], vertices[vis[3]]);
                     Aabb quadAabb = Aabb.CreateFromPoints(quadVertices);
 
-                    sfloat aabbSurfaceArea = quadAabb.SurfaceArea;
+                    fp aabbSurfaceArea = quadAabb.SurfaceArea;
 
                     if (aabbSurfaceArea > Math.Constants.Eps)
                     {
-                        sfloat quadSurfaceArea = CalcTwiceSurfaceArea(quadVertices[0], quadVertices[1], quadVertices[2]) + CalcTwiceSurfaceArea(quadVertices[0], quadVertices[1], quadVertices[3]);
+                        fp quadSurfaceArea = CalcTwiceSurfaceArea(quadVertices[0], quadVertices[1], quadVertices[2]) + CalcTwiceSurfaceArea(quadVertices[0], quadVertices[1], quadVertices[3]);
                         edgeData.Value = (aabbSurfaceArea - quadSurfaceArea) / aabbSurfaceArea;
                         edgeData.Edge = vis[0] < vis[1] ? e : linkEdge;
                     }
@@ -987,7 +989,7 @@ namespace Fixed.Physics
 
                     var primitive = new Primitive
                     {
-                        Vertices = new float3x4(vertices[vis[0]], vertices[vis[1]], vertices[vis[2]], vertices[vis[3]]),
+                        Vertices = new fp3x4(vertices[vis[0]], vertices[vis[1]], vertices[vis[2]], vertices[vis[3]]),
                         Flags = PrimitiveFlags.DefaultTrianglePairFlags
                     };
 
@@ -1048,7 +1050,7 @@ namespace Fixed.Physics
 
                 var primitive = new Primitive
                 {
-                    Vertices = new float3x4(vertices[vis[0]], vertices[vis[1]], vertices[vis[2]], vertices[vis[2]]),
+                    Vertices = new fp3x4(vertices[vis[0]], vertices[vis[1]], vertices[vis[2]], vertices[vis[2]]),
                     Flags = PrimitiveFlags.DefaultTriangleFlags
                 };
 
@@ -1068,7 +1070,7 @@ namespace Fixed.Physics
         }
 
         private void DisableEdgesOfAdjacentPrimitives(
-            NativeList<Primitive> primitives, NativeArray<int3> triangles, NativeArray<float3> vertices, NativeArray<float4> planes, NativeArray<PrimitiveFlags> flags,
+            NativeList<Primitive> primitives, NativeArray<int3> triangles, NativeArray<fp3> vertices, NativeArray<fp4> planes, NativeArray<PrimitiveFlags> flags,
             NativeList<Edge> quadRoots, NativeList<Edge> triangleRoots)
         {
             var outerBoundary = new NativeArray<Edge>(4, Allocator.Temp);

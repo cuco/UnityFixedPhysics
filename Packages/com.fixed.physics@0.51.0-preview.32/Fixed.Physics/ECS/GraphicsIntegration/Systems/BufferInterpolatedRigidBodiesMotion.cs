@@ -4,7 +4,7 @@ using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
 using Unity.Jobs;
-using Fixed.Mathematics;
+using Unity.Mathematics.FixedPoint;
 using Fixed.Physics.Systems;
 using Fixed.Transforms;
 
@@ -84,8 +84,8 @@ namespace Fixed.Physics.GraphicsIntegration
                 var count = batchInChunk.Count;
 
                 var sizeBuffer = UnsafeUtility.SizeOf<PhysicsGraphicalInterpolationBuffer>();
-                var sizeOrientation = UnsafeUtility.SizeOf<quaternion>();
-                var sizePosition = UnsafeUtility.SizeOf<float3>();
+                var sizeOrientation = UnsafeUtility.SizeOf<fpquaternion>();
+                var sizePosition = UnsafeUtility.SizeOf<fp3>();
                 var sizeVelocity = UnsafeUtility.SizeOf<PhysicsVelocity>();
 
                 UnsafeUtility.MemCpyStride(

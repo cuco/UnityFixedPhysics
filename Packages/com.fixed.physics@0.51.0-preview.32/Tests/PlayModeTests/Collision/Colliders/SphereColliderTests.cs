@@ -3,7 +3,7 @@ using NUnit.Framework;
 using Unity.Burst;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Jobs;
-using Fixed.Mathematics;
+using Unity.Mathematics.FixedPoint;
 using TestUtils = Fixed.Physics.Tests.Utils.TestUtils;
 
 namespace Fixed.Physics.Tests.Collision.Colliders
@@ -18,7 +18,7 @@ namespace Fixed.Physics.Tests.Collision.Colliders
         [BurstCompile(CompileSynchronously = true)]
         struct CreateFromBurstJob : IJob
         {
-            public void Execute() => SphereCollider.Create(new SphereGeometry { Radius = (sfloat)1f }).Dispose();
+            public void Execute() => SphereCollider.Create(new SphereGeometry { Radius = (fp)1f }).Dispose();
         }
 
         [Test]
@@ -32,17 +32,17 @@ namespace Fixed.Physics.Tests.Collision.Colliders
         {
             var sphere = new SphereGeometry
             {
-                Center = new float3(-(sfloat)8.45f, (sfloat)9.65f, -(sfloat)0.10f),
-                Radius = (sfloat)0.98f
+                Center = new fp3(-(fp)8.45f, (fp)9.65f, -(fp)0.10f),
+                Radius = (fp)0.98f
             };
 
             var collider = SphereCollider.Create(sphere);
             var sphereCollider = UnsafeUtility.AsRef<SphereCollider>(collider.GetUnsafePtr());
 
-            TestUtils.AreEqual(sphere.Center, sphereCollider.Center, (sfloat)1e-3f);
-            TestUtils.AreEqual(sphere.Center, sphereCollider.Geometry.Center, (sfloat)1e-3f);
-            TestUtils.AreEqual(sphere.Radius, sphereCollider.Radius, (sfloat)1e-3f);
-            TestUtils.AreEqual(sphere.Radius, sphereCollider.Geometry.Radius, (sfloat)1e-3f);
+            TestUtils.AreEqual(sphere.Center, sphereCollider.Center, (fp)1e-3f);
+            TestUtils.AreEqual(sphere.Center, sphereCollider.Geometry.Center, (fp)1e-3f);
+            TestUtils.AreEqual(sphere.Radius, sphereCollider.Radius, (fp)1e-3f);
+            TestUtils.AreEqual(sphere.Radius, sphereCollider.Geometry.Radius, (fp)1e-3f);
             Assert.AreEqual(ColliderType.Sphere, sphereCollider.Type);
             Assert.AreEqual(CollisionType.Convex, sphereCollider.CollisionType);
         }
@@ -53,7 +53,7 @@ namespace Fixed.Physics.Tests.Collision.Colliders
             [Values(float.PositiveInfinity, float.NegativeInfinity, float.NaN)] float value
         )
         {
-            var geometry = new SphereGeometry { Center = new float3((sfloat)value) };
+            var geometry = new SphereGeometry { Center = new fp3((fp)value) };
 
             var ex = Assert.Throws<ArgumentException>(() => SphereCollider.Create(geometry));
             Assert.That(ex.Message, Does.Match(nameof(SphereGeometry.Center)));
@@ -64,7 +64,7 @@ namespace Fixed.Physics.Tests.Collision.Colliders
             [Values(float.PositiveInfinity, float.NegativeInfinity, float.NaN, -1f)] float value
         )
         {
-            var geometry = new SphereGeometry { Radius = (sfloat)value };
+            var geometry = new SphereGeometry { Radius = (fp)value };
 
             var ex = Assert.Throws<ArgumentException>(() => SphereCollider.Create(geometry));
             Assert.That(ex.Message, Does.Match(nameof(SphereGeometry.Radius)));
@@ -82,17 +82,17 @@ namespace Fixed.Physics.Tests.Collision.Colliders
         [Test]
         public void TestSphereColliderCalculateAabbLocal()
         {
-            float3 center = new float3(-(sfloat)8.4f, (sfloat)5.63f, -(sfloat)7.2f);
-            sfloat radius = (sfloat)2.3f;
+            fp3 center = new fp3(-(fp)8.4f, (fp)5.63f, -(fp)7.2f);
+            fp radius = (fp)2.3f;
             var sphereCollider = SphereCollider.Create(new SphereGeometry { Center = center, Radius = radius });
 
             Aabb expected = new Aabb();
-            expected.Min = center - new float3(radius, radius, radius);
-            expected.Max = center + new float3(radius, radius, radius);
+            expected.Min = center - new fp3(radius, radius, radius);
+            expected.Max = center + new fp3(radius, radius, radius);
 
             Aabb actual = sphereCollider.Value.CalculateAabb();
-            TestUtils.AreEqual(expected.Min, actual.Min, (sfloat)1e-3f);
-            TestUtils.AreEqual(expected.Max, actual.Max, (sfloat)1e-3f);
+            TestUtils.AreEqual(expected.Min, actual.Min, (fp)1e-3f);
+            TestUtils.AreEqual(expected.Max, actual.Max, (fp)1e-3f);
         }
 
         /// <summary>
@@ -101,20 +101,20 @@ namespace Fixed.Physics.Tests.Collision.Colliders
         [Test]
         public void TestSphereColliderCalculateAabbTransformed()
         {
-            float3 center = new float3(-(sfloat)3.4f, (sfloat)0.63f, -(sfloat)17.2f);
-            sfloat radius = (sfloat)5.3f;
+            fp3 center = new fp3(-(fp)3.4f, (fp)0.63f, -(fp)17.2f);
+            fp radius = (fp)5.3f;
             var sphereCollider = SphereCollider.Create(new SphereGeometry { Center = center, Radius = radius });
 
-            float3 translation = new float3((sfloat)8.3f, -(sfloat)0.5f, (sfloat)170.0f);
-            quaternion rotation = quaternion.AxisAngle(math.normalize(new float3((sfloat)1.1f, (sfloat)4.5f, (sfloat)0.0f)), (sfloat)146.0f);
+            fp3 translation = new fp3((fp)8.3f, -fp.half, (fp)170.0f);
+            fpquaternion rotation = fpquaternion.AxisAngle(fpmath.normalize(new fp3((fp)1.1f, (fp)4.5f, (fp)0.0f)), (fp)146.0f);
 
             Aabb expected = new Aabb();
-            expected.Min = math.mul(rotation, center) + translation - new float3(radius, radius, radius);
-            expected.Max = math.mul(rotation, center) + translation + new float3(radius, radius, radius);
+            expected.Min = fpmath.mul(rotation, center) + translation - new fp3(radius, radius, radius);
+            expected.Max = fpmath.mul(rotation, center) + translation + new fp3(radius, radius, radius);
 
-            Aabb actual = sphereCollider.Value.CalculateAabb(new RigidTransform(rotation, translation));
-            TestUtils.AreEqual(expected.Min, actual.Min, (sfloat)1e-3f);
-            TestUtils.AreEqual(expected.Max, actual.Max, (sfloat)1e-3f);
+            Aabb actual = sphereCollider.Value.CalculateAabb(new FpRigidTransform(rotation, translation));
+            TestUtils.AreEqual(expected.Min, actual.Min, (fp)1e-3f);
+            TestUtils.AreEqual(expected.Max, actual.Max, (fp)1e-3f);
         }
 
         /// <summary>
@@ -126,14 +126,14 @@ namespace Fixed.Physics.Tests.Collision.Colliders
         [Test]
         public void TestSphereColliderMassProperties()
         {
-            float3 center = new float3(-(sfloat)8.4f, (sfloat)5.63f, (sfloat)77.2f);
-            sfloat radius = (sfloat)2.3f;
+            fp3 center = new fp3(-(fp)8.4f, (fp)5.63f, (fp)77.2f);
+            fp radius = (fp)2.3f;
             var sphereCollider = SphereCollider.Create(new SphereGeometry { Center = center, Radius = radius });
 
-            sfloat inertia = (sfloat)2.0f / (sfloat)5.0f * radius * radius;
-            float3 expectedInertiaTensor = new float3(inertia, inertia, inertia);
-            float3 inertiaTensor = sphereCollider.Value.MassProperties.MassDistribution.InertiaTensor;
-            TestUtils.AreEqual(expectedInertiaTensor, inertiaTensor, (sfloat)1e-3f);
+            fp inertia = fp.two / (fp)5.0f * radius * radius;
+            fp3 expectedInertiaTensor = new fp3(inertia, inertia, inertia);
+            fp3 inertiaTensor = sphereCollider.Value.MassProperties.MassDistribution.InertiaTensor;
+            TestUtils.AreEqual(expectedInertiaTensor, inertiaTensor, (fp)1e-3f);
         }
 
         #endregion

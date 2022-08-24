@@ -1,5 +1,5 @@
 using Unity.Entities;
-using Fixed.Mathematics;
+using Unity.Mathematics.FixedPoint;
 using Fixed.Transforms;
 
 namespace Fixed.Physics.GraphicsIntegration
@@ -36,7 +36,7 @@ namespace Fixed.Physics.GraphicsIntegration
         /// <summary>
         /// The body's position and orientation from the previous physics tick.
         /// </summary>
-        public RigidTransform PreviousTransform;
+        public FpRigidTransform PreviousTransform;
         /// <summary>
         /// The body's linear and angular velocity from the previous physics tick.
         /// </summary>

@@ -1,7 +1,7 @@
 using System;
 using NUnit.Framework;
 using Unity.Collections;
-using Fixed.Mathematics;
+using Unity.Mathematics.FixedPoint;
 using Unity.Entities;
 
 using Assert = UnityEngine.Assertions.Assert;
@@ -15,10 +15,10 @@ namespace Fixed.Physics.Tests.Collision.RigidBody
         {
             var geometry = new BoxGeometry
             {
-                Center = float3.zero,
-                Orientation = quaternion.identity,
-                Size = (sfloat)1.0f,
-                BevelRadius = (sfloat)0.2f
+                Center = fp3.zero,
+                Orientation = fpquaternion.identity,
+                Size = (fp)1.0f,
+                BevelRadius = (fp)0.2f
             };
 
             Physics.RigidBody rigidbodyBox = Fixed.Physics.RigidBody.Zero;
@@ -34,8 +34,8 @@ namespace Fixed.Physics.Tests.Collision.RigidBody
         {
             var geometry = new SphereGeometry
             {
-                Center = float3.zero,
-                Radius = (sfloat)1.0f
+                Center = fp3.zero,
+                Radius = (fp)1.0f
             };
 
             Physics.RigidBody rigidbodySphere = Fixed.Physics.RigidBody.Zero;
@@ -51,19 +51,19 @@ namespace Fixed.Physics.Tests.Collision.RigidBody
         {
             Physics.RigidBody rigidbody = Fixed.Physics.RigidBody.Zero;
 
-            sfloat size = (sfloat)1.0f;
-            sfloat convexRadius = (sfloat)0.0f;
+            fp size = (fp)1.0f;
+            fp convexRadius = (fp)0.0f;
 
-            var rayStartOK = new float3(-(sfloat)10, -(sfloat)10, -(sfloat)10);
-            var rayEndOK = new float3((sfloat)10, (sfloat)10, (sfloat)10);
+            var rayStartOK = new fp3(-(fp)10, -(fp)10, -(fp)10);
+            var rayEndOK = new fp3((fp)10, (fp)10, (fp)10);
 
-            var rayStartFail = new float3(-(sfloat)10, (sfloat)10, -(sfloat)10);
-            var rayEndFail = new float3((sfloat)10, (sfloat)10, (sfloat)10);
+            var rayStartFail = new fp3(-(fp)10, (fp)10, -(fp)10);
+            var rayEndFail = new fp3((fp)10, (fp)10, (fp)10);
 
             rigidbody.Collider = BoxCollider.Create(new BoxGeometry
             {
-                Center = float3.zero,
-                Orientation = quaternion.identity,
+                Center = fp3.zero,
+                Orientation = fpquaternion.identity,
                 Size = size,
                 BevelRadius = convexRadius
             });
@@ -95,20 +95,20 @@ namespace Fixed.Physics.Tests.Collision.RigidBody
         {
             Physics.RigidBody rigidbody = Fixed.Physics.RigidBody.Zero;
 
-            sfloat size = (sfloat)1.0f;
-            sfloat convexRadius = (sfloat)0.0f;
-            sfloat sphereRadius = (sfloat)1.0f;
+            fp size = (fp)1.0f;
+            fp convexRadius = (fp)0.0f;
+            fp sphereRadius = (fp)1.0f;
 
-            var rayStartOK = new float3(-(sfloat)10, -(sfloat)10, -(sfloat)10);
-            var rayEndOK = new float3((sfloat)10, (sfloat)10, (sfloat)10);
+            var rayStartOK = new fp3(-(fp)10, -(fp)10, -(fp)10);
+            var rayEndOK = new fp3((fp)10, (fp)10, (fp)10);
 
-            var rayStartFail = new float3(-(sfloat)10, (sfloat)10, -(sfloat)10);
-            var rayEndFail = new float3((sfloat)10, (sfloat)10, (sfloat)10);
+            var rayStartFail = new fp3(-(fp)10, (fp)10, -(fp)10);
+            var rayEndFail = new fp3((fp)10, (fp)10, (fp)10);
 
             rigidbody.Collider = BoxCollider.Create(new BoxGeometry
             {
-                Center = float3.zero,
-                Orientation = quaternion.identity,
+                Center = fp3.zero,
+                Orientation = fpquaternion.identity,
                 Size = size,
                 BevelRadius = convexRadius
             });
@@ -121,7 +121,7 @@ namespace Fixed.Physics.Tests.Collision.RigidBody
             colliderCastInput.Start = rayStartOK;
             colliderCastInput.End = rayEndOK;
             colliderCastInput.Collider = (Collider*)SphereCollider.Create(
-                new SphereGeometry { Center = float3.zero, Radius = sphereRadius }
+                new SphereGeometry { Center = fp3.zero, Radius = sphereRadius }
                 ).GetUnsafePtr();
 
             Assert.IsTrue(rigidbody.CastCollider(colliderCastInput));
@@ -142,15 +142,15 @@ namespace Fixed.Physics.Tests.Collision.RigidBody
         {
             Physics.RigidBody rigidbody = Fixed.Physics.RigidBody.Zero;
 
-            sfloat size = (sfloat)1.0f;
-            sfloat convexRadius = (sfloat)0.0f;
+            fp size = (fp)1.0f;
+            fp convexRadius = (fp)0.0f;
 
-            var queryPos = new float3(-(sfloat)10, -(sfloat)10, -(sfloat)10);
+            var queryPos = new fp3(-(fp)10, -(fp)10, -(fp)10);
 
             rigidbody.Collider = BoxCollider.Create(new BoxGeometry
             {
-                Center = float3.zero,
-                Orientation = quaternion.identity,
+                Center = fp3.zero,
+                Orientation = fpquaternion.identity,
                 Size = size,
                 BevelRadius = convexRadius
             });
@@ -164,13 +164,13 @@ namespace Fixed.Physics.Tests.Collision.RigidBody
             var allHits = new NativeList<DistanceHit>(Allocator.Temp);
 
             // OK case : with enough max distance
-            pointDistanceInput.MaxDistance = (sfloat)10000.0f;
+            pointDistanceInput.MaxDistance = (fp)10000.0f;
             Assert.IsTrue(rigidbody.CalculateDistance(pointDistanceInput));
             Assert.IsTrue(rigidbody.CalculateDistance(pointDistanceInput, out closestHit));
             Assert.IsTrue(rigidbody.CalculateDistance(pointDistanceInput, ref allHits));
 
             // Fail case : not enough max distance
-            pointDistanceInput.MaxDistance = (sfloat)1;
+            pointDistanceInput.MaxDistance = (fp)1;
             Assert.IsFalse(rigidbody.CalculateDistance(pointDistanceInput));
             Assert.IsFalse(rigidbody.CalculateDistance(pointDistanceInput, out closestHit));
             Assert.IsFalse(rigidbody.CalculateDistance(pointDistanceInput, ref allHits));
@@ -179,48 +179,48 @@ namespace Fixed.Physics.Tests.Collision.RigidBody
         [Test]
         public unsafe void RigidBodyCalculateDistanceTest()
         {
-            sfloat size = (sfloat)1.0f;
-            sfloat convexRadius = (sfloat)0.0f;
-            sfloat sphereRadius = (sfloat)1.0f;
+            fp size = (fp)1.0f;
+            fp convexRadius = (fp)0.0f;
+            fp sphereRadius = (fp)1.0f;
 
-            var queryPos = new float3(-(sfloat)10, -(sfloat)10, -(sfloat)10);
+            var queryPos = new fp3(-(fp)10, -(fp)10, -(fp)10);
 
             BlobAssetReference<Collider> boxCollider = BoxCollider.Create(new BoxGeometry
             {
-                Center = float3.zero,
-                Orientation = quaternion.identity,
+                Center = fp3.zero,
+                Orientation = fpquaternion.identity,
                 Size = size,
                 BevelRadius = convexRadius
             });
             BlobAssetReference<Collider> sphereCollider = SphereCollider.Create(new SphereGeometry
             {
-                Center = float3.zero,
+                Center = fp3.zero,
                 Radius = sphereRadius
             });
 
             var rigidBody = new Physics.RigidBody
             {
-                WorldFromBody = RigidTransform.identity,
+                WorldFromBody = FpRigidTransform.identity,
                 Collider = boxCollider
             };
 
             var colliderDistanceInput = new ColliderDistanceInput
             {
                 Collider = (Collider*)sphereCollider.GetUnsafePtr(),
-                Transform = new RigidTransform(quaternion.identity, queryPos)
+                Transform = new FpRigidTransform(fpquaternion.identity, queryPos)
             };
 
             var closestHit = new DistanceHit();
             var allHits = new NativeList<DistanceHit>(Allocator.Temp);
 
             // OK case : with enough max distance
-            colliderDistanceInput.MaxDistance = (sfloat)10000.0f;
+            colliderDistanceInput.MaxDistance = (fp)10000.0f;
             Assert.IsTrue(rigidBody.CalculateDistance(colliderDistanceInput));
             Assert.IsTrue(rigidBody.CalculateDistance(colliderDistanceInput, out closestHit));
             Assert.IsTrue(rigidBody.CalculateDistance(colliderDistanceInput, ref allHits));
 
             // Fail case : not enough max distance
-            colliderDistanceInput.MaxDistance = (sfloat)1;
+            colliderDistanceInput.MaxDistance = (fp)1;
             Assert.IsFalse(rigidBody.CalculateDistance(colliderDistanceInput));
             Assert.IsFalse(rigidBody.CalculateDistance(colliderDistanceInput, out closestHit));
             Assert.IsFalse(rigidBody.CalculateDistance(colliderDistanceInput, ref allHits));

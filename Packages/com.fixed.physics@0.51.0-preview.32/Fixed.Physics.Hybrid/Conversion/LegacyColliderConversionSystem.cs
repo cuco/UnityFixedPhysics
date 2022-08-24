@@ -3,7 +3,8 @@ using System;
 using System.Collections.Generic;
 using Unity.Collections;
 using Unity.Entities;
-using Fixed.Mathematics;
+using Unity.Mathematics;
+using Unity.Mathematics.FixedPoint;
 using UnityEngine;
 using LegacyPhysics = UnityEngine.Physics;
 using LegacyCollider = UnityEngine.Collider;
@@ -50,7 +51,7 @@ namespace Fixed.Physics.Authoring
             else
                 DeclareAssetDependency(collider.gameObject, legacyMaterial);
 
-            material.Friction = (sfloat)legacyMaterial.dynamicFriction;
+            material.Friction = (fp)legacyMaterial.dynamicFriction;
             if (k_MaterialCombineLookup.TryGetValue(legacyMaterial.frictionCombine, out var combine))
                 material.FrictionCombinePolicy = combine;
             else
@@ -59,7 +60,7 @@ namespace Fixed.Physics.Authoring
                     collider
                 );
 
-            material.Restitution = (sfloat)legacyMaterial.bounciness;
+            material.Restitution = (fp)legacyMaterial.bounciness;
             if (k_MaterialCombineLookup.TryGetValue(legacyMaterial.bounceCombine, out combine))
                 material.RestitutionCombinePolicy = combine;
             else
@@ -73,7 +74,7 @@ namespace Fixed.Physics.Authoring
 
         internal override ShapeComputationData GenerateComputationData(
             T shape, ColliderInstance colliderInstance,
-            NativeList<float3> allConvexHullPoints, NativeList<float3> allMeshVertices,
+            NativeList<fp3> allConvexHullPoints, NativeList<fp3> allMeshVertices,
             NativeList<int3> allMeshTriangles, HashSet<UnityEngine.Mesh> meshAssets
         )
         {
@@ -105,7 +106,7 @@ namespace Fixed.Physics.Authoring
     {
         internal override ShapeComputationData GenerateComputationData(
             LegacyBox shape, ColliderInstance colliderInstance,
-            NativeList<float3> allConvexHullPoints, NativeList<float3> allMeshVertices, NativeList<int3> allMeshTriangles,
+            NativeList<fp3> allConvexHullPoints, NativeList<fp3> allMeshVertices, NativeList<int3> allMeshTriangles,
             HashSet<UnityEngine.Mesh> meshAssets
         )
         {
@@ -113,23 +114,23 @@ namespace Fixed.Physics.Authoring
             res.ShapeType = ShapeType.Box;
 
             var shapeLocalToWorld = shape.transform.localToWorldMatrix;
-            var worldCenter = math.mul(shapeLocalToWorld, new float4(shape.center, sfloat.One));
+            var worldCenter = fpmath.mul(shapeLocalToWorld, new fp4(shape.center, fp.one));
             var transformRotation  = shape.transform.rotation;
             var rigidBodyTransform = Math.DecomposeRigidBodyTransform(shapeLocalToWorld);
-            var shapeFromWorld = math.inverse(new float4x4(rigidBodyTransform));
+            var shapeFromWorld = fpmath.inverse(new fp4x4(rigidBodyTransform));
 
-            var orientationFixup = math.inverse(math.mul(math.inverse(transformRotation), rigidBodyTransform.rot));
+            var orientationFixup = fpmath.inverse(fpmath.mul(fpmath.inverse(transformRotation), rigidBodyTransform.rot));
 
             var geometry = new BoxGeometry
             {
-                Center = math.mul(shapeFromWorld, worldCenter).xyz,
+                Center = fpmath.mul(shapeFromWorld, worldCenter).xyz,
                 Orientation = orientationFixup
             };
 
-            var linearScale = float4x4.TRS(float3.zero, math.inverse(orientationFixup), shape.transform.lossyScale).DecomposeScale();
-            geometry.Size = math.abs(shape.size * linearScale);
+            var linearScale = fp4x4.TRS(fp3.zero, fpmath.inverse(orientationFixup), shape.transform.lossyScale).DecomposeScale();
+            geometry.Size = fpmath.abs(shape.size * linearScale);
 
-            geometry.BevelRadius = math.min(ConvexHullGenerationParameters.Default.BevelRadius, math.cmin(geometry.Size) * (sfloat)0.5f);
+            geometry.BevelRadius = fpmath.min(ConvexHullGenerationParameters.Default.BevelRadius, fpmath.cmin(geometry.Size) * fp.half);
 
             res.BoxProperties = geometry;
 
@@ -144,7 +145,7 @@ namespace Fixed.Physics.Authoring
     {
         internal override ShapeComputationData GenerateComputationData(
             LegacyCapsule shape, ColliderInstance colliderInstance,
-            NativeList<float3> allConvexHullPoints, NativeList<float3> allMeshVertices, NativeList<int3> allMeshTriangles,
+            NativeList<fp3> allConvexHullPoints, NativeList<fp3> allMeshVertices, NativeList<int3> allMeshTriangles,
             HashSet<UnityEngine.Mesh> meshAssets
         )
         {
@@ -152,22 +153,22 @@ namespace Fixed.Physics.Authoring
 
             res.ShapeType = ShapeType.Capsule;
 
-            var shapeLocalToWorld   = (float4x4)shape.transform.localToWorldMatrix;
+            var shapeLocalToWorld   = (fp4x4)shape.transform.localToWorldMatrix;
             var transformRotation   = shape.transform.rotation;
             var rigidBodyTransform  = Math.DecomposeRigidBodyTransform(shapeLocalToWorld);
-            var orientationFixup    = math.inverse(math.mul(math.inverse(transformRotation), rigidBodyTransform.rot));
-            var linearScale         = float4x4.TRS(float3.zero, math.inverse(orientationFixup), shape.transform.lossyScale).DecomposeScale();
+            var orientationFixup    = fpmath.inverse(fpmath.mul(fpmath.inverse(transformRotation), rigidBodyTransform.rot));
+            var linearScale         = fp4x4.TRS(fp3.zero, fpmath.inverse(orientationFixup), shape.transform.lossyScale).DecomposeScale();
 
             // radius is max of the two non-height axes
-            var radius = (sfloat)shape.radius * math.cmax(new float3(math.abs(linearScale)) { [shape.direction] = sfloat.Zero });
+            var radius = (fp)shape.radius * fpmath.cmax(new fp3(fpmath.abs(linearScale)) { [shape.direction] = fp.zero });
 
-            var ax = new float3 { [shape.direction] = sfloat.One };
-            var vertex = ax * ((sfloat)0.5f * (sfloat)shape.height);
-            var worldCenter = math.mul(shapeLocalToWorld, new float4(shape.center, sfloat.Zero));
-            var offset = math.mul(math.inverse(new float4x4(rigidBodyTransform)), worldCenter).xyz - shape.center * math.abs(linearScale);
+            var ax = new fp3 { [shape.direction] = fp.one };
+            var vertex = ax * (fp.half * (fp)shape.height);
+            var worldCenter = fpmath.mul(shapeLocalToWorld, new fp4(shape.center, fp.zero));
+            var offset = fpmath.mul(fpmath.inverse(new fp4x4(rigidBodyTransform)), worldCenter).xyz - shape.center * fpmath.abs(linearScale);
 
-            var v0 = math.mul(orientationFixup, offset + ((float3)shape.center + vertex) * math.abs(linearScale) - ax * radius);
-            var v1 = math.mul(orientationFixup, offset + ((float3)shape.center - vertex) * math.abs(linearScale) + ax * radius);
+            var v0 = fpmath.mul(orientationFixup, offset + ((fp3)shape.center + vertex) * fpmath.abs(linearScale) - ax * radius);
+            var v1 = fpmath.mul(orientationFixup, offset + ((fp3)shape.center - vertex) * fpmath.abs(linearScale) + ax * radius);
 
             res.CapsuleProperties = new CapsuleGeometry { Vertex0 = v0, Vertex1 = v1, Radius = radius };
 
@@ -182,7 +183,7 @@ namespace Fixed.Physics.Authoring
     {
         internal override ShapeComputationData GenerateComputationData(
             LegacySphere shape, ColliderInstance colliderInstance,
-            NativeList<float3> allConvexHullPoints, NativeList<float3> allMeshVertices, NativeList<int3> allMeshTriangles,
+            NativeList<fp3> allConvexHullPoints, NativeList<fp3> allMeshVertices, NativeList<int3> allMeshTriangles,
             HashSet<UnityEngine.Mesh> meshAssets
         )
         {
@@ -190,16 +191,16 @@ namespace Fixed.Physics.Authoring
             res.ShapeType = ShapeType.Sphere;
 
             var shapeLocalToWorld = shape.transform.localToWorldMatrix;
-            var worldCenter = math.mul(shapeLocalToWorld, new float4(shape.center, sfloat.One));
+            var worldCenter = fpmath.mul(shapeLocalToWorld, new fp4(shape.center, fp.one));
             var transformRotation  = shape.transform.rotation;
             var rigidBodyTransform  = Math.DecomposeRigidBodyTransform(shapeLocalToWorld);
-            var orientationFixup    = math.inverse(math.mul(math.inverse(transformRotation), rigidBodyTransform.rot));
+            var orientationFixup    = fpmath.inverse(fpmath.mul(fpmath.inverse(transformRotation), rigidBodyTransform.rot));
 
-            var shapeFromWorld = math.inverse(new float4x4(rigidBodyTransform));
-            var center = math.mul(shapeFromWorld, worldCenter).xyz;
+            var shapeFromWorld = fpmath.inverse(new fp4x4(rigidBodyTransform));
+            var center = fpmath.mul(shapeFromWorld, worldCenter).xyz;
 
-            var linearScale = float4x4.TRS(float3.zero, math.inverse(orientationFixup), shape.transform.lossyScale).DecomposeScale();
-            var radius = (sfloat)shape.radius * math.cmax(math.abs(linearScale));
+            var linearScale = fp4x4.TRS(fp3.zero, fpmath.inverse(orientationFixup), shape.transform.lossyScale).DecomposeScale();
+            var radius = (fp)shape.radius * fpmath.cmax(fpmath.abs(linearScale));
 
             res.SphereProperties = new SphereGeometry { Center = center, Radius = radius };
 
@@ -214,7 +215,7 @@ namespace Fixed.Physics.Authoring
     {
         internal override ShapeComputationData GenerateComputationData(
             LegacyMesh shape, ColliderInstance colliderInstance,
-            NativeList<float3> allConvexHullPoints, NativeList<float3> allMeshVertices, NativeList<int3> allMeshTriangles,
+            NativeList<fp3> allConvexHullPoints, NativeList<fp3> allMeshVertices, NativeList<int3> allMeshTriangles,
             HashSet<UnityEngine.Mesh> meshAssets
         )
         {
@@ -253,7 +254,7 @@ namespace Fixed.Physics.Authoring
 
             var transform = shape.transform;
             var rigidBodyTransform = Math.DecomposeRigidBodyTransform(transform.localToWorldMatrix);
-            var bakeFromShape = math.mul(math.inverse(new float4x4(rigidBodyTransform)), transform.localToWorldMatrix);
+            var bakeFromShape = fpmath.mul(fpmath.inverse(new fp4x4(rigidBodyTransform)), transform.localToWorldMatrix);
 
             res.Instance.Hash = HashableShapeInputs.GetHash128(
                 0u,
@@ -261,7 +262,7 @@ namespace Fixed.Physics.Authoring
                 res.Material,
                 res.CollisionFilter,
                 bakeFromShape,
-                new NativeArray<HashableShapeInputs>(1, Allocator.Temp) { [0] = HashableShapeInputs.FromMesh(shape.sharedMesh, float4x4.identity) },
+                new NativeArray<HashableShapeInputs>(1, Allocator.Temp) { [0] = HashableShapeInputs.FromMesh(shape.sharedMesh, fp4x4.identity) },
                 default,
                 default, HashableShapeInputs.k_DefaultLinearPrecision
             );
@@ -282,15 +283,15 @@ namespace Fixed.Physics.Authoring
                 }
                 else
                 {
-                    var pointCloud = new NativeList<float3>(shape.sharedMesh.vertexCount, Allocator.Temp);
+                    var pointCloud = new NativeList<fp3>(shape.sharedMesh.vertexCount, Allocator.Temp);
                     var triangles = new NativeList<int3>(shape.sharedMesh.triangles.Length / 3, Allocator.Temp);
                     PhysicsShapeAuthoring.AppendMeshPropertiesToNativeBuffers(
-                        float4x4.identity, shape.sharedMesh,
+                        fp4x4.identity, shape.sharedMesh,
                         pointCloud, triangles,
                         default, default
                     );
                     for (int i = 0, count = pointCloud.Length; i < count; ++i)
-                        pointCloud[i] = math.mul(bakeFromShape, new float4(pointCloud[i], sfloat.One)).xyz;
+                        pointCloud[i] = fpmath.mul(bakeFromShape, new fp4(pointCloud[i], fp.one)).xyz;
 
                     if (shape.convex)
                     {

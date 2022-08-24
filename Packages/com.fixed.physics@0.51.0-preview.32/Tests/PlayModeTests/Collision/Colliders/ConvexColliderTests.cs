@@ -3,9 +3,9 @@ using NUnit.Framework;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
-using Fixed.Mathematics;
+using Unity.Mathematics.FixedPoint;
 using Fixed.Physics.Tests.Utils;
-using Random = Fixed.Mathematics.Random;
+using Random = Unity.Mathematics.FixedPoint.Random;
 
 namespace Fixed.Physics.Tests.Collision.Colliders
 {
@@ -21,10 +21,10 @@ namespace Fixed.Physics.Tests.Collision.Colliders
         {
             public void Execute()
             {
-                var points = new NativeArray<float3>(1024, Allocator.Temp);
+                var points = new NativeArray<fp3>(1024, Allocator.Temp);
                 var random = new Random(1234);
                 for (var i = 0; i < points.Length; ++i)
-                    points[i] = random.NextFloat3(new float3(-(sfloat)1f), new float3((sfloat)1f));
+                    points[i] = random.Nextfp3(new fp3(-(fp)1f), new fp3((fp)1f));
                 ConvexCollider.Create(points, ConvexHullGenerationParameters.Default).Dispose();
             }
         }
@@ -32,14 +32,14 @@ namespace Fixed.Physics.Tests.Collision.Colliders
         [Test]
         public void ConvexCollider_Create_WhenCalledFromBurstJob_DoesNotThrow() => new CreateFromBurstJob().Run();
 
-        static readonly float3[] k_TestPoints =
+        static readonly fp3[] k_TestPoints =
         {
-            new float3((sfloat)1.45f, (sfloat)8.67f, (sfloat)3.45f),
-            new float3((sfloat)8.75f, (sfloat)1.23f, (sfloat)6.44f),
-            new float3((sfloat)100.34f, (sfloat)5.33f, -(sfloat)2.55f),
-            new float3((sfloat)8.76f, (sfloat)4.56f, -(sfloat)4.54f),
-            new float3((sfloat)9.75f, -(sfloat)0.45f, -(sfloat)8.99f),
-            new float3((sfloat)7.66f, (sfloat)3.44f, (sfloat)0.0f)
+            new fp3((fp)1.45f, (fp)8.67f, (fp)3.45f),
+            new fp3((fp)8.75f, (fp)1.23f, (fp)6.44f),
+            new fp3((fp)100.34f, (fp)5.33f, -(fp)2.55f),
+            new fp3((fp)8.76f, (fp)4.56f, -(fp)4.54f),
+            new fp3((fp)9.75f, -(fp)0.45f, -(fp)8.99f),
+            new fp3((fp)7.66f, (fp)3.44f, (fp)0.0f)
         };
 
         /// <summary>
@@ -48,9 +48,9 @@ namespace Fixed.Physics.Tests.Collision.Colliders
         [Test]
         public void TestConvexColliderCreate()
         {
-            var points = new NativeArray<float3>(k_TestPoints, Allocator.Temp);
+            var points = new NativeArray<fp3>(k_TestPoints, Allocator.Temp);
             var collider = ConvexCollider.Create(
-                points, new ConvexHullGenerationParameters { BevelRadius = (sfloat)0.15f }, CollisionFilter.Default
+                points, new ConvexHullGenerationParameters { BevelRadius = (fp)0.15f }, CollisionFilter.Default
             );
 
             Assert.AreEqual(ColliderType.Convex, collider.Value.Type);
@@ -63,7 +63,7 @@ namespace Fixed.Physics.Tests.Collision.Colliders
             [Values(float.PositiveInfinity, float.NegativeInfinity, float.NaN)] float errantValue
         )
         {
-            var points = new NativeArray<float3>(k_TestPoints, Allocator.Temp) { [2] = new float3((sfloat)errantValue) };
+            var points = new NativeArray<fp3>(k_TestPoints, Allocator.Temp) { [2] = new fp3((fp)errantValue) };
 
             var ex = Assert.Throws<ArgumentException>(() => ConvexCollider.Create(points, ConvexHullGenerationParameters.Default));
             Assert.That(ex.ParamName, Is.EqualTo("points"));
@@ -74,9 +74,9 @@ namespace Fixed.Physics.Tests.Collision.Colliders
             [Values(float.PositiveInfinity, float.NegativeInfinity, float.NaN, -1f)] float errantValue
         )
         {
-            var points = new NativeArray<float3>(k_TestPoints, Allocator.Temp);
+            var points = new NativeArray<fp3>(k_TestPoints, Allocator.Temp);
             var generationParameters = ConvexHullGenerationParameters.Default;
-            generationParameters.BevelRadius = (sfloat)errantValue;
+            generationParameters.BevelRadius = (fp)errantValue;
 
             var ex = Assert.Throws<ArgumentException>(() => ConvexCollider.Create(points, generationParameters));
             Assert.That(ex.ParamName, Is.EqualTo("generationParameters"));
@@ -94,29 +94,29 @@ namespace Fixed.Physics.Tests.Collision.Colliders
         [Test]
         public unsafe void TestConvexColliderCalculateAabbLocal([Values(0, 0.01f, 1.25f)] float maxShrinkMovement)
         {
-            var points = new NativeArray<float3>(6, Allocator.TempJob)
+            var points = new NativeArray<fp3>(6, Allocator.TempJob)
             {
-                [0] = new float3((sfloat)1.45f, (sfloat)8.67f, (sfloat)3.45f),
-                [1] = new float3((sfloat)8.75f, (sfloat)1.23f, (sfloat)6.44f),
-                [2] = new float3((sfloat)100.34f, (sfloat)5.33f, -(sfloat)2.55f),
-                [3] = new float3((sfloat)8.76f, (sfloat)4.56f, -(sfloat)4.54f),
-                [4] = new float3((sfloat)9.75f, -(sfloat)0.45f, -(sfloat)8.99f),
-                [5] = new float3((sfloat)7.66f, (sfloat)3.44f, (sfloat)0.0f)
+                [0] = new fp3((fp)1.45f, (fp)8.67f, (fp)3.45f),
+                [1] = new fp3((fp)8.75f, (fp)1.23f, (fp)6.44f),
+                [2] = new fp3((fp)100.34f, (fp)5.33f, -(fp)2.55f),
+                [3] = new fp3((fp)8.76f, (fp)4.56f, -(fp)4.54f),
+                [4] = new fp3((fp)9.75f, -(fp)0.45f, -(fp)8.99f),
+                [5] = new fp3((fp)7.66f, (fp)3.44f, (fp)0.0f)
             };
 
-            Aabb expectedAabb = Aabb.CreateFromPoints(new float3x4(points[0], points[1], points[2], points[3]));
+            Aabb expectedAabb = Aabb.CreateFromPoints(new fp3x4(points[0], points[1], points[2], points[3]));
             expectedAabb.Include(points[4]);
             expectedAabb.Include(points[5]);
 
             //TODO 计算有问题
             var collider = ConvexCollider.Create(
-                points, new ConvexHullGenerationParameters { BevelRadius = (sfloat)maxShrinkMovement }, CollisionFilter.Default
+                points, new ConvexHullGenerationParameters { BevelRadius = (fp)maxShrinkMovement }, CollisionFilter.Default
             );
             points.Dispose();
 
             Aabb actualAabb = collider.Value.CalculateAabb();
-            sfloat convexRadius = ((ConvexCollider*)collider.GetUnsafePtr())->ConvexHull.ConvexRadius;
-            sfloat maxError = (sfloat)1e-3f + (sfloat)maxShrinkMovement - convexRadius;
+            fp convexRadius = ((ConvexCollider*)collider.GetUnsafePtr())->ConvexHull.ConvexRadius;
+            fp maxError = (fp)1e-3f + (fp)maxShrinkMovement - convexRadius;
             TestUtils.AreEqual(expectedAabb.Min, actualAabb.Min, maxError);
             TestUtils.AreEqual(expectedAabb.Max, actualAabb.Max, maxError);
         }
@@ -127,37 +127,37 @@ namespace Fixed.Physics.Tests.Collision.Colliders
         [Test]
         public unsafe void TestConvexColliderCalculateAabbTransformed([Values(0, 0.01f, 1.25f)] float maxShrinkMovement)
         {
-            var points = new NativeArray<float3>(6, Allocator.TempJob)
+            var points = new NativeArray<fp3>(6, Allocator.TempJob)
             {
-                [0] = new float3((sfloat)1.45f, (sfloat)8.67f, (sfloat)3.45f),
-                [1] = new float3((sfloat)8.75f, (sfloat)1.23f, (sfloat)6.44f),
-                [2] = new float3((sfloat)100.34f, (sfloat)5.33f, -(sfloat)2.55f),
-                [3] = new float3((sfloat)8.76f, (sfloat)4.56f, -(sfloat)4.54f),
-                [4] = new float3((sfloat)9.75f, -(sfloat)0.45f, -(sfloat)8.99f),
-                [5] = new float3((sfloat)7.66f, (sfloat)3.44f, (sfloat)0.0f)
+                [0] = new fp3((fp)1.45f, (fp)8.67f, (fp)3.45f),
+                [1] = new fp3((fp)8.75f, (fp)1.23f, (fp)6.44f),
+                [2] = new fp3((fp)100.34f, (fp)5.33f, -(fp)2.55f),
+                [3] = new fp3((fp)8.76f, (fp)4.56f, -(fp)4.54f),
+                [4] = new fp3((fp)9.75f, -(fp)0.45f, -(fp)8.99f),
+                [5] = new fp3((fp)7.66f, (fp)3.44f, (fp)0.0f)
             };
 
-            float3 translation = new float3((sfloat)43.56f, -(sfloat)87.32f, -(sfloat)0.02f);
-            quaternion rotation = quaternion.AxisAngle(math.normalize(new float3((sfloat)8.45f, -(sfloat)2.34f, (sfloat)0.82f)), (sfloat)43.21f);
+            fp3 translation = new fp3((fp)43.56f, -(fp)87.32f, -(fp)0.02f);
+            fpquaternion rotation = fpquaternion.AxisAngle(fpmath.normalize(new fp3((fp)8.45f, -(fp)2.34f, (fp)0.82f)), (fp)43.21f);
 
-            float3[] transformedPoints = new float3[points.Length];
+            fp3[] transformedPoints = new fp3[points.Length];
             for (int i = 0; i < points.Length; ++i)
             {
-                transformedPoints[i] = translation + math.mul(rotation, points[i]);
+                transformedPoints[i] = translation + fpmath.mul(rotation, points[i]);
             }
 
-            Aabb expectedAabb = Aabb.CreateFromPoints(new float3x4(transformedPoints[0], transformedPoints[1], transformedPoints[2], transformedPoints[3]));
+            Aabb expectedAabb = Aabb.CreateFromPoints(new fp3x4(transformedPoints[0], transformedPoints[1], transformedPoints[2], transformedPoints[3]));
             expectedAabb.Include(transformedPoints[4]);
             expectedAabb.Include(transformedPoints[5]);
 
             var collider = ConvexCollider.Create(
-                points, new ConvexHullGenerationParameters { BevelRadius = (sfloat)maxShrinkMovement }, CollisionFilter.Default
+                points, new ConvexHullGenerationParameters { BevelRadius = (fp)maxShrinkMovement }, CollisionFilter.Default
             );
             points.Dispose();
 
-            Aabb actualAabb = collider.Value.CalculateAabb(new RigidTransform(rotation, translation));
-            sfloat convexRadius = ((ConvexCollider*)collider.GetUnsafePtr())->ConvexHull.ConvexRadius;
-            sfloat maxError = (sfloat)1e-3f + (sfloat)maxShrinkMovement - convexRadius;
+            Aabb actualAabb = collider.Value.CalculateAabb(new FpRigidTransform(rotation, translation));
+            fp convexRadius = ((ConvexCollider*)collider.GetUnsafePtr())->ConvexHull.ConvexRadius;
+            fp maxError = (fp)1e-3f + (fp)maxShrinkMovement - convexRadius;
 
             TestUtils.AreEqual(expectedAabb.Min, actualAabb.Min, maxError);
             TestUtils.AreEqual(expectedAabb.Max, actualAabb.Max, maxError);

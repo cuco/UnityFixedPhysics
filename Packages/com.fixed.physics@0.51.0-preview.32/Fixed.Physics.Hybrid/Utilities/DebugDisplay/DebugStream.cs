@@ -2,10 +2,11 @@ using System.Collections.Generic;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
-using Fixed.Mathematics;
+using Unity.Mathematics.FixedPoint;
 using Fixed.Physics;
 using Fixed.Physics.Authoring;
 using Fixed.Physics.Systems;
+using Unity.Mathematics;
 using UnityEditor;
 using UnityEngine;
 
@@ -31,95 +32,95 @@ namespace Fixed.Physics.Authoring
                 Writer.EndForEachIndex();
             }
 
-            internal void Point(float3 x, sfloat size, Fixed.DebugDisplay.ColorIndex color)
+            internal void Point(fp3 x, fp size, Fixed.DebugDisplay.ColorIndex color)
             {
                 var lines = new Fixed.DebugDisplay.Lines(3);
 
-                lines.Draw(x - new float3(size, sfloat.Zero, sfloat.Zero), x + new float3(size, sfloat.Zero, sfloat.Zero), color);
-                lines.Draw(x - new float3(sfloat.Zero, size, sfloat.Zero), x + new float3(sfloat.Zero, size, sfloat.Zero), color);
-                lines.Draw(x - new float3(sfloat.Zero, sfloat.Zero, size), x + new float3(sfloat.Zero, sfloat.Zero, size), color);
+                lines.Draw(x - new fp3(size, fp.zero, fp.zero), x + new fp3(size, fp.zero, fp.zero), color);
+                lines.Draw(x - new fp3(fp.zero, size, fp.zero), x + new fp3(fp.zero, size, fp.zero), color);
+                lines.Draw(x - new fp3(fp.zero, fp.zero, size), x + new fp3(fp.zero, fp.zero, size), color);
             }
 
-            internal void Line(float3 x0, float3 x1, Fixed.DebugDisplay.ColorIndex color)
+            internal void Line(fp3 x0, fp3 x1, Fixed.DebugDisplay.ColorIndex color)
             {
                 Fixed.DebugDisplay.Line.Draw(x0, x1, color);
             }
 
-            internal void Arrow(float3 x, float3 v, Fixed.DebugDisplay.ColorIndex color)
+            internal void Arrow(fp3 x, fp3 v, Fixed.DebugDisplay.ColorIndex color)
             {
                 Fixed.DebugDisplay.Arrow.Draw(x, v, color);
             }
 
-            internal void Plane(float3 x, float3 v, Fixed.DebugDisplay.ColorIndex color)
+            internal void Plane(fp3 x, fp3 v, Fixed.DebugDisplay.ColorIndex color)
             {
                 Fixed.DebugDisplay.Plane.Draw(x, v, color);
             }
 
-            internal void Arc(float3 center, float3 normal, float3 arm, sfloat angle,
+            internal void Arc(fp3 center, fp3 normal, fp3 arm, fp angle,
                 Fixed.DebugDisplay.ColorIndex color)
             {
                 Fixed.DebugDisplay.Arc.Draw(center, normal, arm, angle, color);
             }
 
-            internal void Cone(float3 point, float3 axis, sfloat angle, Fixed.DebugDisplay.ColorIndex color)
+            internal void Cone(fp3 point, fp3 axis, fp angle, Fixed.DebugDisplay.ColorIndex color)
             {
                 Fixed.DebugDisplay.Cone.Draw(point, axis, angle, color);
             }
 
-            internal void Box(float3 Size, float3 Center, quaternion Orientation, Fixed.DebugDisplay.ColorIndex color)
+            internal void Box(fp3 Size, fp3 Center, fpquaternion Orientation, Fixed.DebugDisplay.ColorIndex color)
             {
                 Fixed.DebugDisplay.Box.Draw(Size, Center, Orientation, color);
             }
 
-            public void Point(float3 x, sfloat size, Color color)
+            public void Point(fp3 x, fp size, Color color)
             {
                 Writer.Write(Type.Point);
                 Writer.Write(new Point {X = x, Size = size, Color = color});
             }
 
-            public void Line(float3 x0, float3 x1, Color color)
+            public void Line(fp3 x0, fp3 x1, Color color)
             {
                 Writer.Write(Type.Line);
                 Writer.Write(new Line {X0 = x0, X1 = x1, Color = color});
             }
 
-            public void Arrow(float3 x, float3 v, Color color)
+            public void Arrow(fp3 x, fp3 v, Color color)
             {
                 Writer.Write(Type.Arrow);
                 Writer.Write(new Line {X0 = x, X1 = x + v, Color = color});
             }
 
-            public void Plane(float3 x, float3 v, Color color)
+            public void Plane(fp3 x, fp3 v, Color color)
             {
                 Writer.Write(Type.Plane);
                 Writer.Write(new Line {X0 = x, X1 = x + v, Color = color});
             }
 
-            public void Circle(float3 x, float3 v, Color color)
+            public void Circle(fp3 x, fp3 v, Color color)
             {
                 Writer.Write(Type.Circle);
                 Writer.Write(new Line {X0 = x, X1 = x + v, Color = color});
             }
 
-            public void Arc(float3 center, float3 normal, float3 arm, sfloat angle, Color color)
+            public void Arc(fp3 center, fp3 normal, fp3 arm, fp angle, Color color)
             {
                 Writer.Write(Type.Arc);
                 Writer.Write(new Arc {Center = center, Normal = normal, Arm = arm, Angle = angle, Color = color});
             }
 
-            public void Cone(float3 point, float3 axis, sfloat angle, Color color)
+            public void Cone(fp3 point, fp3 axis, fp angle, Color color)
             {
                 Writer.Write(Type.Cone);
                 Writer.Write(new Cone {Point = point, Axis = axis, Angle = angle, Color = color});
             }
 
-            public void Box(float3 size, float3 center, quaternion orientation, Color color)
+            public void Box(fp3 size, fp3 center, fpquaternion orientation, Color color)
             {
                 Writer.Write(Type.Box);
                 Writer.Write(new Box {Size = size, Center = center, Orientation = orientation, Color = color});
             }
 
-            public void Text(char[] text, float3 x, Color color)
+            public void Text(char[] text, fp3 x, Color color)
             {
                 Writer.Write(Type.Text);
                 Writer.Write(new Text {X = x, Color = color, Length = text.Length});
@@ -155,25 +156,25 @@ namespace Fixed.Physics.Authoring
 
         public struct Point
         {
-            public float3 X;
-            public sfloat Size;
+            public fp3 X;
+            public fp Size;
             public Color Color;
 
             public void Draw()
             {
 #if UNITY_EDITOR
                 Handles.color = Color;
-                Handles.DrawLine(X - new float3(Size, sfloat.Zero, sfloat.Zero), X + new float3(Size, sfloat.Zero, sfloat.Zero));
-                Handles.DrawLine(X - new float3(sfloat.Zero, Size, sfloat.Zero), X + new float3(sfloat.Zero, Size, sfloat.Zero));
-                Handles.DrawLine(X - new float3(sfloat.Zero, sfloat.Zero, Size), X + new float3(sfloat.Zero, sfloat.Zero, Size));
+                Handles.DrawLine(X - new fp3(Size, fp.zero, fp.zero), X + new fp3(Size, fp.zero, fp.zero));
+                Handles.DrawLine(X - new fp3(fp.zero, Size, fp.zero), X + new fp3(fp.zero, Size, fp.zero));
+                Handles.DrawLine(X - new fp3(fp.zero, fp.zero, Size), X + new fp3(fp.zero, fp.zero, Size));
 #endif
             }
         }
 
         public struct Line
         {
-            public float3 X0;
-            public float3 X1;
+            public fp3 X0;
+            public fp3 X1;
             public Color Color;
 
             public void Draw()
@@ -192,14 +193,14 @@ namespace Fixed.Physics.Authoring
                     Handles.color = Color;
 
                     Handles.DrawLine(X0, X1);
-                    float3 v = X1 - X0;
-                    float3 dir;
-                    sfloat length = Math.NormalizeWithLength(v, out dir);
-                    float3 perp, perp2;
+                    fp3 v = X1 - X0;
+                    fp3 dir;
+                    fp length = Math.NormalizeWithLength(v, out dir);
+                    fp3 perp, perp2;
                     Math.CalculatePerpendicularNormalized(dir, out perp, out perp2);
                     //TODO
-                    //float3 scale = length * 0.2f;
-                    float3 scale = length / (sfloat)5f;
+                    //fp3 scale = length * 0.2f;
+                    fp3 scale = length / (fp)5f;
 
                     Handles.DrawLine(X1, X1 + (perp - dir) * scale);
                     Handles.DrawLine(X1, X1 - (perp + dir) * scale);
@@ -217,14 +218,14 @@ namespace Fixed.Physics.Authoring
                     Handles.color = Color;
 
                     Handles.DrawLine(X0, X1);
-                    float3 v = X1 - X0;
-                    float3 dir;
-                    sfloat length = Math.NormalizeWithLength(v, out dir);
-                    float3 perp, perp2;
+                    fp3 v = X1 - X0;
+                    fp3 dir;
+                    fp length = Math.NormalizeWithLength(v, out dir);
+                    fp3 perp, perp2;
                     Math.CalculatePerpendicularNormalized(dir, out perp, out perp2);
                     //TODO
-                    //float3 scale = length * 0.2f;
-                    float3 scale = length / (sfloat)5f;
+                    //fp3 scale = length * 0.2f;
+                    fp3 scale = length / (fp)5f;
 
                     Handles.DrawLine(X1, X1 + (perp - dir) * scale);
                     Handles.DrawLine(X1, X1 - (perp + dir) * scale);
@@ -248,21 +249,21 @@ namespace Fixed.Physics.Authoring
 #if UNITY_EDITOR
                     Handles.color = Color;
 
-                    float3 v = X1 - X0;
-                    float3 dir;
-                    sfloat length = Math.NormalizeWithLength(v, out dir);
-                    float3 perp, perp2;
+                    fp3 v = X1 - X0;
+                    fp3 dir;
+                    fp length = Math.NormalizeWithLength(v, out dir);
+                    fp3 perp, perp2;
                     Math.CalculatePerpendicularNormalized(dir, out perp, out perp2);
                     //TODO
-                    //float3 scale = length * 0.2f;
-                    float3 scale = length / (sfloat)5f;
+                    //fp3 scale = length * 0.2f;
+                    fp3 scale = length / (fp)5f;
 
                     const int res = 16;
-                    quaternion q = quaternion.AxisAngle(dir, (sfloat)2.0f * (sfloat)math.PI / (sfloat)res);
-                    float3 arm = perp * length;
+                    fpquaternion q = fpquaternion.AxisAngle(dir, fp.two * (fp)fpmath.PI / (fp)res);
+                    fp3 arm = perp * length;
                     for (int i = 0; i < res; i++)
                     {
-                        float3 nextArm = math.mul(q, arm);
+                        fp3 nextArm = fpmath.mul(q, arm);
                         Handles.DrawLine(X0 + arm, X0 + nextArm);
                         arm = nextArm;
                     }
@@ -273,10 +274,10 @@ namespace Fixed.Physics.Authoring
 
         public struct Arc
         {
-            public float3 Center;
-            public float3 Normal;
-            public float3 Arm;
-            public sfloat Angle;
+            public fp3 Center;
+            public fp3 Normal;
+            public fp3 Arm;
+            public fp Angle;
             public Color Color;
 
             public void Draw()
@@ -285,12 +286,12 @@ namespace Fixed.Physics.Authoring
                 Handles.color = Color;
 
                 const int res = 16;
-                quaternion q = quaternion.AxisAngle(Normal, Angle / (sfloat)res);
-                float3 currentArm = Arm;
+                fpquaternion q = fpquaternion.AxisAngle(Normal, Angle / (fp)res);
+                fp3 currentArm = Arm;
                 Handles.DrawLine(Center, Center + currentArm);
                 for (int i = 0; i < res; i++)
                 {
-                    float3 nextArm = math.mul(q, currentArm);
+                    fp3 nextArm = fpmath.mul(q, currentArm);
                     Handles.DrawLine(Center + currentArm, Center + nextArm);
                     currentArm = nextArm;
                 }
@@ -302,9 +303,9 @@ namespace Fixed.Physics.Authoring
 
         public struct Cone
         {
-            public float3 Point;
-            public float3 Axis;
-            public sfloat Angle;
+            public fp3 Point;
+            public fp3 Axis;
+            public fp Angle;
             public Color Color;
 
             public void Draw()
@@ -312,21 +313,21 @@ namespace Fixed.Physics.Authoring
 #if UNITY_EDITOR
                 Handles.color = Color;
 
-                float3 dir;
-                sfloat scale = Math.NormalizeWithLength(Axis, out dir);
+                fp3 dir;
+                fp scale = Math.NormalizeWithLength(Axis, out dir);
 
-                float3 arm;
+                fp3 arm;
                 {
-                    float3 perp1, perp2;
+                    fp3 perp1, perp2;
                     Math.CalculatePerpendicularNormalized(dir, out perp1, out perp2);
-                    arm = math.mul(quaternion.AxisAngle(perp1, Angle), dir) * scale;
+                    arm = fpmath.mul(fpquaternion.AxisAngle(perp1, Angle), dir) * scale;
                 }
 
                 const int res = 16;
-                quaternion q = quaternion.AxisAngle(dir, (sfloat)2.0f * (sfloat)math.PI / (sfloat)res);
+                fpquaternion q = fpquaternion.AxisAngle(dir, fp.two * (fp)fpmath.PI / (fp)res);
                 for (int i = 0; i < res; i++)
                 {
-                    float3 nextArm = math.mul(q, arm);
+                    fp3 nextArm = fpmath.mul(q, arm);
                     Handles.DrawLine(Point, Point + arm);
                     Handles.DrawLine(Point + arm, Point + nextArm);
                     arm = nextArm;
@@ -337,9 +338,9 @@ namespace Fixed.Physics.Authoring
 
         struct Box
         {
-            public float3 Size;
-            public float3 Center;
-            public quaternion Orientation;
+            public fp3 Size;
+            public fp3 Center;
+            public fpquaternion Orientation;
             public Color Color;
 
             public void Draw()
@@ -359,7 +360,7 @@ namespace Fixed.Physics.Authoring
 
         struct Text
         {
-            public float3 X;
+            public fp3 X;
             public Color Color;
             public int Length;
 

@@ -1,5 +1,6 @@
 using System.Threading;
-using Fixed.Mathematics;
+using Unity.Mathematics;
+using Unity.Mathematics.FixedPoint;
 
 namespace Fixed.DebugDisplay
 {
@@ -32,7 +33,7 @@ namespace Fixed.DebugDisplay
 /*
         internal Unit Allocate(int count)
         {
-            var end = math.min(m_next + count, m_end);
+            var end = fpmath.min(m_next + count, m_end);
             var unit = new Unit { m_begin = m_next, m_next = m_next, m_end = end };
             m_next = end;
             return unit;

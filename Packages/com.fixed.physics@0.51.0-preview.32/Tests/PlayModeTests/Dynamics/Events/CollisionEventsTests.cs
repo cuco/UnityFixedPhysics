@@ -2,7 +2,7 @@ using NUnit.Framework;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
-using Fixed.Mathematics;
+using Unity.Mathematics.FixedPoint;
 
 namespace Fixed.Physics.Tests.Dynamics.CollisionEvents
 {
@@ -28,45 +28,45 @@ namespace Fixed.Physics.Tests.Dynamics.CollisionEvents
             collisionEventData.Value.BodyIndices.BodyIndexB = 1;
             collisionEventData.Value.ColliderKeys.ColliderKeyA = ColliderKey.Empty;
             collisionEventData.Value.ColliderKeys.ColliderKeyB = ColliderKey.Empty;
-            collisionEventData.Value.Normal = new float3((sfloat)0.0f, -(sfloat)1.00000f, (sfloat)0.0f);
+            collisionEventData.Value.Normal = new fp3((fp)0.0f, -(fp)1.00000f, (fp)0.0f);
             collisionEventData.Value.NumNarrowPhaseContactPoints = 3;
-            collisionEventData.Value.SolverImpulse = (sfloat)1.0f;
+            collisionEventData.Value.SolverImpulse = (fp)1.0f;
 
             // Initialize 3 contact points
             collisionEventData.Value.AccessContactPoint(0) =
                 new ContactPoint
             {
-                Distance = (sfloat)0.177905f,
-                Position = new float3(-(sfloat)22.744950f, (sfloat)2.585318f, -(sfloat)50.108990f)
+                Distance = (fp)0.177905f,
+                Position = new fp3(-(fp)22.744950f, (fp)2.585318f, -(fp)50.108990f)
             };
             collisionEventData.Value.AccessContactPoint(1) =
                 new ContactPoint
             {
-                Distance = (sfloat)0.276652f,
-                Position = new float3(-(sfloat)20.731140f, (sfloat)2.486506f, -(sfloat)50.322240f)
+                Distance = (fp)0.276652f,
+                Position = new fp3(-(fp)20.731140f, (fp)2.486506f, -(fp)50.322240f)
             };
             collisionEventData.Value.AccessContactPoint(2) =
                 new ContactPoint
             {
-                Distance = (sfloat)0.278534f,
-                Position = new float3(-(sfloat)20.766140f, (sfloat)2.484623f, -(sfloat)50.652630f)
+                Distance = (fp)0.278534f,
+                Position = new fp3(-(fp)20.766140f, (fp)2.484623f, -(fp)50.652630f)
             };
 
             // Wrapping collision event
             CollisionEvent collisionEvent = new CollisionEvent();
             collisionEvent.EventData = collisionEventData;
-            collisionEvent.TimeStep = (sfloat)1.0f / (sfloat)60.0f;
+            collisionEvent.TimeStep = (fp)1.0f / (fp)60.0f;
 
             // Input velocity is obviously separating, but high angular velocity still caused an event
             collisionEvent.InputVelocityA = new Velocity
             {
-                Angular = new float3(-(sfloat)0.00064f, (sfloat)11.17604f, (sfloat)0.02133f),
-                Linear = new float3(-(sfloat)3.81205f, -(sfloat)0.56607f, (sfloat)9.14945f)
+                Angular = new fp3(-(fp)0.00064f, (fp)11.17604f, (fp)0.02133f),
+                Linear = new fp3(-(fp)3.81205f, -(fp)0.56607f, (fp)9.14945f)
             };
             collisionEvent.InputVelocityB = new Velocity
             {
-                Angular = new float3((sfloat)0.00000f, (sfloat)0.00000f, (sfloat)0.00000f),
-                Linear = new float3((sfloat)0.00000f, (sfloat)0.00000f, (sfloat)0.00000f)
+                Angular = new fp3((fp)0.00000f, (fp)0.00000f, (fp)0.00000f),
+                Linear = new fp3((fp)0.00000f, (fp)0.00000f, (fp)0.00000f)
             };
 
             // Allocate a simple world of 1 dynamic and 1 static body
@@ -75,19 +75,19 @@ namespace Fixed.Physics.Tests.Dynamics.CollisionEvents
             var motionDatas = simpleWorld.MotionDatas;
             motionDatas[0] = new MotionData
             {
-                LinearDamping = (sfloat)0.0f,
-                AngularDamping = (sfloat)0.0f,
-                BodyFromMotion = new RigidTransform(new quaternion((sfloat)0.0f, (sfloat)0.0f, (sfloat)0.0f, (sfloat)1.0f), new float3((sfloat)0.0f, (sfloat)0.0f, (sfloat)0.0f)),
-                WorldFromMotion = new RigidTransform(new quaternion((sfloat)0.09212853f, (sfloat)0.1400256f, -(sfloat)0.006776567f, -(sfloat)0.9858292f), new float3(-(sfloat)22.17587f, (sfloat)0.5172966f, -(sfloat)52.24425f))
+                LinearDamping = (fp)0.0f,
+                AngularDamping = (fp)0.0f,
+                BodyFromMotion = new FpRigidTransform(new fpquaternion((fp)0.0f, (fp)0.0f, (fp)0.0f, (fp)1.0f), new fp3((fp)0.0f, (fp)0.0f, (fp)0.0f)),
+                WorldFromMotion = new FpRigidTransform(new fpquaternion((fp)0.09212853f, (fp)0.1400256f, -(fp)0.006776567f, -(fp)0.9858292f), new fp3(-(fp)22.17587f, (fp)0.5172966f, -(fp)52.24425f))
             };
             motionVelocities[0] = new MotionVelocity
             {
-                LinearVelocity = new float3(-(sfloat)3.81221f, -(sfloat)1.37538f, -(sfloat)15.41893f),
-                AngularVelocity = new float3(-(sfloat)7.30913f, -(sfloat)4.78899f, (sfloat)1.14168f),
-                InverseInertia = new float3((sfloat)0.00045f, (sfloat)0.00045f, (sfloat)0.00045f),
-                InverseMass = (sfloat)0.00018f,
-                AngularExpansionFactor = (sfloat)2.05061f,
-                GravityFactor = (sfloat)1.0f
+                LinearVelocity = new fp3(-(fp)3.81221f, -(fp)1.37538f, -(fp)15.41893f),
+                AngularVelocity = new fp3(-(fp)7.30913f, -(fp)4.78899f, (fp)1.14168f),
+                InverseInertia = new fp3((fp)0.00045f, (fp)0.00045f, (fp)0.00045f),
+                InverseMass = (fp)0.00018f,
+                AngularExpansionFactor = (fp)2.05061f,
+                GravityFactor = (fp)1.0f
             };
 
             // Calculate the collision event details and make sure 1 contact point is returned

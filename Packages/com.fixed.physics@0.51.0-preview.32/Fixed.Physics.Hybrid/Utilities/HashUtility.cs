@@ -1,7 +1,7 @@
 using System.Runtime.InteropServices;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
-using Fixed.Mathematics;
+using Unity.Mathematics.FixedPoint;
 using Hash128 = Unity.Entities.Hash128;
 
 namespace Fixed.Physics.Authoring

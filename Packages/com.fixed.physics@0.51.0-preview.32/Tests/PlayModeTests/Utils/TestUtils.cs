@@ -2,12 +2,13 @@ using System;
 using System.Linq;
 using System.Text;
 using NUnit.Framework.Constraints;
-using Fixed.Mathematics;
+using Unity.Mathematics;
+using Unity.Mathematics.FixedPoint;
 using Assert = UnityEngine.Assertions.Assert;
 using Unity.Entities;
 using Unity.Collections;
 using Unity.Jobs;
-using Random = Fixed.Mathematics.Random;
+using Random = Unity.Mathematics.FixedPoint.Random;
 
 namespace Fixed.Physics.Tests
 {
@@ -37,7 +38,7 @@ namespace Fixed.Physics.Tests
             return sb.ToString();
         }
 
-        static MatrixPrettyCloseConstraint PrettyCloseTo(this ConstraintExpression expression, float4x4 expected)
+        static MatrixPrettyCloseConstraint PrettyCloseTo(this ConstraintExpression expression, fp4x4 expected)
         {
             var constraint = new MatrixPrettyCloseConstraint(expected);
             expression.Append(constraint);
@@ -45,7 +46,7 @@ namespace Fixed.Physics.Tests
         }
 
         static QuaternionOrientationEquivalentConstraint OrientedEquivalentTo(
-            this ConstraintExpression expression, quaternion expected
+            this ConstraintExpression expression, fpquaternion expected
         )
         {
             var constraint = new QuaternionOrientationEquivalentConstraint(expected);
@@ -56,31 +57,31 @@ namespace Fixed.Physics.Tests
 
     class Is : NUnit.Framework.Is
     {
-        public static Float3PrettyCloseConstraint PrettyCloseTo(float3 actual) =>
-            new Float3PrettyCloseConstraint(actual);
+        public static fp3PrettyCloseConstraint PrettyCloseTo(fp3 actual) =>
+            new fp3PrettyCloseConstraint(actual);
 
-        public static MatrixPrettyCloseConstraint PrettyCloseTo(float4x4 actual) =>
+        public static MatrixPrettyCloseConstraint PrettyCloseTo(fp4x4 actual) =>
             new MatrixPrettyCloseConstraint(actual);
 
-        public static QuaternionOrientationEquivalentConstraint OrientedEquivalentTo(quaternion actual) =>
+        public static QuaternionOrientationEquivalentConstraint OrientedEquivalentTo(fpquaternion actual) =>
             new QuaternionOrientationEquivalentConstraint(actual);
     }
 
-    class Float3PrettyCloseConstraint : NUnit.Framework.Constraints.Constraint
+    class fp3PrettyCloseConstraint : NUnit.Framework.Constraints.Constraint
     {
-        public static readonly sfloat DefaultTolerance = (sfloat)0.0001f;
+        public static readonly fp DefaultTolerance = (fp)0.0001f;
 
-        readonly float3 m_Expected;
-        sfloat m_ToleranceSq = DefaultTolerance * DefaultTolerance;
+        readonly fp3 m_Expected;
+        fp m_ToleranceSq = DefaultTolerance * DefaultTolerance;
 
-        public Float3PrettyCloseConstraint(float3 expected) : base((object)expected) => m_Expected = expected;
+        public fp3PrettyCloseConstraint(fp3 expected) : base((object)expected) => m_Expected = expected;
 
-        public override string Description => $"value to be within {math.sqrt(m_ToleranceSq)} of {m_Expected}";
+        public override string Description => $"value to be within {fpmath.sqrt(m_ToleranceSq)} of {m_Expected}";
 
         public override ConstraintResult ApplyTo(object actual) =>
-            new ConstraintResult(this, actual, math.lengthsq((float3)actual - m_Expected) < m_ToleranceSq);
+            new ConstraintResult(this, actual, fpmath.lengthsq((fp3)actual - m_Expected) < m_ToleranceSq);
 
-        public Float3PrettyCloseConstraint Within(sfloat tolerance)
+        public fp3PrettyCloseConstraint Within(fp tolerance)
         {
             m_ToleranceSq = tolerance * tolerance;
             return this;
@@ -89,27 +90,27 @@ namespace Fixed.Physics.Tests
 
     class MatrixPrettyCloseConstraint : NUnit.Framework.Constraints.Constraint
     {
-        public static readonly sfloat DefaultTolerance = (sfloat)0.0001f;
+        public static readonly fp DefaultTolerance = (fp)0.0001f;
 
-        readonly float4x4 m_Expected;
-        sfloat m_ToleranceSq = DefaultTolerance * DefaultTolerance;
+        readonly fp4x4 m_Expected;
+        fp m_ToleranceSq = DefaultTolerance * DefaultTolerance;
 
-        public MatrixPrettyCloseConstraint(float4x4 expected) : base((object)expected) => m_Expected = expected;
+        public MatrixPrettyCloseConstraint(fp4x4 expected) : base((object)expected) => m_Expected = expected;
 
-        public override string Description => $"each column to be within {math.sqrt(m_ToleranceSq)} of {m_Expected}";
+        public override string Description => $"each column to be within {fpmath.sqrt(m_ToleranceSq)} of {m_Expected}";
 
         public override ConstraintResult ApplyTo(object actual)
         {
-            var m = (float4x4)actual;
+            var m = (fp4x4)actual;
             var cmp =
-                math.lengthsq(m.c0 - m_Expected.c0) < m_ToleranceSq
-                && math.lengthsq(m.c1 - m_Expected.c1) < m_ToleranceSq
-                && math.lengthsq(m.c2 - m_Expected.c2) < m_ToleranceSq
-                && math.lengthsq(m.c3 - m_Expected.c3) < m_ToleranceSq;
+                fpmath.lengthsq(m.c0 - m_Expected.c0) < m_ToleranceSq
+                && fpmath.lengthsq(m.c1 - m_Expected.c1) < m_ToleranceSq
+                && fpmath.lengthsq(m.c2 - m_Expected.c2) < m_ToleranceSq
+                && fpmath.lengthsq(m.c3 - m_Expected.c3) < m_ToleranceSq;
             return new ConstraintResult(this, actual, cmp);
         }
 
-        public MatrixPrettyCloseConstraint EachAxisWithin(sfloat tolerance)
+        public MatrixPrettyCloseConstraint EachAxisWithin(fp tolerance)
         {
             m_ToleranceSq = tolerance * tolerance;
             return this;
@@ -118,28 +119,28 @@ namespace Fixed.Physics.Tests
 
     class QuaternionOrientationEquivalentConstraint : NUnit.Framework.Constraints.Constraint
     {
-        public static readonly sfloat DefaultTolerance = (sfloat)0.0005f;
+        public static readonly fp DefaultTolerance = (fp)0.0005f;
 
-        readonly quaternion m_Expected;
-        sfloat m_ToleranceSq = DefaultTolerance * DefaultTolerance;
+        readonly fpquaternion m_Expected;
+        fp m_ToleranceSq = DefaultTolerance * DefaultTolerance;
 
-        public QuaternionOrientationEquivalentConstraint(quaternion expected) => m_Expected = expected;
+        public QuaternionOrientationEquivalentConstraint(fpquaternion expected) => m_Expected = expected;
 
-        public override string Description => $"each axis to be within {math.sqrt(m_ToleranceSq)} of {new float3x3(m_Expected)}";
+        public override string Description => $"each axis to be within {fpmath.sqrt(m_ToleranceSq)} of {new fp3x3(m_Expected)}";
 
         public override ConstraintResult ApplyTo(object actual)
         {
-            var q = (quaternion)actual;
-            var m = new float3x3(q);
-            var expected = new float3x3(m_Expected);
+            var q = (fpquaternion)actual;
+            var m = new fp3x3(q);
+            var expected = new fp3x3(m_Expected);
             var cmp =
-                math.lengthsq(m.c0 - expected.c0) < m_ToleranceSq
-                && math.lengthsq(m.c1 - expected.c1) < m_ToleranceSq
-                && math.lengthsq(m.c2 - expected.c2) < m_ToleranceSq;
+                fpmath.lengthsq(m.c0 - expected.c0) < m_ToleranceSq
+                && fpmath.lengthsq(m.c1 - expected.c1) < m_ToleranceSq
+                && fpmath.lengthsq(m.c2 - expected.c2) < m_ToleranceSq;
             return new ConstraintResult(this, actual, cmp);
         }
 
-        public QuaternionOrientationEquivalentConstraint EachAxisWithin(sfloat tolerance)
+        public QuaternionOrientationEquivalentConstraint EachAxisWithin(fp tolerance)
         {
             m_ToleranceSq = tolerance * tolerance;
             return this;
@@ -181,35 +182,35 @@ namespace Fixed.Physics.Tests.Utils
             Assert.AreApproximatelyEqual(a, b, delta);
         }
 
-        public static void AreEqual(sfloat a, sfloat b, sfloat delta)
+        public static void AreEqual(fp a, fp b, fp delta)
         {
             Assert.AreApproximatelyEqual((float)a, (float)b, (float)delta);
         }
 
-        public static void AreEqual(sfloat a, sfloat b, int maxUlp, bool signedZeroEqual)
+        public static void AreEqual(fp a, fp b, int maxUlp, bool signedZeroEqual)
         {
             if (signedZeroEqual && a == b)
                 return;
 
-            if (math.isfinite(a) && math.isfinite(b))
+            if (fpmath.isfinite(a) && fpmath.isfinite(b))
             {
-                int ia = math.asint(a);
-                int ib = math.asint(b);
+                int ia = fpmath.asint(a);
+                int ib = fpmath.asint(b);
                 if ((ia ^ ib) < 0)
                     Assert.AreEqual(true, false);
-                int ulps = math.abs(ia - ib);
+                int ulps = fpmath.abs(ia - ib);
                 Assert.AreEqual(true, ulps <= maxUlp);
             }
             else
             {
-                if (a != b && (!math.isnan(a) || !math.isnan(b)))
+                if (a != b && (!fpmath.isnan(a) || !fpmath.isnan(b)))
                     Assert.AreEqual(true, false);
             }
         }
 
         public static void AreEqual(double a, double b, double delta = 0.0)
         {
-            Assert.IsTrue(math.abs(a - b) < delta);
+            Assert.IsTrue(fpmath.abs(a - b) < delta);
         }
 
         public static void AreEqual(double a, double b, int maxUlp, bool signedZeroEqual)
@@ -217,10 +218,10 @@ namespace Fixed.Physics.Tests.Utils
             if (signedZeroEqual && a == b)
                 return;
 
-            if (math.isfinite(a) && math.isfinite(b))
+            if (fpmath.isfinite(a) && fpmath.isfinite(b))
             {
-                long la = math.aslong(a);
-                long lb = math.aslong(b);
+                long la = fpmath.aslong(a);
+                long lb = fpmath.aslong(b);
                 if ((la ^ lb) < 0)
                     Assert.AreEqual(true, false);
                 long ulps = la > lb ? la - lb : lb - la;
@@ -228,7 +229,7 @@ namespace Fixed.Physics.Tests.Utils
             }
             else
             {
-                if (a != b && (!math.isnan(a) || !math.isnan(b)))
+                if (a != b && (!fpmath.isnan(a) || !fpmath.isnan(b)))
                     Assert.AreEqual(true, false);
             }
         }
@@ -489,33 +490,33 @@ namespace Fixed.Physics.Tests.Utils
         }
 
         // float
-        public static void AreEqual(float2 a, float2 b, sfloat delta)
+        public static void AreEqual(fp2 a, fp2 b, fp delta)
         {
             AreEqual(a.x, b.x, delta);
             AreEqual(a.y, b.y, delta);
         }
 
-        public static void AreEqual(float2 a, float2 b, int maxUlp, bool signedZeroEqual)
+        public static void AreEqual(fp2 a, fp2 b, int maxUlp, bool signedZeroEqual)
         {
             AreEqual(a.x, b.x, maxUlp, signedZeroEqual);
             AreEqual(a.y, b.y, maxUlp, signedZeroEqual);
         }
 
-        public static void AreEqual(float3 a, float3 b, sfloat delta)
+        public static void AreEqual(fp3 a, fp3 b, fp delta)
         {
             AreEqual(a.x, b.x, delta);
             AreEqual(a.y, b.y, delta);
             AreEqual(a.z, b.z, delta);
         }
 
-        public static void AreEqual(float3 a, float3 b, int maxUlp, bool signedZeroEqual)
+        public static void AreEqual(fp3 a, fp3 b, int maxUlp, bool signedZeroEqual)
         {
             AreEqual(a.x, b.x, maxUlp, signedZeroEqual);
             AreEqual(a.y, b.y, maxUlp, signedZeroEqual);
             AreEqual(a.z, b.z, maxUlp, signedZeroEqual);
         }
 
-        public static void AreEqual(float4 a, float4 b, sfloat delta)
+        public static void AreEqual(fp4 a, fp4 b, fp delta)
         {
             AreEqual(a.x, b.x, delta);
             AreEqual(a.y, b.y, delta);
@@ -523,7 +524,7 @@ namespace Fixed.Physics.Tests.Utils
             AreEqual(a.w, b.w, delta);
         }
 
-        public static void AreEqual(float4 a, float4 b, int maxUlp, bool signedZeroEqual)
+        public static void AreEqual(fp4 a, fp4 b, int maxUlp, bool signedZeroEqual)
         {
             AreEqual(a.x, b.x, maxUlp, signedZeroEqual);
             AreEqual(a.y, b.y, maxUlp, signedZeroEqual);
@@ -531,85 +532,85 @@ namespace Fixed.Physics.Tests.Utils
             AreEqual(a.w, b.w, maxUlp, signedZeroEqual);
         }
 
-        public static void AreEqual(float2x2 a, float2x2 b, sfloat delta)
+        public static void AreEqual(fp2x2 a, fp2x2 b, fp delta)
         {
             AreEqual(a.c0, b.c0, delta);
             AreEqual(a.c1, b.c1, delta);
         }
 
-        public static void AreEqual(float2x2 a, float2x2 b, int maxUlp, bool signedZeroEqual)
+        public static void AreEqual(fp2x2 a, fp2x2 b, int maxUlp, bool signedZeroEqual)
         {
             AreEqual(a.c0, b.c0, maxUlp, signedZeroEqual);
             AreEqual(a.c1, b.c1, maxUlp, signedZeroEqual);
         }
 
-        public static void AreEqual(float3x2 a, float3x2 b, sfloat delta)
+        public static void AreEqual(fp3x2 a, fp3x2 b, fp delta)
         {
             AreEqual(a.c0, b.c0, delta);
             AreEqual(a.c1, b.c1, delta);
         }
 
-        public static void AreEqual(float3x2 a, float3x2 b, int maxUlp, bool signedZeroEqual)
+        public static void AreEqual(fp3x2 a, fp3x2 b, int maxUlp, bool signedZeroEqual)
         {
             AreEqual(a.c0, b.c0, maxUlp, signedZeroEqual);
             AreEqual(a.c1, b.c1, maxUlp, signedZeroEqual);
         }
 
-        public static void AreEqual(float4x2 a, float4x2 b, sfloat delta)
+        public static void AreEqual(fp4x2 a, fp4x2 b, fp delta)
         {
             AreEqual(a.c0, b.c0, delta);
             AreEqual(a.c1, b.c1, delta);
         }
 
-        public static void AreEqual(float4x2 a, float4x2 b, int maxUlp, bool signedZeroEqual)
+        public static void AreEqual(fp4x2 a, fp4x2 b, int maxUlp, bool signedZeroEqual)
         {
             AreEqual(a.c0, b.c0, maxUlp, signedZeroEqual);
             AreEqual(a.c1, b.c1, maxUlp, signedZeroEqual);
         }
 
-        public static void AreEqual(float2x3 a, float2x3 b, sfloat delta)
-        {
-            AreEqual(a.c0, b.c0, delta);
-            AreEqual(a.c1, b.c1, delta);
-            AreEqual(a.c2, b.c2, delta);
-        }
-
-        public static void AreEqual(float2x3 a, float2x3 b, int maxUlp, bool signedZeroEqual)
-        {
-            AreEqual(a.c0, b.c0, maxUlp, signedZeroEqual);
-            AreEqual(a.c1, b.c1, maxUlp, signedZeroEqual);
-            AreEqual(a.c2, b.c2, maxUlp, signedZeroEqual);
-        }
-
-        public static void AreEqual(float3x3 a, float3x3 b, sfloat delta)
+        public static void AreEqual(fp2x3 a, fp2x3 b, fp delta)
         {
             AreEqual(a.c0, b.c0, delta);
             AreEqual(a.c1, b.c1, delta);
             AreEqual(a.c2, b.c2, delta);
         }
 
-        public static void AreEqual(float3x3 a, float3x3 b, int maxUlp, bool signedZeroEqual)
+        public static void AreEqual(fp2x3 a, fp2x3 b, int maxUlp, bool signedZeroEqual)
         {
             AreEqual(a.c0, b.c0, maxUlp, signedZeroEqual);
             AreEqual(a.c1, b.c1, maxUlp, signedZeroEqual);
             AreEqual(a.c2, b.c2, maxUlp, signedZeroEqual);
         }
 
-        public static void AreEqual(float4x3 a, float4x3 b, sfloat delta)
+        public static void AreEqual(fp3x3 a, fp3x3 b, fp delta)
         {
             AreEqual(a.c0, b.c0, delta);
             AreEqual(a.c1, b.c1, delta);
             AreEqual(a.c2, b.c2, delta);
         }
 
-        public static void AreEqual(float4x3 a, float4x3 b, int maxUlp, bool signedZeroEqual)
+        public static void AreEqual(fp3x3 a, fp3x3 b, int maxUlp, bool signedZeroEqual)
         {
             AreEqual(a.c0, b.c0, maxUlp, signedZeroEqual);
             AreEqual(a.c1, b.c1, maxUlp, signedZeroEqual);
             AreEqual(a.c2, b.c2, maxUlp, signedZeroEqual);
         }
 
-        public static void AreEqual(float2x4 a, float2x4 b, sfloat delta)
+        public static void AreEqual(fp4x3 a, fp4x3 b, fp delta)
+        {
+            AreEqual(a.c0, b.c0, delta);
+            AreEqual(a.c1, b.c1, delta);
+            AreEqual(a.c2, b.c2, delta);
+        }
+
+        public static void AreEqual(fp4x3 a, fp4x3 b, int maxUlp, bool signedZeroEqual)
+        {
+            AreEqual(a.c0, b.c0, maxUlp, signedZeroEqual);
+            AreEqual(a.c1, b.c1, maxUlp, signedZeroEqual);
+            AreEqual(a.c2, b.c2, maxUlp, signedZeroEqual);
+        }
+
+        public static void AreEqual(fp2x4 a, fp2x4 b, fp delta)
         {
             AreEqual(a.c0, b.c0, delta);
             AreEqual(a.c1, b.c1, delta);
@@ -617,7 +618,7 @@ namespace Fixed.Physics.Tests.Utils
             AreEqual(a.c3, b.c3, delta);
         }
 
-        public static void AreEqual(float2x4 a, float2x4 b, int maxUlp, bool signedZeroEqual)
+        public static void AreEqual(fp2x4 a, fp2x4 b, int maxUlp, bool signedZeroEqual)
         {
             AreEqual(a.c0, b.c0, maxUlp, signedZeroEqual);
             AreEqual(a.c1, b.c1, maxUlp, signedZeroEqual);
@@ -625,7 +626,7 @@ namespace Fixed.Physics.Tests.Utils
             AreEqual(a.c3, b.c3, maxUlp, signedZeroEqual);
         }
 
-        public static void AreEqual(float3x4 a, float3x4 b, sfloat delta)
+        public static void AreEqual(fp3x4 a, fp3x4 b, fp delta)
         {
             AreEqual(a.c0, b.c0, delta);
             AreEqual(a.c1, b.c1, delta);
@@ -633,7 +634,7 @@ namespace Fixed.Physics.Tests.Utils
             AreEqual(a.c3, b.c3, delta);
         }
 
-        public static void AreEqual(float3x4 a, float3x4 b, int maxUlp, bool signedZeroEqual)
+        public static void AreEqual(fp3x4 a, fp3x4 b, int maxUlp, bool signedZeroEqual)
         {
             AreEqual(a.c0, b.c0, maxUlp, signedZeroEqual);
             AreEqual(a.c1, b.c1, maxUlp, signedZeroEqual);
@@ -641,7 +642,7 @@ namespace Fixed.Physics.Tests.Utils
             AreEqual(a.c3, b.c3, maxUlp, signedZeroEqual);
         }
 
-        public static void AreEqual(float4x4 a, float4x4 b, sfloat delta)
+        public static void AreEqual(fp4x4 a, fp4x4 b, fp delta)
         {
             AreEqual(a.c0, b.c0, delta);
             AreEqual(a.c1, b.c1, delta);
@@ -649,7 +650,7 @@ namespace Fixed.Physics.Tests.Utils
             AreEqual(a.c3, b.c3, delta);
         }
 
-        public static void AreEqual(float4x4 a, float4x4 b, int maxUlp, bool signedZeroEqual)
+        public static void AreEqual(fp4x4 a, fp4x4 b, int maxUlp, bool signedZeroEqual)
         {
             AreEqual(a.c0, b.c0, maxUlp, signedZeroEqual);
             AreEqual(a.c1, b.c1, maxUlp, signedZeroEqual);
@@ -826,12 +827,12 @@ namespace Fixed.Physics.Tests.Utils
             AreEqual(a.c3, b.c3, maxUlp, signedZeroEqual);
         }
 
-        public static void AreEqual(quaternion a, quaternion b, sfloat delta)
+        public static void AreEqual(fpquaternion a, fpquaternion b, fp delta)
         {
             AreEqual(a.value, b.value, delta);
         }
 
-        public static void AreEqual(RigidTransform a, RigidTransform b, sfloat delta)
+        public static void AreEqual(FpRigidTransform a, FpRigidTransform b, fp delta)
         {
             AreEqual(a.rot, b.rot, delta);
             AreEqual(a.pos, b.pos, delta);
@@ -844,14 +845,14 @@ namespace Fixed.Physics.Tests.Utils
         public static BlobAssetReference<Collider> GenerateRandomMesh(ref Random rnd)
         {
             int numTriangles = rnd.NextInt(1, 250);
-            var vertices = new NativeArray<float3>(numTriangles * 3, Allocator.Temp);
+            var vertices = new NativeArray<fp3>(numTriangles * 3, Allocator.Temp);
             var triangles = new NativeArray<int3>(numTriangles, Allocator.Temp);
 
             int nextIndex = 0;
 
             while (numTriangles > 0)
             {
-                var featureTriangles = math.min(rnd.NextInt(1, 100), numTriangles);
+                var featureTriangles = fpmath.min(rnd.NextInt(1, 100), numTriangles);
 
                 int featureType = rnd.NextInt(0, 3);
                 switch (featureType)
@@ -861,13 +862,13 @@ namespace Fixed.Physics.Tests.Utils
                         // Soup
                         for (int i = 0; i < featureTriangles; i++)
                         {
-                            sfloat size = rnd.NextFloat((sfloat)0.1f, (sfloat)2.5f);
+                            fp size = rnd.NextFloat((fp)0.1f, (fp)2.5f);
                             size *= size;
 
-                            float3 center = rnd.NextFloat3(-(sfloat)10.0f, (sfloat)10.0f);
+                            fp3 center = rnd.Nextfp3(-(fp)10.0f, (fp)10.0f);
                             for (int j = 0; j < 3; j++)
                             {
-                                vertices[nextIndex++] = center + rnd.NextFloat3(-size, size);
+                                vertices[nextIndex++] = center + rnd.Nextfp3(-size, size);
                             }
                         }
                         break;
@@ -876,22 +877,22 @@ namespace Fixed.Physics.Tests.Utils
                     case 1:
                     {
                         // Fan
-                        float3 center = rnd.NextFloat3(-(sfloat)10.0f, (sfloat)10.0f);
-                        float3 arm = rnd.NextFloat3Direction() * rnd.NextFloat((sfloat)0.1f, (sfloat)1.0f);
-                        float3 axis;
+                        fp3 center = rnd.Nextfp3(-(fp)10.0f, (fp)10.0f);
+                        fp3 arm = rnd.Nextfp3Direction() * rnd.NextFloat((fp)0.1f, (fp)1.0f);
+                        fp3 axis;
                         {
-                            float3 unused;
-                            Math.CalculatePerpendicularNormalized(math.normalize(arm), out axis, out unused);
+                            fp3 unused;
+                            Math.CalculatePerpendicularNormalized(fpmath.normalize(arm), out axis, out unused);
                         }
-                        sfloat arc = rnd.NextFloat((sfloat)0.1f, (sfloat)2.0f * (sfloat)math.PI);
-                        arc = math.min(arc, (sfloat)featureTriangles * (sfloat)math.PI / (sfloat)2.0f); // avoid degenerate triangles
-                        featureTriangles = (int)math.min((sfloat)featureTriangles, (arc / (sfloat)0.025f)); // avoid degenerate triangles
-                        quaternion q = Fixed.Mathematics.quaternion.AxisAngle(axis, arc / (sfloat)numTriangles);
+                        fp arc = rnd.NextFloat((fp)0.1f, fp.two * (fp)fpmath.PI);
+                        arc = fpmath.min(arc, (fp)featureTriangles * (fp)fpmath.PI / fp.two); // avoid degenerate triangles
+                        featureTriangles = (int)fpmath.min((fp)featureTriangles, (arc / (fp)0.025f)); // avoid degenerate triangles
+                        fpquaternion q = Unity.Mathematics.FixedPoint.fpquaternion.AxisAngle(axis, arc / (fp)numTriangles);
                         for (int i = 0; i < featureTriangles; i++)
                         {
                             vertices[nextIndex++] = center;
                             vertices[nextIndex++] = center + arm;
-                            arm = math.mul(q, arm);
+                            arm = fpmath.mul(q, arm);
                             vertices[nextIndex++] = center + arm;
                         }
                         break;
@@ -900,17 +901,17 @@ namespace Fixed.Physics.Tests.Utils
                     case 2:
                     {
                         // Strip
-                        float3 v0 = rnd.NextFloat3(-(sfloat)10.0f, (sfloat)10.0f);
-                        float3 v1 = v0 + rnd.NextFloat3(-(sfloat)0.5f, (sfloat)0.5f);
-                        float3 dir;
+                        fp3 v0 = rnd.Nextfp3(-(fp)10.0f, (fp)10.0f);
+                        fp3 v1 = v0 + rnd.Nextfp3(-fp.half, fp.half);
+                        fp3 dir;
                         {
-                            float3 unused;
-                            Math.CalculatePerpendicularNormalized(math.normalize(v1 - v0), out dir, out unused);
+                            fp3 unused;
+                            Math.CalculatePerpendicularNormalized(fpmath.normalize(v1 - v0), out dir, out unused);
                         }
                         for (int i = 0; i < featureTriangles; i++)
                         {
-                            float3 v2 = v0 + rnd.NextFloat((sfloat)0.25f, (sfloat)0.5f) * dir;
-                            dir = math.mul(Fixed.Mathematics.quaternion.AxisAngle(rnd.NextFloat3Direction(), rnd.NextFloat((sfloat)0.0f, (sfloat)0.3f)), dir);
+                            fp3 v2 = v0 + rnd.NextFloat((fp)0.25f, fp.half) * dir;
+                            dir = fpmath.mul(Unity.Mathematics.FixedPoint.fpquaternion.AxisAngle(rnd.Nextfp3Direction(), rnd.NextFloat((fp)0.0f, (fp)0.3f)), dir);
 
                             vertices[nextIndex++] = v0;
                             vertices[nextIndex++] = v1;
@@ -932,14 +933,14 @@ namespace Fixed.Physics.Tests.Utils
                             break;
                         }
 
-                        int rows = rnd.NextInt(1, (int)math.sqrt((sfloat)quads));
+                        int rows = rnd.NextInt(1, (int)fpmath.sqrt((fp)quads));
                         int cols = quads / rows;
                         quads = rows * cols;
                         featureTriangles = quads * 2;
 
-                        float3 origin = rnd.NextFloat3(-(sfloat)10.0f, (sfloat)10.0f);
-                        float3 x = rnd.NextFloat3(-(sfloat)0.5f, (sfloat)0.5f);
-                        float3 y = rnd.NextFloat3(-(sfloat)0.5f, (sfloat)0.5f);
+                        fp3 origin = rnd.Nextfp3(-(fp)10.0f, (fp)10.0f);
+                        fp3 x = rnd.Nextfp3(-fp.half, fp.half);
+                        fp3 y = rnd.Nextfp3(-fp.half, fp.half);
                         for (int i = 0; i < rows; i++)
                         {
                             for (int j = 0; j < cols; j++)
@@ -976,13 +977,13 @@ namespace Fixed.Physics.Tests.Utils
         public static BlobAssetReference<Collider> GenerateRandomTerrain(ref Random rnd)
         {
             int2 size = rnd.NextInt2(2, 50);
-            float3 scale = rnd.NextFloat3((sfloat)0.1f, new float3((sfloat)1, (sfloat)10, (sfloat)1));
+            fp3 scale = rnd.Nextfp3((fp)0.1f, new fp3((fp)1, (fp)10, (fp)1));
 
             int numSamples = size.x * size.y;
-            var heights = new NativeArray<sfloat>(numSamples, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
+            var heights = new NativeArray<fp>(numSamples, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
             for (int i = 0; i < numSamples; i++)
             {
-                heights[i] = rnd.NextFloat((sfloat)0, (sfloat)1);
+                heights[i] = rnd.NextFloat((fp)0, (fp)1);
             }
 
             // CollisionMethod.Vertices will fail the unit tests, because it is a low-quality mode
@@ -998,10 +999,10 @@ namespace Fixed.Physics.Tests.Utils
             {
                 children[i] = new CompoundCollider.ColliderBlobInstance
                 {
-                    CompoundFromChild = new RigidTransform
+                    CompoundFromChild = new FpRigidTransform
                     {
-                        pos = (rnd.NextInt(10) > 0) ? rnd.NextFloat3(-(sfloat)5.0f, (sfloat)5.0f) : float3.zero,
-                        rot = (rnd.NextInt(10) > 0) ? rnd.NextQuaternionRotation() : quaternion.identity
+                        pos = (rnd.NextInt(10) > 0) ? rnd.Nextfp3(-(fp)5.0f, (fp)5.0f) : fp3.zero,
+                        rot = (rnd.NextInt(10) > 0) ? rnd.NextQuaternionRotation() : fpquaternion.identity
                     },
                     Collider = GenerateRandomCollider(ref rnd)
                 };
@@ -1013,7 +1014,7 @@ namespace Fixed.Physics.Tests.Utils
         public static BlobAssetReference<Collider> GenerateRandomConvex(ref Random rnd)
         {
             ColliderType colliderType = (ColliderType)rnd.NextInt((int)ColliderType.Cylinder + 1);
-            sfloat convexRadius = (rnd.NextInt(4) > 0) ? rnd.NextFloat((sfloat)0.5f) : (sfloat)0.0f;
+            fp convexRadius = (rnd.NextInt(4) > 0) ? rnd.NextFloat(fp.half) : (fp)0.0f;
             switch (colliderType)
             {
                 case ColliderType.Convex:
@@ -1023,10 +1024,10 @@ namespace Fixed.Physics.Tests.Utils
                     {
                         numPoints++;
                     }
-                    var points = new NativeArray<float3>(numPoints, Allocator.TempJob);
+                    var points = new NativeArray<fp3>(numPoints, Allocator.TempJob);
                     for (int i = 0; i < numPoints; i++)
                     {
-                        points[i] = rnd.NextFloat3(-(sfloat)1.0f, (sfloat)1.0f);
+                        points[i] = rnd.Nextfp3(-(fp)1.0f, (fp)1.0f);
                     }
                     var generationParameters = ConvexHullGenerationParameters.Default;
                     generationParameters.BevelRadius = convexRadius;
@@ -1039,74 +1040,74 @@ namespace Fixed.Physics.Tests.Utils
                 {
                     return SphereCollider.Create(new SphereGeometry
                     {
-                        Center = (rnd.NextInt(4) > 0) ? float3.zero : rnd.NextFloat3(-(sfloat)0.5f, (sfloat)0.5f),
-                        Radius = rnd.NextFloat((sfloat)0.01f, (sfloat)0.5f)
+                        Center = (rnd.NextInt(4) > 0) ? fp3.zero : rnd.Nextfp3(-fp.half, fp.half),
+                        Radius = rnd.NextFloat((fp)0.01f, fp.half)
                     });
                 }
 
                 case ColliderType.Capsule:
                 {
-                    float3 point0 = rnd.NextFloat3((sfloat)0.0f, (sfloat)1.0f);
-                    float3 point1 = (rnd.NextInt(4) > 0) ? -point0 : rnd.NextFloat3(-(sfloat)1.0f, (sfloat)1.0f);
+                    fp3 point0 = rnd.Nextfp3((fp)0.0f, (fp)1.0f);
+                    fp3 point1 = (rnd.NextInt(4) > 0) ? -point0 : rnd.Nextfp3(-(fp)1.0f, (fp)1.0f);
                     return CapsuleCollider.Create(new CapsuleGeometry
                     {
                         Vertex0 = point0,
                         Vertex1 = point1,
-                        Radius = rnd.NextFloat((sfloat)0.01f, (sfloat)0.5f)
+                        Radius = rnd.NextFloat((fp)0.01f, fp.half)
                     });
                 }
 
                 case ColliderType.Triangle:
                 {
-                    return PolygonCollider.CreateTriangle(rnd.NextFloat3(-(sfloat)1.0f, (sfloat)1.0f), rnd.NextFloat3(-(sfloat)1.0f, (sfloat)1.0f), rnd.NextFloat3(-(sfloat)1.0f, (sfloat)1.0f));
+                    return PolygonCollider.CreateTriangle(rnd.Nextfp3(-(fp)1.0f, (fp)1.0f), rnd.Nextfp3(-(fp)1.0f, (fp)1.0f), rnd.Nextfp3(-(fp)1.0f, (fp)1.0f));
                 }
 
                 case ColliderType.Quad:
                 {
                     // Pick 3 totally random points, then choose a fourth that makes a flat and convex quad
-                    float3 point0 = rnd.NextFloat3(-(sfloat)1.0f, (sfloat)1.0f);
-                    float3 point1 = rnd.NextFloat3(-(sfloat)1.0f, (sfloat)1.0f);
-                    float3 point3 = rnd.NextFloat3(-(sfloat)1.0f, (sfloat)1.0f);
-                    sfloat t0 = rnd.NextFloat((sfloat)0.0f, (sfloat)1.0f);
-                    sfloat t1 = rnd.NextFloat((sfloat)0.0f, (sfloat)1.0f);
-                    float3 e = point1 + point1 - point0;
-                    float3 a = math.lerp(point1, e, t0);
-                    float3 b = math.lerp(point3, point3 + point3 - point0, t0);
-                    float3 point2 = math.lerp(a, b, t1);
+                    fp3 point0 = rnd.Nextfp3(-(fp)1.0f, (fp)1.0f);
+                    fp3 point1 = rnd.Nextfp3(-(fp)1.0f, (fp)1.0f);
+                    fp3 point3 = rnd.Nextfp3(-(fp)1.0f, (fp)1.0f);
+                    fp t0 = rnd.NextFloat((fp)0.0f, (fp)1.0f);
+                    fp t1 = rnd.NextFloat((fp)0.0f, (fp)1.0f);
+                    fp3 e = point1 + point1 - point0;
+                    fp3 a = fpmath.lerp(point1, e, t0);
+                    fp3 b = fpmath.lerp(point3, point3 + point3 - point0, t0);
+                    fp3 point2 = fpmath.lerp(a, b, t1);
 
                     return PolygonCollider.CreateQuad(point0, point1, point2, point3);
                 }
 
                 case ColliderType.Box:
                 {
-                    sfloat minSize = (sfloat)0.05f; // TODO - work around hull builder problems with small faces, sometimes doesn't extend 1D->2D based on face area
+                    fp minSize = (fp)0.05f; // TODO - work around hull builder problems with small faces, sometimes doesn't extend 1D->2D based on face area
                     var boxGeometry = new BoxGeometry
                     {
-                        Center = (rnd.NextInt(4) > 0) ? float3.zero : rnd.NextFloat3(-(sfloat)0.5f, (sfloat)0.5f),
-                        Orientation = (rnd.NextInt(4) > 0) ? quaternion.identity : rnd.NextQuaternionRotation(),
-                        Size = rnd.NextFloat3(minSize, (sfloat)1.0f)
+                        Center = (rnd.NextInt(4) > 0) ? fp3.zero : rnd.Nextfp3(-fp.half, fp.half),
+                        Orientation = (rnd.NextInt(4) > 0) ? fpquaternion.identity : rnd.NextQuaternionRotation(),
+                        Size = rnd.Nextfp3(minSize, (fp)1.0f)
                     };
 
-                    sfloat maxBevelRadius = math.max(math.cmin((boxGeometry.Size - minSize) / ((sfloat)2.0f * ((sfloat)1.0f + sfloat.Epsilon))), (sfloat)0.0f);
-                    boxGeometry.BevelRadius = math.min(maxBevelRadius, convexRadius);
+                    fp maxBevelRadius = fpmath.max(fpmath.cmin((boxGeometry.Size - minSize) / ((fp)2.0f * ((fp)1.0f + fp.Epsilon))), (fp)0.0f);
+                    boxGeometry.BevelRadius = fpmath.min(maxBevelRadius, convexRadius);
 
                     return BoxCollider.Create(boxGeometry);
                 }
 
                 case ColliderType.Cylinder:
                 {
-                    sfloat minSize = (sfloat)0.01f; // TODO - cylinder gets degenerate faces if radius-convexRadius=0 or height/2-convexRadius=0, decide how to handle this in CylinderCollider
+                    fp minSize = (fp)0.01f; // TODO - cylinder gets degenerate faces if radius-convexRadius=0 or height/2-convexRadius=0, decide how to handle this in CylinderCollider
                     var cylinderGeometry = new CylinderGeometry
                     {
-                        Center = (rnd.NextInt(4) > 0) ? float3.zero : rnd.NextFloat3(-(sfloat)0.5f, (sfloat)0.5f),
-                        Orientation = (rnd.NextInt(4) > 0) ? quaternion.identity : rnd.NextQuaternionRotation(),
-                        Height = rnd.NextFloat((sfloat)2.0f * minSize, (sfloat)1f),
-                        Radius = rnd.NextFloat(minSize, (sfloat)1.0f),
+                        Center = (rnd.NextInt(4) > 0) ? fp3.zero : rnd.Nextfp3(-fp.half, fp.half),
+                        Orientation = (rnd.NextInt(4) > 0) ? fpquaternion.identity : rnd.NextQuaternionRotation(),
+                        Height = rnd.NextFloat((fp)2.0f * minSize, (fp)1f),
+                        Radius = rnd.NextFloat(minSize, (fp)1.0f),
                         SideCount = 20
                     };
 
-                    var maxBevelRadius = math.max(math.min(cylinderGeometry.Height / (sfloat)2, cylinderGeometry.Radius) - minSize, (sfloat)0.0f);
-                    cylinderGeometry.BevelRadius = math.min(maxBevelRadius, convexRadius);
+                    var maxBevelRadius = fpmath.max(fpmath.min(cylinderGeometry.Height / (fp)2, cylinderGeometry.Radius) - minSize, (fp)0.0f);
+                    cylinderGeometry.BevelRadius = fpmath.min(maxBevelRadius, convexRadius);
 
                     return CylinderCollider.Create(cylinderGeometry);
                 }
@@ -1136,7 +1137,7 @@ namespace Fixed.Physics.Tests.Utils
             return GenerateRandomCompound(ref rnd); // 2.5% compound
         }
 
-        public static unsafe PhysicsWorld GenerateRandomWorld(ref Random rnd, int numBodies, sfloat size, int numThreadsHint)
+        public static unsafe PhysicsWorld GenerateRandomWorld(ref Random rnd, int numBodies, fp size, int numThreadsHint)
         {
             // Create the world
             PhysicsWorld world = new PhysicsWorld(numBodies, 0, 0);
@@ -1147,10 +1148,10 @@ namespace Fixed.Physics.Tests.Utils
             {
                 bodies[i] = new RigidBody
                 {
-                    WorldFromBody = new RigidTransform
+                    WorldFromBody = new FpRigidTransform
                     {
-                        pos = rnd.NextFloat3(-size, size),
-                        rot = (rnd.NextInt(10) > 0) ? rnd.NextQuaternionRotation() : quaternion.identity
+                        pos = rnd.Nextfp3(-size, size),
+                        rot = (rnd.NextInt(10) > 0) ? rnd.NextQuaternionRotation() : fpquaternion.identity
                     },
                     Collider = GenerateRandomCollider(ref rnd),   // Not safe, could be garbage collected
                     Entity = Entity.Null,
@@ -1162,13 +1163,13 @@ namespace Fixed.Physics.Tests.Utils
             if (numThreadsHint == -1)
             {
                 world.CollisionWorld.Broadphase.Build(world.StaticBodies, world.DynamicBodies, world.MotionVelocities,
-                    world.CollisionWorld.CollisionTolerance, (sfloat)1.0f, -(sfloat)9.81f * math.up());
+                    world.CollisionWorld.CollisionTolerance, (fp)1.0f, -(fp)9.81f * fpmath.up());
             }
             else
             {
                 var buildStaticTree = new NativeArray<int>(1, Allocator.TempJob);
                 buildStaticTree[0] = 1;
-                world.CollisionWorld.Broadphase.ScheduleBuildJobs(ref world, timeStep: (sfloat)1.0f, gravity: -(sfloat)9.81f * math.up(),
+                world.CollisionWorld.Broadphase.ScheduleBuildJobs(ref world, timeStep: (fp)1.0f, gravity: -(fp)9.81f * fpmath.up(),
                     buildStaticTree, inputDeps: new JobHandle(), numThreadsHint > 0).Complete();
                 buildStaticTree.Dispose();
             }

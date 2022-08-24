@@ -1,5 +1,6 @@
 using Unity.Entities;
 using Fixed.Physics.Systems;
+using Unity.Mathematics.FixedPoint;
 
 namespace Fixed.Physics.GraphicsIntegration
 {
@@ -14,17 +15,17 @@ namespace Fixed.Physics.GraphicsIntegration
         /// <summary>
         /// The value of <c>Time.ElapsedTime</c> in the most recent tick of the <c>FixedStepSimulationSystemGroup</c>.
         /// </summary>
-        public sfloat MostRecentElapsedTime { get; private set; }
+        public fp MostRecentElapsedTime { get; private set; }
 
         /// <summary>
         /// The value of <c>Time.DeltaTime</c> in the most recent tick of the <c>FixedStepSimulationSystemGroup</c>.
         /// </summary>
-        public sfloat MostRecentDeltaTime { get; private set; }
+        public fp MostRecentDeltaTime { get; private set; }
 
         protected override void OnUpdate()
         {
-            MostRecentElapsedTime = (sfloat)Time.ElapsedTime;
-            MostRecentDeltaTime = (sfloat)Time.DeltaTime;
+            MostRecentElapsedTime = (fp)Time.ElapsedTime;
+            MostRecentDeltaTime = (fp)Time.DeltaTime;
         }
     }
 }

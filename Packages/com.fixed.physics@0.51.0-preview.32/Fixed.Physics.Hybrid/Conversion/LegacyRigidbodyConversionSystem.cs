@@ -1,6 +1,7 @@
 #if LEGACY_PHYSICS
 using Unity.Entities;
 using Fixed.Physics.GraphicsIntegration;
+using Unity.Mathematics.FixedPoint;
 using UnityEngine;
 using LegacyRigidBody = UnityEngine.Rigidbody;
 using LegacyCollider = UnityEngine.Collider;
@@ -56,7 +57,7 @@ namespace Fixed.Physics.Authoring
                     }
                     // n.b. no way to know if CoM was manually adjusted, so all legacy Rigidbody objects use auto CoM
                     DstEntityManager.AddOrSetComponent(entity, !body.isKinematic ?
-                        PhysicsMass.CreateDynamic(massProperties, (sfloat)body.mass) :
+                        PhysicsMass.CreateDynamic(massProperties, (fp)body.mass) :
                         PhysicsMass.CreateKinematic(massProperties));
 
                     DstEntityManager.AddOrSetComponent(entity, new PhysicsVelocity());
@@ -65,14 +66,14 @@ namespace Fixed.Physics.Authoring
                     {
                         DstEntityManager.AddOrSetComponent(entity, new PhysicsDamping
                         {
-                            Linear = (sfloat)body.drag,
-                            Angular = (sfloat)body.angularDrag
+                            Linear = (fp)body.drag,
+                            Angular = (fp)body.angularDrag
                         });
                         if (!body.useGravity)
-                            DstEntityManager.AddOrSetComponent(entity, new PhysicsGravityFactor { Value = sfloat.Zero });
+                            DstEntityManager.AddOrSetComponent(entity, new PhysicsGravityFactor { Value = fp.zero });
                     }
                     else
-                        DstEntityManager.AddOrSetComponent(entity, new PhysicsGravityFactor { Value = sfloat.Zero });
+                        DstEntityManager.AddOrSetComponent(entity, new PhysicsGravityFactor { Value = fp.zero });
                 }
             );
 

@@ -6,11 +6,11 @@
         "Unity.Collections",
         "Unity.Entities",
         "Unity.Entities.Hybrid",
-        "Fixed.Mathematics",
+        "Unity.Mathematics.FixedPoint",
         "Fixed.Physics",
         "Fixed.Transforms",
         "Unity.Mathematics",
-        "Fixed.Sfloat"
+        "Fixed.fp"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

@@ -1,5 +1,5 @@
 using System;
-using Fixed.Mathematics;
+using Unity.Mathematics.FixedPoint;
 using UnityEditor;
 using UnityEditor.IMGUI.Controls;
 using UnityEngine;
@@ -10,7 +10,7 @@ namespace Fixed.Physics.Editor
     {
         public float bevelRadius
         {
-            get => Mathf.Min(m_BevelRadius, (float)math.cmin(GetSize()) * 0.5f);
+            get => Mathf.Min(m_BevelRadius, (float)fpmath.cmin(GetSize()) * 0.5f);
             set
             {
                 if (!m_IsDragging)
@@ -37,7 +37,7 @@ namespace Fixed.Physics.Editor
         {
             get
             {
-                var size = (float3)GetSize();
+                var size = (fp3)GetSize();
                 var diameter = 0f;
                 // only consider size values on enabled axes
                 if (IsAxisEnabled(0)) diameter = Mathf.Max(diameter, Mathf.Abs((float)size.x));
@@ -46,8 +46,8 @@ namespace Fixed.Physics.Editor
             }
             set
             {
-                var size = (float3)GetSize();
-                size.x = size.y = (sfloat)Mathf.Max(0f, value * 2.0f);
+                var size = (fp3)GetSize();
+                size.x = size.y = (fp)Mathf.Max(0f, value * 2.0f);
                 SetSize(size);
             }
         }
@@ -94,23 +94,23 @@ namespace Fixed.Physics.Editor
 
                 var radius          = this.radius;
                 var bevelRadius     = this.bevelRadius;
-                var sBevelRadius = (sfloat)this.bevelRadius;
+                var sBevelRadius = (fp)this.bevelRadius;
 
-                var halfHeight      = new float3(sfloat.Zero, sfloat.Zero, (sfloat)height * (sfloat)0.5f);
-                var ctr             = (float3)center;
-                var halfAngleStep   = math.PI / (sfloat)m_SideCount;
-                var angleStep       = (sfloat)2f * halfAngleStep;
-                sfloat kHalfPI = (math.PI * (sfloat)0.5f);
+                var halfHeight      = new fp3(fp.zero, fp.zero, (fp)height * fp.half);
+                var ctr             = (fp3)center;
+                var halfAngleStep   = fpmath.PI / (fp)m_SideCount;
+                var angleStep       = (fp)2f * halfAngleStep;
+                fp kHalfPI = (fpmath.PI * fp.half);
 
-                var bottom          = ctr + halfHeight + new float3 { z = sBevelRadius };
-                var top             = ctr - halfHeight - new float3 { z = sBevelRadius };
-                var tangent         = new float3(sfloat.One, sfloat.Zero, sfloat.Zero);
-                var binormal        = new float3(sfloat.Zero, sfloat.One, sfloat.Zero);
+                var bottom          = ctr + halfHeight + new fp3 { z = sBevelRadius };
+                var top             = ctr - halfHeight - new fp3 { z = sBevelRadius };
+                var tangent         = new fp3(fp.one, fp.zero, fp.zero);
+                var binormal        = new fp3(fp.zero, fp.one, fp.zero);
                 var topBackFaced    = PhysicsBoundsHandleUtility.IsBackfaced(top,    -tangent, binormal, axes, isCameraInsideBox);
                 var bottomBackFaced = PhysicsBoundsHandleUtility.IsBackfaced(bottom,  tangent, binormal, axes, isCameraInsideBox);
 
-                var cameraCenter = float3.zero;
-                var cameraForward = new float3 { z = sfloat.One };
+                var cameraCenter = fp3.zero;
+                var cameraForward = new fp3 { z = fp.one };
                 if (Camera.current != null)
                 {
                     cameraCenter = Camera.current.transform.position;
@@ -125,33 +125,33 @@ namespace Fixed.Physics.Editor
                 var cameraOrtho = Camera.current != null && Camera.current.orthographic;
 
                 var noSides     = (radius - bevelRadius) < (float)PhysicsBoundsHandleUtility.kDistanceEpsilon;
-                var up          = new float3(sfloat.Zero, sfloat.Zero, sfloat.MinusOne);
+                var up          = new fp3(fp.zero, fp.zero, fp.minusOne);
 
-                var t           = ((sfloat)(m_SideCount - 2) * angleStep);
-                var xyAngle0    = new float3(math.cos(t), math.sin(t), sfloat.Zero);
+                var t           = ((fp)(m_SideCount - 2) * angleStep);
+                var xyAngle0    = new fp3(fpmath.cos(t), fpmath.sin(t), fp.zero);
 
-                t = (sfloat)(m_SideCount - 1) * angleStep;
-                var xyAngle1    = new float3(math.cos(t), math.sin(t), sfloat.Zero);
-                var sideways1   = new float3(math.cos(t + kHalfPI - halfAngleStep), math.sin(t + kHalfPI - halfAngleStep), sfloat.Zero);
-                var direction1  = new float3(math.cos(t + halfAngleStep), math.sin(t + halfAngleStep), sfloat.Zero);
+                t = (fp)(m_SideCount - 1) * angleStep;
+                var xyAngle1    = new fp3(fpmath.cos(t), fpmath.sin(t), fp.zero);
+                var sideways1   = new fp3(fpmath.cos(t + kHalfPI - halfAngleStep), fpmath.sin(t + kHalfPI - halfAngleStep), fp.zero);
+                var direction1  = new fp3(fpmath.cos(t + halfAngleStep), fpmath.sin(t + halfAngleStep), fp.zero);
                 var bevelGreaterThanZero = bevelRadius > 0f;
                 var bevelLessThanCylinderRadius = bevelRadius < radius;
                 for (var i = 0; i < m_SideCount; ++i)
                 {
-                    t = (sfloat)i * angleStep;
-                    var xyAngle2    = new float3(math.cos(t), math.sin(t), sfloat.Zero);
-                    var sideways2   = new float3(math.cos(t + kHalfPI - halfAngleStep), math.sin(t + kHalfPI - halfAngleStep), sfloat.Zero);
-                    var direction2  = new float3(math.cos(t + halfAngleStep), math.sin(t + halfAngleStep), sfloat.Zero);
+                    t = (fp)i * angleStep;
+                    var xyAngle2    = new fp3(fpmath.cos(t), fpmath.sin(t), fp.zero);
+                    var sideways2   = new fp3(fpmath.cos(t + kHalfPI - halfAngleStep), fpmath.sin(t + kHalfPI - halfAngleStep), fp.zero);
+                    var direction2  = new fp3(fpmath.cos(t + halfAngleStep), fpmath.sin(t + halfAngleStep), fp.zero);
 
-                    var offset0     = xyAngle0 * (sfloat)(radius - bevelRadius);
-                    var offset1     = xyAngle1 * (sfloat)(radius - bevelRadius);
-                    var offset2     = xyAngle2 * (sfloat)(radius - bevelRadius);
+                    var offset0     = xyAngle0 * (fp)(radius - bevelRadius);
+                    var offset1     = xyAngle1 * (fp)(radius - bevelRadius);
+                    var offset2     = xyAngle2 * (fp)(radius - bevelRadius);
 
-                    var top1     = ctr + offset1 - (halfHeight - new float3 { z = sBevelRadius });
-                    var bottom1  = ctr + offset1 + (halfHeight - new float3 { z = sBevelRadius });
+                    var top1     = ctr + offset1 - (halfHeight - new fp3 { z = sBevelRadius });
+                    var bottom1  = ctr + offset1 + (halfHeight - new fp3 { z = sBevelRadius });
 
-                    var top2     = ctr + offset2 - (halfHeight - new float3 { z = sBevelRadius });
-                    var bottom2  = ctr + offset2 + (halfHeight - new float3 { z = sBevelRadius });
+                    var top2     = ctr + offset2 - (halfHeight - new fp3 { z = sBevelRadius });
+                    var bottom2  = ctr + offset2 + (halfHeight - new fp3 { z = sBevelRadius });
 
                     var startOffset     = direction1 * sBevelRadius;
 
@@ -169,7 +169,7 @@ namespace Fixed.Physics.Editor
                             Handles.DrawLine(bottom1 - upOffset, bottom2 - upOffset);
                         }
 
-                        var currSideMidPoint     = ctr + ((top1 + bottom1 + top2 + bottom2) * (sfloat)0.25f) + startOffset;
+                        var currSideMidPoint     = ctr + ((top1 + bottom1 + top2 + bottom2) * (fp)0.25f) + startOffset;
                         var currSideBackFaced    = PhysicsBoundsHandleUtility.IsBackfaced(currSideMidPoint, up, sideways2, axes, isCameraInsideBox);
 
                         Handles.color = currSideBackFaced ? backfacedColor : frontfacedColor;
@@ -189,13 +189,13 @@ namespace Fixed.Physics.Editor
                     }
                     else
                     {
-                        var top0                = ctr + offset0 - (halfHeight - new float3 { z = sBevelRadius });
-                        var bottom0             = ctr + offset0 + (halfHeight - new float3 { z = sBevelRadius });
+                        var top0                = ctr + offset0 - (halfHeight - new fp3 { z = sBevelRadius });
+                        var bottom0             = ctr + offset0 + (halfHeight - new fp3 { z = sBevelRadius });
 
-                        var prevMidPoint         = ctr + ((top0 + top1 + bottom0 + bottom1) * (sfloat)0.25f) + startOffset;
+                        var prevMidPoint         = ctr + ((top0 + top1 + bottom0 + bottom1) * (fp)0.25f) + startOffset;
                         var prevSideBackFaced    = PhysicsBoundsHandleUtility.IsBackfaced(prevMidPoint, up, sideways1, axes, isCameraInsideBox);
 
-                        var currMidPoint         = ctr + ((top1 + top2 + bottom1 + bottom2) * (sfloat)0.25f) + startOffset;
+                        var currMidPoint         = ctr + ((top1 + top2 + bottom1 + bottom2) * (fp)0.25f) + startOffset;
                         var currSideBackFaced    = PhysicsBoundsHandleUtility.IsBackfaced(currMidPoint, up, sideways2, axes, isCameraInsideBox);
 
                         // Square side of bevelled cylinder
@@ -216,18 +216,18 @@ namespace Fixed.Physics.Editor
                         var cornerIndex0 = i;
                         var cornerIndex1 = i + m_SideCount;
                         {
-                            var orientation = quaternion.LookRotation(xyAngle2, up);
-                            var cornerNormal = math.normalize(math.mul(orientation, new float3(sfloat.Zero, sfloat.One, sfloat.One)));
+                            var orientation = fpquaternion.LookRotation(xyAngle2, up);
+                            var cornerNormal = fpmath.normalize(fpmath.mul(orientation, new fp3(fp.zero, fp.one, fp.one)));
                             PhysicsBoundsHandleUtility.CalculateCornerHorizon(top2,
-                                new float3x3(direction1, up, direction2),
+                                new fp3x3(direction1, up, direction2),
                                 cornerNormal, cameraCenter, cameraForward, cameraOrtho,
                                 bevelRadius, out m_Corners[cornerIndex0]);
                         }
                         {
-                            var orientation = quaternion.LookRotation(xyAngle2, -up);
-                            var cornerNormal = math.normalize(math.mul(orientation, new float3(sfloat.Zero, sfloat.One, sfloat.One)));
+                            var orientation = fpquaternion.LookRotation(xyAngle2, -up);
+                            var cornerNormal = fpmath.normalize(fpmath.mul(orientation, new fp3(fp.zero, fp.one, fp.one)));
                             PhysicsBoundsHandleUtility.CalculateCornerHorizon(bottom2,
-                                new float3x3(direction2, -up, direction1),
+                                new fp3x3(direction2, -up, direction1),
                                 cornerNormal, cameraCenter, cameraForward, cameraOrtho,
                                 bevelRadius, out m_Corners[cornerIndex1]);
                         }

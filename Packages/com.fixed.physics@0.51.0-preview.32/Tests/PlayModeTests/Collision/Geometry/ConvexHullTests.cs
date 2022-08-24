@@ -1,6 +1,6 @@
 using System;
 using NUnit.Framework;
-using Fixed.Mathematics;
+using Unity.Mathematics.FixedPoint;
 using Unity.Collections;
 using UnityEngine;
 
@@ -12,14 +12,14 @@ namespace Fixed.Physics.Tests.Collision.Geometry
         public unsafe void BuildConvexHull2D()
         {
             // Build circle.
-            var expectedCom = new float3((sfloat)4, (sfloat)5, (sfloat)3);
+            var expectedCom = new fp3((fp)4, (fp)5, (fp)3);
             const int n = 1024;
-            float3* points = stackalloc float3[n];
+            fp3* points = stackalloc fp3[n];
             Aabb domain = Aabb.Empty;
             for (int i = 0; i < n; ++i)
             {
-                sfloat angle = (sfloat)i / (sfloat)n * (sfloat)2 * (sfloat)math.PI;
-                points[i] = expectedCom + new float3(math.cos(angle), math.sin(angle), (sfloat)0);
+                fp angle = (fp)i / (fp)n * (fp)2 * (fp)fpmath.PI;
+                points[i] = expectedCom + new fp3(fpmath.cos(angle), fpmath.sin(angle), (fp)0);
                 domain.Include(points[i]);
             }
             ConvexHullBuilderStorage builder = new ConvexHullBuilderStorage(8192, Allocator.Temp, domain, 0.0f, ConvexHullBuilder.IntResolution.High);
@@ -29,8 +29,8 @@ namespace Fixed.Physics.Tests.Collision.Geometry
             }
             builder.Builder.UpdateHullMassProperties();
             var massProperties = builder.Builder.HullMassProperties;
-            Assert.IsTrue(math.all(math.abs(massProperties.CenterOfMass - expectedCom) < (sfloat)1e-4f));
-            Assert.AreEqual((float)math.PI, (float)massProperties.SurfaceArea, 1e-4f);
+            Assert.IsTrue(math.all(fpmath.abs(massProperties.CenterOfMass - expectedCom) < (fp)1e-4f));
+            Assert.AreEqual((float)fpmath.PI, (float)massProperties.SurfaceArea, 1e-4f);
         }
 
         private static void TestAdd128(ulong highA, ulong lowA, ulong highB, ulong lowB, ulong highExpected, ulong lowExpected)

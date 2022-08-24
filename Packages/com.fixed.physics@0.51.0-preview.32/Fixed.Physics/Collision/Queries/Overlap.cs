@@ -1,5 +1,6 @@
 using Unity.Burst;
-using Fixed.Mathematics;
+using Unity.Mathematics;
+using Unity.Mathematics.FixedPoint;
 
 namespace Fixed.Physics
 {
@@ -138,7 +139,7 @@ namespace Fixed.Physics
                 if (child.Collider->CollisionType == CollisionType.Composite)
                 {
                     OverlapAabbInput childInput = input;
-                    childInput.Aabb = Math.TransformAabb(math.inverse(child.CompoundFromChild), input.Aabb);
+                    childInput.Aabb = Math.TransformAabb(fpmath.inverse(child.CompoundFromChild), input.Aabb);
 
                     collector.PushCompositeCollider(new ColliderKeyPath(childKey, m_NumColliderKeyBits));
                     AabbCollider(childInput, child.Collider, ref collector);

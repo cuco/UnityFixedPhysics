@@ -1,5 +1,5 @@
 using System;
-using Fixed.Mathematics;
+using Unity.Mathematics.FixedPoint;
 using UnityEditor;
 using UnityEditor.IMGUI.Controls;
 using UnityEngine;
@@ -18,8 +18,8 @@ namespace Fixed.Physics.Editor
                 return;
             }
 
-            var cameraPos = default(float3);
-            var cameraFwd = new float3 { z = sfloat.One };
+            var cameraPos = default(fp3);
+            var cameraFwd = new fp3 { z = fp.one };
             var cameraOrtho = true;
             if (Camera.current != null)
             {
@@ -28,41 +28,41 @@ namespace Fixed.Physics.Editor
                 cameraOrtho = Camera.current.orthographic;
             }
 
-            var size        = new float3((sfloat)this.radius * (sfloat)2f, (sfloat)this.radius * (sfloat)2f, (sfloat)height);
+            var size        = new fp3((fp)this.radius * (fp)2f, (fp)this.radius * (fp)2f, (fp)height);
             var radius      = this.radius;
-            var origin      = (float3)this.center;
+            var origin      = (fp3)this.center;
             var bounds      = new Bounds(this.center, size);
 
             // Since the geometry is transformed by Handles.matrix during rendering, we transform the camera position
             // by the inverse matrix so that the two-shaded wireframe will have the proper orientation.
             var invMatrix       = Handles.inverseMatrix;
-            var cameraCenter    = (float3)invMatrix.MultiplyPoint(cameraPos);
-            var cameraForward   = (float3)invMatrix.MultiplyVector(cameraFwd);
+            var cameraCenter    = (fp3)invMatrix.MultiplyPoint(cameraPos);
+            var cameraForward   = (fp3)invMatrix.MultiplyVector(cameraFwd);
 
             bool isCameraInsideBox = Camera.current != null
                 && bounds.Contains(invMatrix.MultiplyPoint(cameraPos));
 
-            PhysicsBoundsHandleUtility.DrawFace(origin, size * new float3(sfloat.One,  sfloat.One,  sfloat.One), radius, 0, axes, isCameraInsideBox);
-            PhysicsBoundsHandleUtility.DrawFace(origin, size * new float3(sfloat.MinusOne,  sfloat.One,  sfloat.One), radius, 0, axes, isCameraInsideBox);
-            PhysicsBoundsHandleUtility.DrawFace(origin, size * new float3(sfloat.One,  sfloat.One,  sfloat.One), radius, 1, axes, isCameraInsideBox);
-            PhysicsBoundsHandleUtility.DrawFace(origin, size * new float3(sfloat.One, sfloat.MinusOne,  sfloat.One), radius, 1, axes, isCameraInsideBox);
-            PhysicsBoundsHandleUtility.DrawFace(origin, size * new float3(sfloat.One,  sfloat.One,  sfloat.One), radius, 2, axes, isCameraInsideBox);
-            PhysicsBoundsHandleUtility.DrawFace(origin, size * new float3(sfloat.One,  sfloat.One, sfloat.MinusOne), radius, 2, axes, isCameraInsideBox);
+            PhysicsBoundsHandleUtility.DrawFace(origin, size * new fp3(fp.one,  fp.one,  fp.one), radius, 0, axes, isCameraInsideBox);
+            PhysicsBoundsHandleUtility.DrawFace(origin, size * new fp3(fp.minusOne,  fp.one,  fp.one), radius, 0, axes, isCameraInsideBox);
+            PhysicsBoundsHandleUtility.DrawFace(origin, size * new fp3(fp.one,  fp.one,  fp.one), radius, 1, axes, isCameraInsideBox);
+            PhysicsBoundsHandleUtility.DrawFace(origin, size * new fp3(fp.one, fp.minusOne,  fp.one), radius, 1, axes, isCameraInsideBox);
+            PhysicsBoundsHandleUtility.DrawFace(origin, size * new fp3(fp.one,  fp.one,  fp.one), radius, 2, axes, isCameraInsideBox);
+            PhysicsBoundsHandleUtility.DrawFace(origin, size * new fp3(fp.one,  fp.one, fp.minusOne), radius, 2, axes, isCameraInsideBox);
 
-            var corner = (sfloat)0.5f * size - new float3(sfloat.One) * (sfloat)radius;
-            var axisx = new float3(sfloat.One, sfloat.Zero, sfloat.Zero);
-            var axisy = new float3(sfloat.Zero, sfloat.One, sfloat.Zero);
-            var axisz = new float3(sfloat.Zero, sfloat.Zero, sfloat.One);
+            var corner = fp.half * size - new fp3(fp.one) * (fp)radius;
+            var axisx = new fp3(fp.one, fp.zero, fp.zero);
+            var axisy = new fp3(fp.zero, fp.one, fp.zero);
+            var axisz = new fp3(fp.zero, fp.zero, fp.one);
 
-            PhysicsBoundsHandleUtility.CalculateCornerHorizon(origin + corner * new float3(sfloat.MinusOne,  sfloat.One, sfloat.MinusOne), quaternion.LookRotation(-axisz,  axisy), cameraCenter, cameraForward, cameraOrtho, radius, out s_Corners[0]);
-            PhysicsBoundsHandleUtility.CalculateCornerHorizon(origin + corner * new float3(sfloat.MinusOne,  sfloat.One,  sfloat.One), quaternion.LookRotation(-axisx,  axisy), cameraCenter, cameraForward, cameraOrtho, radius, out s_Corners[1]);
-            PhysicsBoundsHandleUtility.CalculateCornerHorizon(origin + corner * new float3(sfloat.One,  sfloat.One,  sfloat.One), quaternion.LookRotation(axisz,  axisy), cameraCenter, cameraForward, cameraOrtho, radius, out s_Corners[2]);
-            PhysicsBoundsHandleUtility.CalculateCornerHorizon(origin + corner * new float3(sfloat.One,  sfloat.One, sfloat.MinusOne), quaternion.LookRotation(axisx,  axisy), cameraCenter, cameraForward, cameraOrtho, radius, out s_Corners[3]);
+            PhysicsBoundsHandleUtility.CalculateCornerHorizon(origin + corner * new fp3(fp.minusOne,  fp.one, fp.minusOne), fpquaternion.LookRotation(-axisz,  axisy), cameraCenter, cameraForward, cameraOrtho, radius, out s_Corners[0]);
+            PhysicsBoundsHandleUtility.CalculateCornerHorizon(origin + corner * new fp3(fp.minusOne,  fp.one,  fp.one), fpquaternion.LookRotation(-axisx,  axisy), cameraCenter, cameraForward, cameraOrtho, radius, out s_Corners[1]);
+            PhysicsBoundsHandleUtility.CalculateCornerHorizon(origin + corner * new fp3(fp.one,  fp.one,  fp.one), fpquaternion.LookRotation(axisz,  axisy), cameraCenter, cameraForward, cameraOrtho, radius, out s_Corners[2]);
+            PhysicsBoundsHandleUtility.CalculateCornerHorizon(origin + corner * new fp3(fp.one,  fp.one, fp.minusOne), fpquaternion.LookRotation(axisx,  axisy), cameraCenter, cameraForward, cameraOrtho, radius, out s_Corners[3]);
 
-            PhysicsBoundsHandleUtility.CalculateCornerHorizon(origin + corner * new float3(sfloat.MinusOne, sfloat.MinusOne, sfloat.MinusOne), quaternion.LookRotation(-axisx, -axisy), cameraCenter, cameraForward, cameraOrtho, radius, out s_Corners[4]);
-            PhysicsBoundsHandleUtility.CalculateCornerHorizon(origin + corner * new float3(sfloat.MinusOne, sfloat.MinusOne,  sfloat.One), quaternion.LookRotation(axisz, -axisy), cameraCenter, cameraForward, cameraOrtho, radius, out s_Corners[5]);
-            PhysicsBoundsHandleUtility.CalculateCornerHorizon(origin + corner * new float3(sfloat.One, sfloat.MinusOne,  sfloat.One), quaternion.LookRotation(axisx, -axisy), cameraCenter, cameraForward, cameraOrtho, radius, out s_Corners[6]);
-            PhysicsBoundsHandleUtility.CalculateCornerHorizon(origin + corner * new float3(sfloat.One, sfloat.MinusOne, sfloat.MinusOne), quaternion.LookRotation(-axisz, -axisy), cameraCenter, cameraForward, cameraOrtho, radius, out s_Corners[7]);
+            PhysicsBoundsHandleUtility.CalculateCornerHorizon(origin + corner * new fp3(fp.minusOne, fp.minusOne, fp.minusOne), fpquaternion.LookRotation(-axisx, -axisy), cameraCenter, cameraForward, cameraOrtho, radius, out s_Corners[4]);
+            PhysicsBoundsHandleUtility.CalculateCornerHorizon(origin + corner * new fp3(fp.minusOne, fp.minusOne,  fp.one), fpquaternion.LookRotation(axisz, -axisy), cameraCenter, cameraForward, cameraOrtho, radius, out s_Corners[5]);
+            PhysicsBoundsHandleUtility.CalculateCornerHorizon(origin + corner * new fp3(fp.one, fp.minusOne,  fp.one), fpquaternion.LookRotation(axisx, -axisy), cameraCenter, cameraForward, cameraOrtho, radius, out s_Corners[6]);
+            PhysicsBoundsHandleUtility.CalculateCornerHorizon(origin + corner * new fp3(fp.one, fp.minusOne, fp.minusOne), fpquaternion.LookRotation(-axisz, -axisy), cameraCenter, cameraForward, cameraOrtho, radius, out s_Corners[7]);
 
             PhysicsBoundsHandleUtility.DrawCorner(s_Corners[0], new bool3(false, true,  true));
             PhysicsBoundsHandleUtility.DrawCorner(s_Corners[3], new bool3(true,  false, true));

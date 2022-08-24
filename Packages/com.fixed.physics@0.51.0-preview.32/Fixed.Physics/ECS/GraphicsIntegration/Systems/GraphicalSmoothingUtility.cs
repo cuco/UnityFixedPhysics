@@ -1,6 +1,6 @@
 using System.Runtime.CompilerServices;
 using Unity.Collections;
-using Fixed.Mathematics;
+using Unity.Mathematics.FixedPoint;
 using Fixed.Physics.Extensions;
 using Fixed.Transforms;
 
@@ -35,8 +35,8 @@ namespace Fixed.Physics.GraphicsIntegration
         /// See also <seealso cref="BuildLocalToWorld"/>.
         /// </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static RigidTransform Extrapolate(
-            in RigidTransform currentTransform, in PhysicsVelocity currentVelocity, in PhysicsMass mass, sfloat timeAhead
+        public static FpRigidTransform Extrapolate(
+            in FpRigidTransform currentTransform, in PhysicsVelocity currentVelocity, in PhysicsMass mass, fp timeAhead
         )
         {
             var newTransform = currentTransform;
@@ -68,15 +68,15 @@ namespace Fixed.Physics.GraphicsIntegration
         /// See also <seealso cref="BuildLocalToWorld"/>.
         /// </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static RigidTransform Interpolate(
-            in RigidTransform previousTransform,
-            in RigidTransform currentTransform,
-            sfloat normalizedTimeAhead
+        public static FpRigidTransform Interpolate(
+            in FpRigidTransform previousTransform,
+            in FpRigidTransform currentTransform,
+            fp normalizedTimeAhead
         )
         {
-            return new RigidTransform(
-                math.nlerp(previousTransform.rot, currentTransform.rot, normalizedTimeAhead),
-                math.lerp(previousTransform.pos, currentTransform.pos, normalizedTimeAhead)
+            return new FpRigidTransform(
+                fpmath.nlerp(previousTransform.rot, currentTransform.rot, normalizedTimeAhead),
+                fpmath.lerp(previousTransform.pos, currentTransform.pos, normalizedTimeAhead)
             );
         }
 
@@ -96,23 +96,23 @@ namespace Fixed.Physics.GraphicsIntegration
         /// An interpolated transform for a rigid body's graphical representation, suitable for constructing its <c>LocalToWorld</c> matrix before rendering.
         /// See also <seealso cref="BuildLocalToWorld"/>.
         /// </returns>
-        public static RigidTransform InterpolateUsingVelocity(
-            in RigidTransform previousTransform,
+        public static FpRigidTransform InterpolateUsingVelocity(
+            in FpRigidTransform previousTransform,
             in PhysicsVelocity previousVelocity,
             in PhysicsVelocity currentVelocity,
             in PhysicsMass mass,
-            sfloat timeAhead, sfloat normalizedTimeAhead
+            fp timeAhead, fp normalizedTimeAhead
         )
         {
             var newTransform = previousTransform;
 
             // Partially integrate with old velocities
-            previousVelocity.Integrate(mass, timeAhead * (sfloat.One - normalizedTimeAhead), ref newTransform.pos, ref newTransform.rot);
+            previousVelocity.Integrate(mass, timeAhead * (fp.one - normalizedTimeAhead), ref newTransform.pos, ref newTransform.rot);
             // Blend the previous and current velocities
             var interpolatedVelocity = new PhysicsVelocity
             {
-                Linear = math.lerp(previousVelocity.Linear, currentVelocity.Linear, normalizedTimeAhead),
-                Angular = math.lerp(previousVelocity.Angular, currentVelocity.Angular, normalizedTimeAhead)
+                Linear = fpmath.lerp(previousVelocity.Linear, currentVelocity.Linear, normalizedTimeAhead),
+                Angular = fpmath.lerp(previousVelocity.Angular, currentVelocity.Angular, normalizedTimeAhead)
             };
             // Then finish integration with blended velocities
             interpolatedVelocity.Integrate(mass, timeAhead * normalizedTimeAhead, ref newTransform.pos, ref newTransform.rot);
@@ -134,25 +134,25 @@ namespace Fixed.Physics.GraphicsIntegration
         /// <returns>A LocalToWorld matrix to use in place of those produced by default.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static LocalToWorld BuildLocalToWorld(
-            int i, RigidTransform transform,
+            int i, FpRigidTransform transform,
             bool hasAnyScale,
             bool hasNonUniformScale, NativeArray<NonUniformScale> nonUniformScales,
             bool hasScale, NativeArray<Scale> scales,
             NativeArray<CompositeScale> compositeScales
         )
         {
-            var tr = new float4x4(transform);
+            var tr = new fp4x4(transform);
 
             if (!hasAnyScale)
                 return new LocalToWorld { Value = tr };
 
             var scale = hasNonUniformScale
-                ? float4x4.Scale(nonUniformScales[i].Value)
+                ? fp4x4.Scale(nonUniformScales[i].Value)
                 : hasScale
-                ? float4x4.Scale(new float3(scales[i].Value))
+                ? fp4x4.Scale(new fp3(scales[i].Value))
                 : compositeScales[i].Value;
 
-            return new LocalToWorld { Value = math.mul(tr, scale) };
+            return new LocalToWorld { Value = fpmath.mul(tr, scale) };
         }
     }
 }

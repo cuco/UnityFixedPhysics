@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using Unity.Collections;
 using Unity.Entities;
-using Fixed.Mathematics;
+using Unity.Mathematics.FixedPoint;
 using Fixed.Physics.Extensions;
+using Unity.Mathematics;
 using Unity.Properties;
 using FloatRange = Fixed.Physics.Math.FloatRange;
 
@@ -224,7 +225,7 @@ namespace Fixed.Physics
         /// </summary>
         /// <param name="anchorA">Specifies the anchor point in the space of body A.</param>
         /// <param name="anchorB">Specifies the target point in the space of body B.</param>
-        public static PhysicsJoint CreateBallAndSocket(float3 anchorA, float3 anchorB)
+        public static PhysicsJoint CreateBallAndSocket(fp3 anchorA, fp3 anchorB)
         {
             var bodyAFromJoint = BodyFrame.Identity;
             bodyAFromJoint.Position = anchorA;
@@ -289,7 +290,7 @@ namespace Fixed.Physics
         /// <param name="anchorA">Specifies the anchor point in the space of body A.</param>
         /// <param name="anchorB">Specifies the target point in the space of body B.</param>
         /// <param name="distanceRange">The minimum required distance and maximum possible distance between the two anchor points.</param>
-        public static PhysicsJoint CreateLimitedDistance(float3 anchorA, float3 anchorB, FloatRange distanceRange)
+        public static PhysicsJoint CreateLimitedDistance(fp3 anchorA, fp3 anchorB, FloatRange distanceRange)
         {
             var bodyAFromJoint = BodyFrame.Identity;
             bodyAFromJoint.Position = anchorA;
@@ -354,7 +355,7 @@ namespace Fixed.Physics
                 Length = 3,
                 [0]                                  = Constraint.FixedAngle(Constraint.DefaultSpringFrequency, Constraint.DefaultSpringDamping),
                 [k_PrismaticDistanceOnAxisIndex]     = Constraint.Planar(0, distanceOnAxis.Sorted(), Constraint.DefaultSpringFrequency, Constraint.DefaultSpringDamping),
-                [k_PrismaticDistanceOnAxisIndex + 1] = Constraint.Cylindrical(0, float2.zero, Constraint.DefaultSpringFrequency, Constraint.DefaultSpringDamping)
+                [k_PrismaticDistanceOnAxisIndex + 1] = Constraint.Cylindrical(0, fp2.zero, Constraint.DefaultSpringFrequency, Constraint.DefaultSpringDamping)
             }
         };
 
@@ -376,7 +377,7 @@ namespace Fixed.Physics
         /// <param name="perpendicularCone">The joint defining the conic sections about the perpendicular axis to subtract from the primary cone.</param>
         public static void CreateRagdoll(
             BodyFrame bodyAFromJoint, BodyFrame bodyBFromJoint,
-            sfloat maxConeAngle, FloatRange angularPlaneRange, FloatRange angularTwistRange,
+            fp maxConeAngle, FloatRange angularPlaneRange, FloatRange angularTwistRange,
             out PhysicsJoint primaryConeAndTwist, out PhysicsJoint perpendicularCone
         )
         {
@@ -388,8 +389,8 @@ namespace Fixed.Physics
                 m_Constraints = new FixedList128Bytes<Constraint>
                 {
                     Length = 2,
-                    [k_RagdollPrimaryTwistRangeIndex] = Constraint.Twist(0, math.clamp(angularTwistRange.Sorted(), new float2(-math.PI), new float2(math.PI)), Constraint.DefaultSpringFrequency, Constraint.DefaultSpringDamping),
-                    [k_RagdollPrimaryMaxConeIndex]    = Constraint.Cone(0, new FloatRange(sfloat.Zero, math.min(math.abs(maxConeAngle), math.PI)), Constraint.DefaultSpringFrequency, Constraint.DefaultSpringDamping)
+                    [k_RagdollPrimaryTwistRangeIndex] = Constraint.Twist(0, fpmath.clamp(angularTwistRange.Sorted(), new fp2(-fpmath.PI), new fp2(fpmath.PI)), Constraint.DefaultSpringFrequency, Constraint.DefaultSpringDamping),
+                    [k_RagdollPrimaryMaxConeIndex]    = Constraint.Cone(0, new FloatRange(fp.zero, fpmath.min(fpmath.abs(maxConeAngle), fpmath.PI)), Constraint.DefaultSpringFrequency, Constraint.DefaultSpringDamping)
                 }
             };
 
@@ -406,7 +407,7 @@ namespace Fixed.Physics
                 m_Constraints = new FixedList128Bytes<Constraint>
                 {
                     Length = 2,
-                    [k_RagdollPerpendicularRangeIndex]     = Constraint.Cone(0, math.clamp(angularPlaneRange.Sorted() + new float2(sfloat.FromRaw(0x3fc90fdb)), new float2(sfloat.Zero), new float2(math.PI)), Constraint.DefaultSpringFrequency, Constraint.DefaultSpringDamping),
+                    [k_RagdollPerpendicularRangeIndex]     = Constraint.Cone(0, fpmath.clamp(angularPlaneRange.Sorted() + new fp2(fp.FromRaw(0x3fc90fdb)), new fp2(fp.zero), new fp2(fpmath.PI)), Constraint.DefaultSpringFrequency, Constraint.DefaultSpringDamping),
                     [k_RagdollPerpendicularRangeIndex + 1] = Constraint.BallAndSocket(Constraint.DefaultSpringFrequency, Constraint.DefaultSpringDamping)
                 }
             };
@@ -421,7 +422,7 @@ namespace Fixed.Physics
         /// <param name="offset">Specifies a target point and orientation in the space of body B.</param>
         /// <param name="linearLocks">Specifies which linear axes are constrained.</param>
         /// <param name="angularLocks">Specifies which angular axes are constrained.</param>
-        public static PhysicsJoint CreateLimitedDOF(RigidTransform offset, bool3 linearLocks, bool3 angularLocks)
+        public static PhysicsJoint CreateLimitedDOF(FpRigidTransform offset, bool3 linearLocks, bool3 angularLocks)
         {
             var joint = new PhysicsJoint
             {
@@ -435,8 +436,8 @@ namespace Fixed.Physics
                     {
                         ConstrainedAxes = linearLocks,
                         Type = ConstraintType.Linear,
-                        Min = sfloat.Zero,
-                        Max = sfloat.Zero,
+                        Min = fp.zero,
+                        Max = fp.zero,
                         SpringFrequency = Constraint.DefaultSpringFrequency,
                         SpringDamping = Constraint.DefaultSpringDamping
                     },
@@ -444,8 +445,8 @@ namespace Fixed.Physics
                     {
                         ConstrainedAxes = angularLocks,
                         Type = ConstraintType.Angular,
-                        Min = sfloat.Zero,
-                        Max = sfloat.Zero,
+                        Min = fp.zero,
+                        Max = fp.zero,
                         SpringFrequency = Constraint.DefaultSpringFrequency,
                         SpringDamping = Constraint.DefaultSpringDamping
                     },

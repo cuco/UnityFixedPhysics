@@ -1,5 +1,6 @@
 using System;
-using Fixed.Mathematics;
+using Unity.Mathematics.FixedPoint;
+using Unity.Mathematics;
 
 namespace Fixed.Physics
 {
@@ -10,26 +11,26 @@ namespace Fixed.Physics
         /// </summary>
         public struct FloatRange : IEquatable<FloatRange>
         {
-            public sfloat Min;
-            public sfloat Max;
+            public fp Min;
+            public fp Max;
 
-            public FloatRange(sfloat min, sfloat max)
+            public FloatRange(fp min, fp max)
             {
                 Min = min;
                 Max = max;
             }
 
-            public sfloat Mid => math.lerp(Min, Max, (sfloat)0.5f);
+            public fp Mid => fpmath.lerp(Min, Max, fp.half);
 
             public bool Equals(FloatRange other) => Min.Equals(other.Min) && Max.Equals(other.Max);
 
             public override bool Equals(object obj) => obj is FloatRange other && Equals(other);
 
-            public override int GetHashCode() => unchecked((int)math.hash(new float2(Min, Max)));
+            public override int GetHashCode() => unchecked((int)fpmath.hash(new fp2(Min, Max)));
 
-            public static implicit operator float2(FloatRange range) => new float2(range.Min, range.Max);
+            public static implicit operator fp2(FloatRange range) => new fp2(range.Min, range.Max);
 
-            public static implicit operator FloatRange(float2 f) => new FloatRange { Min = f.x, Max = f.y };
+            public static implicit operator FloatRange(fp2 f) => new FloatRange { Min = f.x, Max = f.y };
 
             public override string ToString() => $"FloatRange {{ Min = {Min}, Max = {Max} }}";
 
@@ -37,7 +38,7 @@ namespace Fixed.Physics
             /// Returns a sorted copy of this instance.
             /// </summary>
             /// <returns>A copy of this instance, where <see cref="Min"/> is the lesser of <see cref="Min"/> and <see cref="Max"/>, and <see cref="Max"/> is the greater of the two.</returns>
-            public FloatRange Sorted() => math.select(this, ((float2)this).yx, Min > Max);
+            public FloatRange Sorted() => fpmath.select(this, ((fp2)this).yx, Min > Max);
         }
     }
 }

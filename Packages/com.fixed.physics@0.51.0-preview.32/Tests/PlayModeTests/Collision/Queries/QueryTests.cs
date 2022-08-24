@@ -1,8 +1,8 @@
 using System;
 using NUnit.Framework;
-using Fixed.Mathematics;
+using Unity.Mathematics.FixedPoint;
 using Unity.Collections;
-using Random = Fixed.Mathematics.Random;
+using Random = Unity.Mathematics.FixedPoint.Random;
 using static Fixed.Physics.Math;
 using Fixed.Physics.Tests.Utils;
 
@@ -14,43 +14,43 @@ namespace Fixed.Physics.Tests.Collision.Queries
         // The results will not be exactly the same due to floating point inaccuracy, approximations in methods like convex-convex collider cast, etc.
         // Collider cast conservative advancement is accurate to 1e-3, so this tolerance must be at least a bit higher than that to allow for other
         // sources of error on top of it.
-        static readonly sfloat tolerance = (sfloat)1.1e-3f;
+        static readonly fp tolerance = (fp)1.1e-3f;
 
         //
         // Query result validation
         //
 
-        static unsafe float3 getSupport(ref ConvexHull hull, float3 direction)
+        static unsafe fp3 getSupport(ref ConvexHull hull, fp3 direction)
         {
-            float4 best = new float4(hull.Vertices[0], math.dot(hull.Vertices[0], direction));
+            fp4 best = new fp4(hull.Vertices[0], fpmath.dot(hull.Vertices[0], direction));
             for (int i = 1; i < hull.Vertices.Length; i++)
             {
-                sfloat dot = math.dot(hull.Vertices[i], direction);
-                best = math.select(best, new float4(hull.Vertices[i], dot), dot > best.w);
+                fp dot = fpmath.dot(hull.Vertices[i], direction);
+                best = fpmath.select(best, new fp4(hull.Vertices[i], dot), dot > best.w);
             }
             return best.xyz;
         }
 
-        static void ValidateDistanceResult(DistanceQueries.Result result, ref ConvexHull a, ref ConvexHull b, MTransform aFromB, sfloat referenceDistance, string failureMessage)
+        static void ValidateDistanceResult(DistanceQueries.Result result, ref ConvexHull a, ref ConvexHull b, MTransform aFromB, fp referenceDistance, string failureMessage)
         {
             // Calculate the support distance along the separating normal
-            float3 tempA = getSupport(ref a, -result.NormalInA);
-            float3 supportQuery = tempA - result.NormalInA * a.ConvexRadius;
-            float3 tempB = Math.Mul(aFromB, getSupport(ref b, math.mul(aFromB.InverseRotation, result.NormalInA)));
-            float3 supportTarget = tempB + result.NormalInA * b.ConvexRadius;
-            sfloat supportQueryDot = math.dot(supportQuery, result.NormalInA);
-            sfloat supportTargetDot = math.dot(supportTarget, result.NormalInA);
-            sfloat supportDistance = supportQueryDot - supportTargetDot;
+            fp3 tempA = getSupport(ref a, -result.NormalInA);
+            fp3 supportQuery = tempA - result.NormalInA * a.ConvexRadius;
+            fp3 tempB = Math.Mul(aFromB, getSupport(ref b, fpmath.mul(aFromB.InverseRotation, result.NormalInA)));
+            fp3 supportTarget = tempB + result.NormalInA * b.ConvexRadius;
+            fp supportQueryDot = fpmath.dot(supportQuery, result.NormalInA);
+            fp supportTargetDot = fpmath.dot(supportTarget, result.NormalInA);
+            fp supportDistance = supportQueryDot - supportTargetDot;
 
             // Increase the tolerance in case of core penetration
-            sfloat adjustedTolerance = tolerance;
-            sfloat zeroCoreDistance = -a.ConvexRadius - b.ConvexRadius; // Distance of shapes including radius at which core shapes are penetrating
+            fp adjustedTolerance = tolerance;
+            fp zeroCoreDistance = -a.ConvexRadius - b.ConvexRadius; // Distance of shapes including radius at which core shapes are penetrating
             if (result.Distance < zeroCoreDistance || referenceDistance < zeroCoreDistance || supportDistance < zeroCoreDistance)
             {
                 // Core shape penetration distances are less accurate, and error scales with the number of vertices (as well as shape size). See stopThreshold in ConvexConvexDistanceQueries.
                 // This is not usually noticeable in rigid body simulation because accuracy improves as the penetration resolves.
                 // The tolerance is tuned for these tests, it might require further tuning as the tests change.
-                adjustedTolerance = (sfloat)1e-2f + (sfloat)1e-3f * (sfloat)(a.NumVertices + b.NumVertices);
+                adjustedTolerance = (fp)1e-2f + (fp)1e-3f * (fp)(a.NumVertices + b.NumVertices);
             }
 
             // Check that the distance is consistent with the reference distance
@@ -58,7 +58,7 @@ namespace Fixed.Physics.Tests.Collision.Queries
 
             // Check that the separating normal and closest point are consistent with the distance
             Assert.AreEqual((float)result.Distance, (float)supportDistance, (float)adjustedTolerance, failureMessage + ": incorrect normal");
-            sfloat positionDot = math.dot(result.PositionOnAinA, result.NormalInA);
+            fp positionDot = fpmath.dot(result.PositionOnAinA, result.NormalInA);
             Assert.AreEqual((float)supportQueryDot, (float)positionDot, (float)adjustedTolerance, failureMessage + ": incorrect position");
         }
 
@@ -66,7 +66,7 @@ namespace Fixed.Physics.Tests.Collision.Queries
         // Reference implementations of queries using simple brute-force methods
         //
 
-        static unsafe sfloat RefConvexConvexDistance(ref ConvexHull a, ref ConvexHull b, MTransform aFromB)
+        static unsafe fp RefConvexConvexDistance(ref ConvexHull a, ref ConvexHull b, MTransform aFromB)
         {
             bool success = false;
             if (a.NumVertices + b.NumVertices < 64) // too slow without burst
@@ -76,10 +76,10 @@ namespace Fixed.Physics.Tests.Collision.Queries
                 Aabb aabb = Aabb.Empty;
                 for (int iB = 0; iB < b.NumVertices; iB++)
                 {
-                    float3 vertexB = Math.Mul(aFromB, b.Vertices[iB]);
+                    fp3 vertexB = Math.Mul(aFromB, b.Vertices[iB]);
                     for (int iA = 0; iA < a.NumVertices; iA++)
                     {
-                        float3 vertexA = a.Vertices[iA];
+                        fp3 vertexA = a.Vertices[iA];
                         aabb.Include(vertexA - vertexB);
                     }
                 }
@@ -88,33 +88,33 @@ namespace Fixed.Physics.Tests.Collision.Queries
                 success = true;
                 for (int iB = 0; iB < b.NumVertices; iB++)
                 {
-                    float3 vertexB = Math.Mul(aFromB, b.Vertices[iB]);
+                    fp3 vertexB = Math.Mul(aFromB, b.Vertices[iB]);
                     for (int iA = 0; iA < a.NumVertices; iA++)
                     {
-                        float3 vertexA = a.Vertices[iA];
+                        fp3 vertexA = a.Vertices[iA];
                         diff.AddPoint(vertexA - vertexB, (uint)(iA | iB << 16));
                     }
                 }
 
-                sfloat distance = (sfloat)0.0f;
+                fp distance = (fp)0.0f;
                 if (success && diff.Dimension == 3)
                 {
                     // Find the closest triangle to the origin
-                    distance = sfloat.MaxValue;
+                    distance = fp.max_value;
                     bool penetrating = true;
                     foreach (int t in diff.Triangles.Indices)
                     {
                         ConvexHullBuilder.Triangle triangle = diff.Triangles[t];
-                        float3 v0 = diff.Vertices[triangle.GetVertex(0)].Position;
-                        float3 v1 = diff.Vertices[triangle.GetVertex(1)].Position;
-                        float3 v2 = diff.Vertices[triangle.GetVertex(2)].Position;
-                        float3 n = diff.ComputePlane(t).Normal;
-                        DistanceQueries.Result result = DistanceQueries.TriangleSphere(v0, v1, v2, n, float3.zero, (sfloat)0.0f, MTransform.Identity);
+                        fp3 v0 = diff.Vertices[triangle.GetVertex(0)].Position;
+                        fp3 v1 = diff.Vertices[triangle.GetVertex(1)].Position;
+                        fp3 v2 = diff.Vertices[triangle.GetVertex(2)].Position;
+                        fp3 n = diff.ComputePlane(t).Normal;
+                        DistanceQueries.Result result = DistanceQueries.TriangleSphere(v0, v1, v2, n, fp3.zero, (fp)0.0f, MTransform.Identity);
                         if (result.Distance < distance)
                         {
                             distance = result.Distance;
                         }
-                        penetrating = penetrating & (math.dot(n, -result.NormalInA) < (sfloat)0.0f); // only penetrating if inside of all planes
+                        penetrating = penetrating & (fpmath.dot(n, -result.NormalInA) < (fp)0.0f); // only penetrating if inside of all planes
                     }
 
                     if (penetrating)
@@ -147,7 +147,7 @@ namespace Fixed.Physics.Tests.Collision.Queries
         {
             // Do the query, API version and reference version, then validate the result
             DistanceQueries.Result result = DistanceQueries.ConvexConvex((Collider*)query, (Collider*)target, queryFromTarget);
-            sfloat referenceDistance = RefConvexConvexDistance(ref query->ConvexHull, ref target->ConvexHull, queryFromTarget);
+            fp referenceDistance = RefConvexConvexDistance(ref query->ConvexHull, ref target->ConvexHull, queryFromTarget);
             ValidateDistanceResult(result, ref query->ConvexHull, ref target->ConvexHull, queryFromTarget, referenceDistance, failureMessage);
         }
 
@@ -180,8 +180,8 @@ namespace Fixed.Physics.Tests.Collision.Queries
                 var target = TestUtils.GenerateRandomConvex(ref rnd);
                 var query = TestUtils.GenerateRandomConvex(ref rnd);
                 MTransform queryFromTarget = new MTransform(
-                    (rnd.NextInt(10) > 0) ? rnd.NextQuaternionRotation() : quaternion.identity,
-                    rnd.NextFloat3(-(sfloat)3.0f, (sfloat)3.0f));
+                    (rnd.NextInt(10) > 0) ? rnd.NextQuaternionRotation() : fpquaternion.identity,
+                    rnd.Nextfp3(-(fp)3.0f, (fp)3.0f));
                 TestConvexConvexDistance((ConvexCollider*)target.GetUnsafePtr(), (ConvexCollider*)query.GetUnsafePtr(), queryFromTarget, "ConvexConvexDistanceTest failed " + i + " (" + state.ToString() + ")");
             }
         }
@@ -225,11 +225,11 @@ namespace Fixed.Physics.Tests.Collision.Queries
                     uint testState = rnd.state;
 
                     // Generate random transform
-                    sfloat distance = math.pow((sfloat)10.0f, rnd.NextFloat(-(sfloat)15.0f, -(sfloat)1.0f));
-                    sfloat angle = math.pow((sfloat)10.0f, rnd.NextFloat(-(sfloat)15.0f, (sfloat)0.0f));
+                    fp distance = fpmath.pow((fp)10.0f, rnd.NextFloat(-(fp)15.0f, -(fp)1.0f));
+                    fp angle = fpmath.pow((fp)10.0f, rnd.NextFloat(-(fp)15.0f, (fp)0.0f));
                     MTransform queryFromTarget = new MTransform(
-                        (rnd.NextInt(10) > 0) ? quaternion.AxisAngle(rnd.NextFloat3Direction(), angle) : quaternion.identity,
-                        (rnd.NextInt(10) > 0) ? rnd.NextFloat3Direction() * distance : float3.zero);
+                        (rnd.NextInt(10) > 0) ? fpquaternion.AxisAngle(rnd.Nextfp3Direction(), angle) : fpquaternion.identity,
+                        (rnd.NextInt(10) > 0) ? rnd.Nextfp3Direction() * distance : fp3.zero);
                     TestConvexConvexDistance((ConvexCollider*)collider.GetUnsafePtr(), (ConvexCollider*)collider.GetUnsafePtr(), queryFromTarget, "ConvexConvexDistanceEdgeCaseTest failed " + iShape + ", " + iTest + " (" + shapeState + ", " + testState + ")");
                 }
             }
@@ -240,7 +240,7 @@ namespace Fixed.Physics.Tests.Collision.Queries
             return new DistanceQueries.Result
             {
                 PositionOnAinA = Math.Mul(queryFromWorld, hit.Position + hit.SurfaceNormal * hit.Distance),
-                NormalInA = math.mul(queryFromWorld.Rotation, hit.SurfaceNormal),
+                NormalInA = fpmath.mul(queryFromWorld.Rotation, hit.SurfaceNormal),
                 Distance = hit.Distance
             };
         }
@@ -265,12 +265,12 @@ namespace Fixed.Physics.Tests.Collision.Queries
             world.CalculateDistance(input, ref hits);
 
             // Check each hit and find the closest
-            sfloat closestDistance = sfloat.MaxValue;
+            fp closestDistance = fp.max_value;
             MTransform queryFromWorld = Math.Inverse(new MTransform(input.Transform));
             for (int iHit = 0; iHit < hits.Length; iHit++)
             {
                 DistanceHit hit = hits[iHit];
-                closestDistance = math.min(closestDistance, hit.Distance);
+                closestDistance = fpmath.min(closestDistance, hit.Distance);
 
                 MTransform queryLeafFromWorld = queryFromWorld;
                 ConvexCollider* queryCollider = (ConvexCollider*)input.Collider;
@@ -288,7 +288,7 @@ namespace Fixed.Physics.Tests.Collision.Queries
                 ChildCollider leaf;
                 MTransform queryFromTarget;
                 GetHitLeaf(ref world, hit.RigidBodyIndex, hit.ColliderKey, queryLeafFromWorld, out leaf, out queryFromTarget);
-                sfloat referenceDistance = DistanceQueries.ConvexConvex((Collider*)queryCollider, leaf.Collider, queryFromTarget).Distance;
+                fp referenceDistance = DistanceQueries.ConvexConvex((Collider*)queryCollider, leaf.Collider, queryFromTarget).Distance;
 
                 // Compare to the world query result
                 DistanceQueries.Result result = DistanceResultFromDistanceHit(hit, queryLeafFromWorld);
@@ -335,14 +335,14 @@ namespace Fixed.Physics.Tests.Collision.Queries
         static unsafe void CheckColliderCastHit(ref Physics.PhysicsWorld world, ColliderCastInput input, ColliderCastHit hit, string failureMessage)
         {
             // If the input doesn't contain a convex collider, fetch the leaf at the hit transform
-            MTransform worldFromQuery = new MTransform(input.Orientation, math.lerp(input.Start, input.End, hit.Fraction));
+            MTransform worldFromQuery = new MTransform(input.Orientation, fpmath.lerp(input.Start, input.End, hit.Fraction));
             MTransform queryLeafFromWorld = Inverse(worldFromQuery);
             ConvexCollider* queryCollider = (ConvexCollider*)input.Collider;
             ChildCollider queryLeaf;
 
             if (input.Collider->CollisionType != CollisionType.Convex)
             {
-                Collider.GetLeafCollider(input.Collider, new RigidTransform(worldFromQuery.Rotation, worldFromQuery.Translation), hit.QueryColliderKey, out queryLeaf);
+                Collider.GetLeafCollider(input.Collider, new FpRigidTransform(worldFromQuery.Rotation, worldFromQuery.Translation), hit.QueryColliderKey, out queryLeaf);
                 queryLeafFromWorld = Inverse(new MTransform(queryLeaf.TransformFromChild));
                 queryCollider = (ConvexCollider*)queryLeaf.Collider;
             }
@@ -353,12 +353,12 @@ namespace Fixed.Physics.Tests.Collision.Queries
             DistanceQueries.Result result = new DistanceQueries.Result
             {
                 PositionOnAinA = Math.Mul(queryLeafFromWorld, hit.Position),
-                NormalInA = math.mul(queryLeafFromWorld.Rotation, hit.SurfaceNormal),
-                Distance = (sfloat)0.0f
+                NormalInA = fpmath.mul(queryLeafFromWorld.Rotation, hit.SurfaceNormal),
+                Distance = (fp)0.0f
             };
 
             // If the fraction is zero then the shapes should penetrate, otherwise they should have zero distance
-            if (hit.Fraction == (sfloat)0.0f)
+            if (hit.Fraction == (fp)0.0f)
             {
                 // Do a distance query to verify initial penetration
                 result.Distance = DistanceQueries.ConvexConvex((Collider*)queryCollider, leaf.Collider, queryFromTarget).Distance;
@@ -380,11 +380,11 @@ namespace Fixed.Physics.Tests.Collision.Queries
             world.CastCollider(input, ref hits);
 
             // Check each hit and find the earliest
-            sfloat minFraction = sfloat.MaxValue;
+            fp minFraction = fp.max_value;
             for (int iHit = 0; iHit < hits.Length; iHit++)
             {
                 ColliderCastHit hit = hits[iHit];
-                minFraction = math.min(minFraction, hit.Fraction);
+                minFraction = fpmath.min(minFraction, hit.Fraction);
                 CheckColliderCastHit(ref world, input, hit, failureMessage + ", hits[" + iHit + "]");
             }
 
@@ -398,7 +398,7 @@ namespace Fixed.Physics.Tests.Collision.Queries
             else
             {
                 Assert.AreEqual((float)closestHit.Fraction, (float)minFraction, (float)(tolerance *
-                    math.length(input.Ray.Displacement)), failureMessage + ", closestHit: fraction does not match");
+                    fpmath.length(input.Ray.Displacement)), failureMessage + ", closestHit: fraction does not match");
                 CheckColliderCastHit(ref world, input, closestHit, failureMessage + ", closestHit");
             }
 
@@ -419,18 +419,18 @@ namespace Fixed.Physics.Tests.Collision.Queries
             }
 
             // Check that the hit position matches the fraction
-            float3 hitPosition = math.lerp(input.Start, input.End, hit.Fraction);
-            Assert.Less(math.length(hitPosition - hit.Position), tolerance, failureMessage + ": inconsistent fraction and position");
+            fp3 hitPosition = fpmath.lerp(input.Start, input.End, hit.Fraction);
+            Assert.Less(fpmath.length(hitPosition - hit.Position), tolerance, failureMessage + ": inconsistent fraction and position");
 
             // Query the hit position and check that it's on the surface of the shape
             PointDistanceInput pointInput = new PointDistanceInput
             {
-                Position = math.transform(math.inverse(leaf.TransformFromChild), hit.Position),
-                MaxDistance = sfloat.MaxValue
+                Position = fpmath.transform(fpmath.inverse(leaf.TransformFromChild), hit.Position),
+                MaxDistance = fp.max_value
             };
             DistanceHit distanceHit;
             leaf.Collider->CalculateDistance(pointInput, out distanceHit);
-            if (((ConvexCollider*)leaf.Collider)->ConvexHull.ConvexRadius > (sfloat)0.0f)
+            if (((ConvexCollider*)leaf.Collider)->ConvexHull.ConvexRadius > (fp)0.0f)
             {
                 // Convex raycast approximates radius, so it's possible that the hit position is not exactly on the shape, but must at least be outside
                 Assert.Greater(distanceHit.Distance, -tolerance, failureMessage);
@@ -452,11 +452,11 @@ namespace Fixed.Physics.Tests.Collision.Queries
             world.CastRay(input, ref hits);
 
             // Check each hit and find the earliest
-            sfloat minFraction = sfloat.MaxValue;
+            fp minFraction = fp.max_value;
             for (int iHit = 0; iHit < hits.Length; iHit++)
             {
                 RaycastHit hit = hits[iHit];
-                minFraction = math.min(minFraction, hit.Fraction);
+                minFraction = fpmath.min(minFraction, hit.Fraction);
                 CheckRaycastHit(ref world, input, hit, failureMessage + ", hits[" + iHit + "]");
             }
 
@@ -470,7 +470,7 @@ namespace Fixed.Physics.Tests.Collision.Queries
             else
             {
                 Assert.AreEqual((float)closestHit.Fraction, (float)minFraction, (float)(tolerance *
-                    math.length(input.Ray.Displacement)), failureMessage + ", closestHit: fraction does not match");
+                    fpmath.length(input.Ray.Displacement)), failureMessage + ", closestHit: fraction does not match");
                 CheckRaycastHit(ref world, input, closestHit, failureMessage + ", closestHit");
             }
 
@@ -524,7 +524,7 @@ namespace Fixed.Physics.Tests.Collision.Queries
                         rnd.state = dbgWorld;
                     }
                     uint worldState = rnd.state;
-                    Physics.PhysicsWorld world = TestUtils.GenerateRandomWorld(ref rnd, rnd.NextInt(1, 20), (sfloat)10.0f, numThreadsHint);
+                    Physics.PhysicsWorld world = TestUtils.GenerateRandomWorld(ref rnd, rnd.NextInt(1, 20), (fp)10.0f, numThreadsHint);
 
                     for (int iTest = 0; iTest < (numTests / numWorlds); iTest++)
                     {
@@ -537,13 +537,13 @@ namespace Fixed.Physics.Tests.Collision.Queries
 
                         // Generate common random query inputs, including composite/terrain colliders
                         var collider = TestUtils.GenerateRandomCollider(ref rnd);
-                        RigidTransform transform = new RigidTransform
+                        FpRigidTransform transform = new FpRigidTransform
                         {
-                            pos = rnd.NextFloat3(-(sfloat)10.0f, (sfloat)10.0f),
-                            rot = (rnd.NextInt(10) > 0) ? rnd.NextQuaternionRotation() : quaternion.identity,
+                            pos = rnd.Nextfp3(-(fp)10.0f, (fp)10.0f),
+                            rot = (rnd.NextInt(10) > 0) ? rnd.NextQuaternionRotation() : fpquaternion.identity,
                         };
                         var startPos = transform.pos;
-                        var endPos = startPos + rnd.NextFloat3(-(sfloat)5.0f, (sfloat)5.0f);
+                        var endPos = startPos + rnd.Nextfp3(-(fp)5.0f, (fp)5.0f);
 
                         // Distance test
                         {
@@ -551,7 +551,7 @@ namespace Fixed.Physics.Tests.Collision.Queries
                             {
                                 Collider = (Collider*)collider.GetUnsafePtr(),
                                 Transform = transform,
-                                MaxDistance = (rnd.NextInt(4) > 0) ? rnd.NextFloat((sfloat)5.0f) : (sfloat)0.0f
+                                MaxDistance = (rnd.NextInt(4) > 0) ? rnd.NextFloat((fp)5.0f) : (fp)0.0f
                             };
                             WorldCalculateDistanceTest(ref world, input, ref distanceHits, "WorldQueryTest failed CalculateDistance " + failureMessage);
                         }
@@ -590,33 +590,33 @@ namespace Fixed.Physics.Tests.Collision.Queries
         }
 
         // Tests that a contact point is on the surface of its shape
-        static unsafe void CheckPointOnSurface(ref ChildCollider leaf, float3 position, string failureMessage)
+        static unsafe void CheckPointOnSurface(ref ChildCollider leaf, fp3 position, string failureMessage)
         {
-            float3 positionLocal = math.transform(math.inverse(leaf.TransformFromChild), position);
-            leaf.Collider->CalculateDistance(new PointDistanceInput { Position = positionLocal, MaxDistance = sfloat.MaxValue, Filter = Physics.CollisionFilter.Default }, out DistanceHit hit);
+            fp3 positionLocal = fpmath.transform(fpmath.inverse(leaf.TransformFromChild), position);
+            leaf.Collider->CalculateDistance(new PointDistanceInput { Position = positionLocal, MaxDistance = fp.max_value, Filter = Physics.CollisionFilter.Default }, out DistanceHit hit);
             Assert.Less(hit.Distance, tolerance, failureMessage + ": contact point outside of shape");
             Assert.Greater(hit.Distance, -((ConvexCollider*)leaf.Collider)->ConvexHull.ConvexRadius - tolerance, failureMessage + ": contact point inside of shape");
         }
 
         // Tests that the points of a manifold are all coplanar
-        static unsafe void CheckManifoldFlat(ref ConvexConvexManifoldQueries.Manifold manifold, float3 normal, string failureMessage)
+        static unsafe void CheckManifoldFlat(ref ConvexConvexManifoldQueries.Manifold manifold, fp3 normal, string failureMessage)
         {
-            float3 point0 = manifold[0].Position + normal * manifold[0].Distance;
-            float3 point1 = manifold[1].Position + normal * manifold[1].Distance;
+            fp3 point0 = manifold[0].Position + normal * manifold[0].Distance;
+            fp3 point1 = manifold[1].Position + normal * manifold[1].Distance;
             for (int i = 2; i < manifold.NumContacts; i++)
             {
                 // Try to calculate a plane from points 0, 1, iNormal
-                float3 point = manifold[i].Position + normal * manifold[i].Distance;
-                float3 cross = math.cross(point - point0, point - point1);
-                if (math.lengthsq(cross) > (sfloat)1e-6f)
+                fp3 point = manifold[i].Position + normal * manifold[i].Distance;
+                fp3 cross = fpmath.cross(point - point0, point - point1);
+                if (fpmath.lengthsq(cross) > (fp)1e-6f)
                 {
                     // Test that each point in the manifold is on the plane
-                    float3 faceNormal = math.normalize(cross);
-                    sfloat dot = math.dot(point0, faceNormal);
+                    fp3 faceNormal = fpmath.normalize(cross);
+                    fp dot = fpmath.dot(point0, faceNormal);
                     for (int j = 2; j < manifold.NumContacts; j++)
                     {
-                        float3 testPoint = manifold[j].Position + normal * manifold[j].Distance;
-                        Assert.AreEqual((float)dot, (float)math.dot(faceNormal, testPoint), (float)tolerance, failureMessage + " contact " + j);
+                        fp3 testPoint = manifold[j].Position + normal * manifold[j].Distance;
+                        Assert.AreEqual((float)dot, (float)fpmath.dot(faceNormal, testPoint), (float)tolerance, failureMessage + " contact " + j);
                     }
                     break;
                 }
@@ -649,7 +649,7 @@ namespace Fixed.Physics.Tests.Collision.Queries
                     rnd.state = dbgWorld;
                 }
                 uint worldState = rnd.state;
-                Physics.PhysicsWorld world = TestUtils.GenerateRandomWorld(ref rnd, rnd.NextInt(1, 20), (sfloat)3.0f, 1);
+                Physics.PhysicsWorld world = TestUtils.GenerateRandomWorld(ref rnd, rnd.NextInt(1, 20), (fp)3.0f, 1);
 
                 // Manifold test
                 // TODO would be nice if we could change the world collision tolerance
@@ -675,7 +675,7 @@ namespace Fixed.Physics.Tests.Collision.Queries
                             world.MotionVelocities[iBodyB] : MotionVelocity.Zero;
 
                         ManifoldQueries.BodyBody(bodyA, bodyB, motionVelocityA, motionVelocityB,
-                            world.CollisionWorld.CollisionTolerance, (sfloat)1.0f, new BodyIndexPair { BodyIndexA = iBodyA, BodyIndexB = iBodyB }, ref contactWriter);
+                            world.CollisionWorld.CollisionTolerance, (fp)1.0f, new BodyIndexPair { BodyIndexA = iBodyA, BodyIndexB = iBodyB }, ref contactWriter);
                         contactWriter.EndForEachIndex();
 
                         // Read each manifold
@@ -728,22 +728,22 @@ namespace Fixed.Physics.Tests.Collision.Queries
                             if (!skipClosestPointTest)
                             {
                                 ContactPoint closestPoint = manifold[minIndex];
-                                RigidTransform aFromWorld = math.inverse(leafA.TransformFromChild);
+                                FpRigidTransform aFromWorld = fpmath.inverse(leafA.TransformFromChild);
                                 DistanceQueries.Result result = new DistanceQueries.Result
                                 {
-                                    PositionOnAinA = math.transform(aFromWorld, closestPoint.Position + manifold.Normal * closestPoint.Distance),
-                                    NormalInA = math.mul(aFromWorld.rot, manifold.Normal),
+                                    PositionOnAinA = fpmath.transform(aFromWorld, closestPoint.Position + manifold.Normal * closestPoint.Distance),
+                                    NormalInA = fpmath.mul(aFromWorld.rot, manifold.Normal),
                                     Distance = closestPoint.Distance
                                 };
 
-                                MTransform aFromB = new MTransform(math.mul(aFromWorld, leafB.TransformFromChild));
-                                sfloat referenceDistance = DistanceQueries.ConvexConvex(leafA.Collider, leafB.Collider, aFromB).Distance;
+                                MTransform aFromB = new MTransform(fpmath.mul(aFromWorld, leafB.TransformFromChild));
+                                fp referenceDistance = DistanceQueries.ConvexConvex(leafA.Collider, leafB.Collider, aFromB).Distance;
                                 ValidateDistanceResult(result, ref ((ConvexCollider*)leafA.Collider)->ConvexHull, ref ((ConvexCollider*)leafB.Collider)->ConvexHull, aFromB, referenceDistance, failureMessage + " closest point");
                             }
 
                             // Check that the manifold is flat
                             CheckManifoldFlat(ref manifold, manifold.Normal, failureMessage + ": non-flat A");
-                            CheckManifoldFlat(ref manifold, float3.zero, failureMessage + ": non-flat B");
+                            CheckManifoldFlat(ref manifold, fp3.zero, failureMessage + ": non-flat B");
                         }
 
                         contacts.Dispose();

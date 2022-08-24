@@ -1,6 +1,7 @@
 using System;
 using Unity.Assertions;
-using Fixed.Mathematics;
+using Unity.Mathematics;
+using Unity.Mathematics.FixedPoint;
 
 namespace Fixed.Physics
 {
@@ -34,8 +35,8 @@ namespace Fixed.Physics
         public CombinePolicy FrictionCombinePolicy;
         public CombinePolicy RestitutionCombinePolicy;
         public byte CustomTags;
-        public sfloat Friction;
-        public sfloat Restitution;
+        public fp Friction;
+        public fp Restitution;
 
         public CollisionResponsePolicy CollisionResponse
         {
@@ -126,8 +127,8 @@ namespace Fixed.Physics
         {
             FrictionCombinePolicy = CombinePolicy.GeometricMean,
             RestitutionCombinePolicy = CombinePolicy.GeometricMean,
-            Friction = (sfloat)0.5f,
-            Restitution = sfloat.Zero
+            Friction = fp.half,
+            Restitution = fp.zero
         };
 
         private static CollisionResponsePolicy FlagsToCollisionResponse(MaterialFlags flags)
@@ -160,41 +161,41 @@ namespace Fixed.Physics
 
         // Get a combined friction value for a pair of materials.
         // The combine policy with the highest value takes priority.
-        public static sfloat GetCombinedFriction(Material materialA, Material materialB)
+        public static fp GetCombinedFriction(Material materialA, Material materialB)
         {
             var policy = (CombinePolicy)math.max((int)materialA.FrictionCombinePolicy, (int)materialB.FrictionCombinePolicy);
             switch (policy)
             {
                 case CombinePolicy.GeometricMean:
-                    return math.sqrt(materialA.Friction * materialB.Friction);
+                    return fpmath.sqrt(materialA.Friction * materialB.Friction);
                 case CombinePolicy.Minimum:
-                    return math.min(materialA.Friction, materialB.Friction);
+                    return fpmath.min(materialA.Friction, materialB.Friction);
                 case CombinePolicy.Maximum:
-                    return math.max(materialA.Friction, materialB.Friction);
+                    return fpmath.max(materialA.Friction, materialB.Friction);
                 case CombinePolicy.ArithmeticMean:
-                    return (materialA.Friction + materialB.Friction) * (sfloat)0.5f;
+                    return (materialA.Friction + materialB.Friction) * fp.half;
                 default:
-                    return sfloat.Zero;
+                    return fp.zero;
             }
         }
 
         // Get a combined restitution value for a pair of materials.
         // The combine policy with the highest value takes priority.
-        public static sfloat GetCombinedRestitution(Material materialA, Material materialB)
+        public static fp GetCombinedRestitution(Material materialA, Material materialB)
         {
             var policy = (CombinePolicy)math.max((int)materialA.RestitutionCombinePolicy, (int)materialB.RestitutionCombinePolicy);
             switch (policy)
             {
                 case CombinePolicy.GeometricMean:
-                    return math.sqrt(materialA.Restitution * materialB.Restitution);
+                    return fpmath.sqrt(materialA.Restitution * materialB.Restitution);
                 case CombinePolicy.Minimum:
-                    return math.min(materialA.Restitution, materialB.Restitution);
+                    return fpmath.min(materialA.Restitution, materialB.Restitution);
                 case CombinePolicy.Maximum:
-                    return math.max(materialA.Restitution, materialB.Restitution);
+                    return fpmath.max(materialA.Restitution, materialB.Restitution);
                 case CombinePolicy.ArithmeticMean:
-                    return (materialA.Restitution + materialB.Restitution) * (sfloat)0.5f;
+                    return (materialA.Restitution + materialB.Restitution) * fp.half;
                 default:
-                    return sfloat.Zero;
+                    return fp.zero;
             }
         }
 
@@ -218,7 +219,7 @@ namespace Fixed.Physics
                     | ((byte)RestitutionCombinePolicy << 8)
                     | (CustomTags << 12))
                 ),
-                math.hash(new float2(Friction, Restitution))
+                fpmath.hash(new fp2(Friction, Restitution))
             )));
         }
     }

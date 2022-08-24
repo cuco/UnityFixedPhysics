@@ -8,29 +8,29 @@
  9                                | 9            | JacModFlags (byte)                          |
  **BaseContactJacobian**          |              |                                             |
  0                                | 3            | NumContacts (int)                           |
- 4                                | 15           | Normal (float3)                             |
+ 4                                | 15           | Normal (fp3)                             |
  **ContactJacobianAngular**       |              |                                             |
- 0                                | 11           | AngularA (float3)                           |
- 12                               | 23           | AngularB (float3)                           |
- 24                               | 27           | EffectiveMass (sfloat)                       |
- 28                               | 31           | Impulse (sfloat)                             |
+ 0                                | 11           | AngularA (fp3)                           |
+ 12                               | 23           | AngularB (fp3)                           |
+ 24                               | 27           | EffectiveMass (fp)                       |
+ 28                               | 31           | Impulse (fp)                             |
  **ContactJacAngAndVelToReachCP** |              |                                             |
  0                                | 31           | Jac (ContactJacobianAngular)                |
- 32                               | 35           | VelToReachCP (sfloat)                        |
+ 32                               | 35           | VelToReachCP (fp)                        |
  **ContactJacobian**              |              |                                             |
  0                                | 15           | BaseJac (BaseContactJacobian)               |
- 16                               | 19           | CoefficientOfFriction (sfloat)               |
- 20                               | 23           | CoefficientOfRestitution (sfloat)            |
+ 16                               | 19           | CoefficientOfFriction (fp)               |
+ 20                               | 23           | CoefficientOfRestitution (fp)            |
  24                               | 55           | Friction0 (ContactJacobianAngular)          |
  56                               | 87           | Friction1 (ContactJacobianAngular)          |
- 88                               | 91           | FrictionEffectiveMassNonDiag (sfloat)        |
+ 88                               | 91           | FrictionEffectiveMassNonDiag (fp)        |
  92                               | 123          | AngularFriction (ContactJacobianAngular)    |
  **TriggerJacobian**              |              |                                             |
  0                                | 15           | BaseJac (BaseContactJacobian)               |
  16                               | 23           | ColliderKeys (2 ints)                       |
  **ContactPoint**
- 0                                | 11           | Position (float3)                           |
- 12                               | 15           | Distance (sfloat)                            |
+ 0                                | 11           | Position (fp3)                           |
+ 12                               | 15           | Distance (fp)                            |
 
   **Contact jacobian types**                      |
 --------------------------------------------------|

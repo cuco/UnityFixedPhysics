@@ -1,5 +1,6 @@
 using System.Runtime.CompilerServices;
-using Fixed.Mathematics;
+using Unity.Mathematics;
+using Unity.Mathematics.FixedPoint;
 
 namespace Fixed.Physics
 {
@@ -8,19 +9,19 @@ namespace Fixed.Physics
     public struct MassDistribution
     {
         // The center of mass and the orientation to principal axis space
-        public RigidTransform Transform;
+        public FpRigidTransform Transform;
 
         // Diagonalized inertia tensor for a unit mass
-        public float3 InertiaTensor;
+        public fp3 InertiaTensor;
 
         // Get the inertia as a 3x3 matrix
-        public float3x3 InertiaMatrix
+        public fp3x3 InertiaMatrix
         {
             get
             {
-                var r = new float3x3(Transform.rot);
-                var r2 = new float3x3(InertiaTensor.x * r.c0, InertiaTensor.y * r.c1, InertiaTensor.z * r.c2);
-                return math.mul(r2, math.inverse(r));
+                var r = new fp3x3(Transform.rot);
+                var r2 = new fp3x3(InertiaTensor.x * r.c0, InertiaTensor.y * r.c1, InertiaTensor.z * r.c2);
+                return fpmath.mul(r2, fpmath.inverse(r));
             }
         }
     }
@@ -32,23 +33,23 @@ namespace Fixed.Physics
         public MassDistribution MassDistribution;
 
         // The volume of the object.
-        public sfloat Volume;
+        public fp Volume;
 
         // Upper bound on the rate of change of the object's extent in any direction,
         // with respect to angular speed around its center of mass.
         // Used to determine how much to expand a rigid body's AABB to enclose its swept volume.
-        public sfloat AngularExpansionFactor;
+        public fp AngularExpansionFactor;
 
         // The mass properties of a unit sphere
         public static readonly MassProperties UnitSphere = new MassProperties
         {
             MassDistribution = new MassDistribution
             {
-                Transform = RigidTransform.identity,
-                InertiaTensor = new float3(sfloat.FromRaw(0x3ecccccd))
+                Transform = FpRigidTransform.identity,
+                InertiaTensor = new fp3(fp.FromRaw(0x3ecccccd))
             },
-            Volume = sfloat.FromRaw(0x40860a92),//(4.0f / 3.0f) * (sfloat)math.PI,
-            AngularExpansionFactor = sfloat.Zero
+            Volume = fp.FromRaw(0x40860a92),//(4.0f / 3.0f) * (fp)fpmath.PI,
+            AngularExpansionFactor = fp.zero
         };
     }
 
@@ -56,71 +57,71 @@ namespace Fixed.Physics
     public struct MotionData
     {
         // Center of mass and inertia orientation in world space
-        public RigidTransform WorldFromMotion;
+        public FpRigidTransform WorldFromMotion;
 
         // Center of mass and inertia orientation in rigid body space
-        public RigidTransform BodyFromMotion;
+        public FpRigidTransform BodyFromMotion;
 
         // Damping applied to the motion during each simulation step
-        public sfloat LinearDamping;
-        public sfloat AngularDamping;
+        public fp LinearDamping;
+        public fp AngularDamping;
 
         public static readonly MotionData Zero = new MotionData
         {
-            WorldFromMotion = RigidTransform.identity,
-            BodyFromMotion = RigidTransform.identity,
-            LinearDamping = sfloat.Zero,
-            AngularDamping = sfloat.Zero
+            WorldFromMotion = FpRigidTransform.identity,
+            BodyFromMotion = FpRigidTransform.identity,
+            LinearDamping = fp.zero,
+            AngularDamping = fp.zero
         };
     }
 
     // A dynamic rigid body's "hot" motion data, used during solving.
     public struct MotionVelocity
     {
-        public float3 LinearVelocity;   // world space
-        public float3 AngularVelocity;  // motion space
-        public float3 InverseInertia;
-        public sfloat InverseMass;
-        public sfloat AngularExpansionFactor;
+        public fp3 LinearVelocity;   // world space
+        public fp3 AngularVelocity;  // motion space
+        public fp3 InverseInertia;
+        public fp InverseMass;
+        public fp AngularExpansionFactor;
 
         // A multiplier applied to the simulation step's gravity vector
-        public sfloat GravityFactor;
+        public fp GravityFactor;
 
-        public bool HasInfiniteMass => InverseMass == sfloat.Zero;
+        public bool HasInfiniteMass => InverseMass == fp.zero;
         public bool HasInfiniteInertia => !math.any(InverseInertia);
         public bool IsKinematic => HasInfiniteMass && HasInfiniteInertia;
 
         public static readonly MotionVelocity Zero = new MotionVelocity
         {
-            LinearVelocity = new float3(0),
-            AngularVelocity = new float3(0),
-            InverseInertia = new float3(0),
-            InverseMass = sfloat.Zero,
-            AngularExpansionFactor = sfloat.Zero,
-            GravityFactor = sfloat.Zero
+            LinearVelocity = new fp3(0),
+            AngularVelocity = new fp3(0),
+            InverseInertia = new fp3(0),
+            InverseMass = fp.zero,
+            AngularExpansionFactor = fp.zero,
+            GravityFactor = fp.zero
         };
 
         // Apply a linear impulse (in world space)
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void ApplyLinearImpulse(float3 impulse)
+        public void ApplyLinearImpulse(fp3 impulse)
         {
             LinearVelocity += impulse * InverseMass;
         }
 
         // Apply an angular impulse (in motion space)
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void ApplyAngularImpulse(float3 impulse)
+        public void ApplyAngularImpulse(fp3 impulse)
         {
             AngularVelocity += impulse * InverseInertia;
         }
 
         // Calculate the distances by which to expand collision tolerances based on the speed of the object.
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal MotionExpansion CalculateExpansion(sfloat timeStep) => new MotionExpansion
+        internal MotionExpansion CalculateExpansion(fp timeStep) => new MotionExpansion
         {
             Linear = LinearVelocity * timeStep,
-            // math.length(AngularVelocity) * timeStep is conservative approximation of sin((math.length(AngularVelocity) * timeStep)
-            Uniform = math.min(math.length(AngularVelocity) * timeStep * AngularExpansionFactor, AngularExpansionFactor)
+            // fpmath.length(AngularVelocity) * timeStep is conservative approximation of sin((fpmath.length(AngularVelocity) * timeStep)
+            Uniform = fpmath.min(fpmath.length(AngularVelocity) * timeStep * AngularExpansionFactor, AngularExpansionFactor)
         };
     }
 
@@ -128,36 +129,36 @@ namespace Fixed.Physics
     // Used to determine how far away from the body to look for collisions.
     struct MotionExpansion
     {
-        public float3 Linear;   // how far to look ahead of the object
-        public sfloat Uniform;   // how far to look around the object
+        public fp3 Linear;   // how far to look ahead of the object
+        public fp Uniform;   // how far to look around the object
 
-        public sfloat MaxDistance => math.length(Linear) + Uniform;
+        public fp MaxDistance => fpmath.length(Linear) + Uniform;
 
         public static readonly MotionExpansion Zero = new MotionExpansion
         {
-            Linear = new float3(sfloat.Zero),
-            Uniform = sfloat.Zero
+            Linear = new fp3(fp.zero),
+            Uniform = fp.zero
         };
 
         // Expand an AABB
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Aabb ExpandAabb(Aabb aabb) => new Aabb
         {
-            Max = math.max(aabb.Max, aabb.Max + Linear) + Uniform,
-            Min = math.min(aabb.Min, aabb.Min + Linear) - Uniform
+            Max = fpmath.max(aabb.Max, aabb.Max + Linear) + Uniform,
+            Min = fpmath.min(aabb.Min, aabb.Min + Linear) - Uniform
         };
     }
 
     // A linear and angular velocity
     public struct Velocity
     {
-        public float3 Linear;   // world space
-        public float3 Angular;  // motion space
+        public fp3 Linear;   // world space
+        public fp3 Angular;  // motion space
 
         public static readonly Velocity Zero = new Velocity
         {
-            Linear = new float3(sfloat.Zero),
-            Angular = new float3(sfloat.Zero)
+            Linear = new fp3(fp.zero),
+            Angular = new fp3(fp.zero)
         };
     }
 }

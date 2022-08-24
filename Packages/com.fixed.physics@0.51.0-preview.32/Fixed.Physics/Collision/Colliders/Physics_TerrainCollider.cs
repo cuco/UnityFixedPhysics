@@ -2,7 +2,8 @@ using Unity.Burst;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
-using Fixed.Mathematics;
+using Unity.Mathematics;
+using Unity.Mathematics.FixedPoint;
 using UnityEngine.Assertions;
 
 namespace Fixed.Physics
@@ -38,17 +39,17 @@ namespace Fixed.Physics
 
         // Create a terrain collider from a grid of heights
         public static BlobAssetReference<Collider> Create(
-            NativeArray<sfloat> heights, int2 size, float3 scale, CollisionMethod collisionMethod
+            NativeArray<fp> heights, int2 size, fp3 scale, CollisionMethod collisionMethod
         ) =>
             Create(heights, size, scale, collisionMethod, CollisionFilter.Default, Material.Default);
 
         public static BlobAssetReference<Collider> Create(
-            NativeArray<sfloat> heights, int2 size, float3 scale, CollisionMethod collisionMethod, CollisionFilter filter
+            NativeArray<fp> heights, int2 size, fp3 scale, CollisionMethod collisionMethod, CollisionFilter filter
         ) =>
             Create(heights, size, scale, collisionMethod, filter, Material.Default);
 
         public static unsafe BlobAssetReference<Collider> Create(
-            NativeArray<sfloat> heights, int2 size, float3 scale, CollisionMethod collisionMethod, CollisionFilter filter, Material material
+            NativeArray<fp> heights, int2 size, fp3 scale, CollisionMethod collisionMethod, CollisionFilter filter, Material material
         )
         {
             SafetyChecks.CheckInRangeAndThrow(size.x, new int2(2, int.MaxValue), nameof(size));
@@ -68,7 +69,7 @@ namespace Fixed.Physics
             collider->m_Header.Filter = filter;
             collider->Material = material;
             collider->MemorySize = totalSize;
-            collider->Terrain.Init(size, scale, (sfloat*)heights.GetUnsafePtr());
+            collider->Terrain.Init(size, scale, (fp*)heights.GetUnsafePtr());
 
             var blob = BlobAssetReference<Collider>.Create(collider, totalSize);
             UnsafeUtility.Free(collider, Allocator.Temp);
@@ -91,19 +92,19 @@ namespace Fixed.Physics
             get
             {
                 // Rough approximation based on AABB
-                float3 size = Terrain.Aabb.Extents;
+                fp3 size = Terrain.Aabb.Extents;
                 return new MassProperties
                 {
                     MassDistribution = new MassDistribution
                     {
-                        Transform = new RigidTransform(quaternion.identity, Terrain.Aabb.Center),
-                        InertiaTensor = new float3(
-                            (size.y * size.y + size.z * size.z) * sfloat.FromRaw(0x3daaaaab),
-                            (size.x * size.x + size.z * size.z) * sfloat.FromRaw(0x3daaaaab),
-                            (size.x * size.x + size.y * size.y) * sfloat.FromRaw(0x3daaaaab))
+                        Transform = new FpRigidTransform(fpquaternion.identity, Terrain.Aabb.Center),
+                        InertiaTensor = new fp3(
+                            (size.y * size.y + size.z * size.z) * fp.FromRaw(0x3daaaaab),
+                            (size.x * size.x + size.z * size.z) * fp.FromRaw(0x3daaaaab),
+                            (size.x * size.x + size.y * size.y) * fp.FromRaw(0x3daaaaab))
                     },
-                    Volume = sfloat.Zero,
-                    AngularExpansionFactor = math.length(Terrain.Aabb.Extents) * (sfloat)0.5f
+                    Volume = fp.zero,
+                    AngularExpansionFactor = fpmath.length(Terrain.Aabb.Extents) * fp.half
                 };
             }
         }
@@ -151,7 +152,7 @@ namespace Fixed.Physics
             return Terrain.Aabb;
         }
 
-        public Aabb CalculateAabb(RigidTransform transform)
+        public Aabb CalculateAabb(FpRigidTransform transform)
         {
             return Math.TransformAabb(transform, Terrain.Aabb);
         }
@@ -208,52 +209,52 @@ namespace Fixed.Physics
 
         // Interfaces that represent queries that exist in the GameObjects world.
 
-        public bool CheckSphere(float3 position, sfloat radius, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
+        public bool CheckSphere(fp3 position, fp radius, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
             => QueryWrappers.CheckSphere(ref this, position, radius, filter, queryInteraction);
-        public bool OverlapSphere(float3 position, sfloat radius, ref NativeList<DistanceHit> outHits, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
+        public bool OverlapSphere(fp3 position, fp radius, ref NativeList<DistanceHit> outHits, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
             => QueryWrappers.OverlapSphere(ref this, position, radius, ref outHits, filter, queryInteraction);
-        public bool OverlapSphereCustom<T>(float3 position, sfloat radius, ref T collector, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default) where T : struct, ICollector<DistanceHit>
+        public bool OverlapSphereCustom<T>(fp3 position, fp radius, ref T collector, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default) where T : struct, ICollector<DistanceHit>
             => QueryWrappers.OverlapSphereCustom(ref this, position, radius, ref collector, filter, queryInteraction);
 
-        public bool CheckCapsule(float3 point1, float3 point2, sfloat radius, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
+        public bool CheckCapsule(fp3 point1, fp3 point2, fp radius, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
             => QueryWrappers.CheckCapsule(ref this, point1, point2, radius, filter, queryInteraction);
-        public bool OverlapCapsule(float3 point1, float3 point2, sfloat radius, ref NativeList<DistanceHit> outHits, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
+        public bool OverlapCapsule(fp3 point1, fp3 point2, fp radius, ref NativeList<DistanceHit> outHits, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
             => QueryWrappers.OverlapCapsule(ref this, point1, point2, radius, ref outHits, filter, queryInteraction);
-        public bool OverlapCapsuleCustom<T>(float3 point1, float3 point2, sfloat radius, ref T collector, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default) where T : struct, ICollector<DistanceHit>
+        public bool OverlapCapsuleCustom<T>(fp3 point1, fp3 point2, fp radius, ref T collector, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default) where T : struct, ICollector<DistanceHit>
             => QueryWrappers.OverlapCapsuleCustom(ref this, point1, point2, radius, ref collector, filter, queryInteraction);
 
-        public bool CheckBox(float3 center, quaternion orientation, float3 halfExtents, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
+        public bool CheckBox(fp3 center, fpquaternion orientation, fp3 halfExtents, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
             => QueryWrappers.CheckBox(ref this, center, orientation, halfExtents, filter, queryInteraction);
-        public bool OverlapBox(float3 center, quaternion orientation, float3 halfExtents, ref NativeList<DistanceHit> outHits, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
+        public bool OverlapBox(fp3 center, fpquaternion orientation, fp3 halfExtents, ref NativeList<DistanceHit> outHits, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
             => QueryWrappers.OverlapBox(ref this, center, orientation, halfExtents, ref outHits, filter, queryInteraction);
-        public bool OverlapBoxCustom<T>(float3 center, quaternion orientation, float3 halfExtents, ref T collector, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default) where T : struct, ICollector<DistanceHit>
+        public bool OverlapBoxCustom<T>(fp3 center, fpquaternion orientation, fp3 halfExtents, ref T collector, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default) where T : struct, ICollector<DistanceHit>
             => QueryWrappers.OverlapBoxCustom(ref this, center, orientation, halfExtents, ref collector, filter, queryInteraction);
 
-        public bool SphereCast(float3 origin, sfloat radius, float3 direction, sfloat maxDistance, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
+        public bool SphereCast(fp3 origin, fp radius, fp3 direction, fp maxDistance, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
             => QueryWrappers.SphereCast(ref this, origin, radius, direction, maxDistance, filter, queryInteraction);
-        public bool SphereCast(float3 origin, sfloat radius, float3 direction, sfloat maxDistance, out ColliderCastHit hitInfo, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
+        public bool SphereCast(fp3 origin, fp radius, fp3 direction, fp maxDistance, out ColliderCastHit hitInfo, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
             => QueryWrappers.SphereCast(ref this, origin, radius, direction, maxDistance, out hitInfo, filter, queryInteraction);
-        public bool SphereCastAll(float3 origin, sfloat radius, float3 direction, sfloat maxDistance, ref NativeList<ColliderCastHit> outHits, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
+        public bool SphereCastAll(fp3 origin, fp radius, fp3 direction, fp maxDistance, ref NativeList<ColliderCastHit> outHits, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
             => QueryWrappers.SphereCastAll(ref this, origin, radius, direction, maxDistance, ref outHits, filter, queryInteraction);
-        public bool SphereCastCustom<T>(float3 origin, sfloat radius, float3 direction, sfloat maxDistance, ref T collector, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default) where T : struct, ICollector<ColliderCastHit>
+        public bool SphereCastCustom<T>(fp3 origin, fp radius, fp3 direction, fp maxDistance, ref T collector, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default) where T : struct, ICollector<ColliderCastHit>
             => QueryWrappers.SphereCastCustom(ref this, origin, radius, direction, maxDistance, ref collector, filter, queryInteraction);
 
-        public bool BoxCast(float3 center, quaternion orientation, float3 halfExtents, float3 direction, sfloat maxDistance, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
+        public bool BoxCast(fp3 center, fpquaternion orientation, fp3 halfExtents, fp3 direction, fp maxDistance, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
             => QueryWrappers.BoxCast(ref this, center, orientation, halfExtents, direction, maxDistance, filter, queryInteraction);
-        public bool BoxCast(float3 center, quaternion orientation, float3 halfExtents, float3 direction, sfloat maxDistance, out ColliderCastHit hitInfo, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
+        public bool BoxCast(fp3 center, fpquaternion orientation, fp3 halfExtents, fp3 direction, fp maxDistance, out ColliderCastHit hitInfo, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
             => QueryWrappers.BoxCast(ref this, center, orientation, halfExtents, direction, maxDistance, out hitInfo, filter, queryInteraction);
-        public bool BoxCastAll(float3 center, quaternion orientation, float3 halfExtents, float3 direction, sfloat maxDistance, ref NativeList<ColliderCastHit> outHits, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
+        public bool BoxCastAll(fp3 center, fpquaternion orientation, fp3 halfExtents, fp3 direction, fp maxDistance, ref NativeList<ColliderCastHit> outHits, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
             => QueryWrappers.BoxCastAll(ref this, center, orientation, halfExtents, direction, maxDistance, ref outHits, filter, queryInteraction);
-        public bool BoxCastCustom<T>(float3 center, quaternion orientation, float3 halfExtents, float3 direction, sfloat maxDistance, ref T collector, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default) where T : struct, ICollector<ColliderCastHit>
+        public bool BoxCastCustom<T>(fp3 center, fpquaternion orientation, fp3 halfExtents, fp3 direction, fp maxDistance, ref T collector, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default) where T : struct, ICollector<ColliderCastHit>
             => QueryWrappers.BoxCastCustom(ref this, center, orientation, halfExtents, direction, maxDistance, ref collector, filter, queryInteraction);
 
-        public bool CapsuleCast(float3 point1, float3 point2, sfloat radius, float3 direction, sfloat maxDistance, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
+        public bool CapsuleCast(fp3 point1, fp3 point2, fp radius, fp3 direction, fp maxDistance, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
             => QueryWrappers.CapsuleCast(ref this, point1, point2, radius, direction, maxDistance, filter, queryInteraction);
-        public bool CapsuleCast(float3 point1, float3 point2, sfloat radius, float3 direction, sfloat maxDistance, out ColliderCastHit hitInfo, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
+        public bool CapsuleCast(fp3 point1, fp3 point2, fp radius, fp3 direction, fp maxDistance, out ColliderCastHit hitInfo, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
             => QueryWrappers.CapsuleCast(ref this, point1, point2, radius, direction, maxDistance, out hitInfo, filter, queryInteraction);
-        public bool CapsuleCastAll(float3 point1, float3 point2, sfloat radius, float3 direction, sfloat maxDistance, ref NativeList<ColliderCastHit> outHits, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
+        public bool CapsuleCastAll(fp3 point1, fp3 point2, fp radius, fp3 direction, fp maxDistance, ref NativeList<ColliderCastHit> outHits, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
             => QueryWrappers.CapsuleCastAll(ref this, point1, point2, radius, direction, maxDistance, ref outHits, filter, queryInteraction);
-        public bool CapsuleCastCustom<T>(float3 point1, float3 point2, sfloat radius, float3 direction, sfloat maxDistance, ref T collector, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default) where T : struct, ICollector<ColliderCastHit>
+        public bool CapsuleCastCustom<T>(fp3 point1, fp3 point2, fp radius, fp3 direction, fp maxDistance, ref T collector, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default) where T : struct, ICollector<ColliderCastHit>
             => QueryWrappers.CapsuleCastCustom(ref this, point1, point2, radius, direction, maxDistance, ref collector, filter, queryInteraction);
 
         #endregion
@@ -308,14 +309,14 @@ namespace Fixed.Physics
         {
             public int Base;    // Index of the first node
             public int Pitch;   // Number of nodes per row
-            public sfloat Scale; // Size of a child of a node in this level
+            public fp Scale; // Size of a child of a node in this level
         }
 
         public Aabb Aabb { get; private set; } // AABB of the terrain in local space
         public int2 Size { get; private set; } // Number of height samples in each dimension
 
-        public float3 Scale { get; private set; } // Transform from quantized heightfield space to local space
-        public float3 InverseScale { get; private set; } // 1/Scale
+        public fp3 Scale { get; private set; } // Transform from quantized heightfield space to local space
+        public fp3 InverseScale { get; private set; } // 1/Scale
 
         public uint NumXBits { get; private set; } // Number of bits required to store an X coordinate
         public uint NumColliderKeyBits { get; private set; } // Number of bits required to store a collider key
@@ -388,35 +389,35 @@ namespace Fixed.Physics
 
         // Initialize the terrain.
         // The memory must have been allocated correctly beforehand.
-        internal unsafe void Init(int2 size, float3 scale, sfloat* heights)
+        internal unsafe void Init(int2 size, fp3 scale, fp* heights)
         {
             int numSamples = size.x * size.y;
             CalculateTreeInfo(size, out int numNodes, out int numLevels,
                 out int heightsSize, out int levelsSize, out int nodesSize);
 
             // Calculate the quantization scale for the heights
-            sfloat quantizationFactor;
+            fp quantizationFactor;
             {
-                float4 maxHeight4 = float4.zero;
+                fp4 maxHeight4 = fp4.zero;
                 int numSamples4 = numSamples >> 2;
                 for (int iHeight = 0; iHeight < numSamples4; iHeight++)
                 {
-                    float4 height4 = ((float4*)heights)[iHeight];
-                    maxHeight4 = math.max(maxHeight4, math.abs(height4));
+                    fp4 height4 = ((fp4*)heights)[iHeight];
+                    maxHeight4 = fpmath.max(maxHeight4, fpmath.abs(height4));
                 }
 
-                sfloat maxHeight = math.cmax(maxHeight4);
+                fp maxHeight = fpmath.cmax(maxHeight4);
                 for (int iHeight = numSamples4 << 2; iHeight < numSamples; iHeight++)
                 {
-                    maxHeight = math.max(maxHeight, heights[iHeight]);
+                    maxHeight = fpmath.max(maxHeight, heights[iHeight]);
                 }
 
-                quantizationFactor = sfloat.FromRaw(0x46fffc00) / maxHeight;//(short.MaxValue - 1)
+                quantizationFactor = fp.FromRaw(0x46fffc00) / maxHeight;//(short.MaxValue - 1)
             }
 
             Size = size;
-            Scale = new float3(scale.x, scale.y / quantizationFactor, scale.z);
-            InverseScale = new float3(sfloat.One, quantizationFactor, sfloat.One) * math.rcp(scale);
+            Scale = new fp3(scale.x, scale.y / quantizationFactor, scale.z);
+            InverseScale = new fp3(fp.one, quantizationFactor, fp.one) * fpmath.rcp(scale);
 
             // Calculate the number of shape key bits required to store quad z, x and triangle index.  Size - 2 is the highest possible quad index.
             // We reserve one extra value in the x field to guarantee that all-1s is not needed to refer to any triangle, since it is reserved for invalid.
@@ -428,7 +429,7 @@ namespace Fixed.Physics
             short* quantizedHeights = (short*)end;
             for (int iHeight = 0; iHeight < numSamples; iHeight++)
             {
-                quantizedHeights[iHeight] = (short)(heights[iHeight] * quantizationFactor + (sfloat)0.5f);
+                quantizedHeights[iHeight] = (short)(heights[iHeight] * quantizationFactor + fp.half);
             }
             m_HeightsBlob.Offset = UnsafeEx.CalculateOffset(end, ref m_HeightsBlob);
             m_HeightsBlob.Length = numSamples;
@@ -475,7 +476,7 @@ namespace Fixed.Physics
                     // Save the current level description for lookup in queries
                     levelData->Base = (int)(level - root);
                     levelData->Pitch = (int)levelSize.x;
-                    levelData->Scale = (sfloat)(1 << levelIndex);
+                    levelData->Scale = (fp)(1 << levelIndex);
                     levelData--;
                     levelIndex++;
 
@@ -574,8 +575,8 @@ namespace Fixed.Physics
             // Use min and max height of the whole heightfield to build the AABB
             Aabb = new Aabb
             {
-                Min = new float3(sfloat.Zero, (sfloat)math.cmin(root->Min4), sfloat.Zero) * Scale,
-                Max = new float3((sfloat)(size.x - 1), (sfloat)math.cmax(root->Max4), (sfloat)(size.y - 1)) * Scale
+                Min = new fp3(fp.zero, (fp)math.cmin(root->Min4), fp.zero) * Scale,
+                Max = new fp3((fp)(size.x - 1), (fp)math.cmax(root->Max4), (fp)(size.y - 1)) * Scale
             };
         }
 
@@ -592,33 +593,33 @@ namespace Fixed.Physics
         // Takes x,z coordinates in local space.
         // If those coordinates are inside the height field, then the height and gradient at those coordinates are set and the method returns true.
         // Otherwise, the method returns false.
-        public bool GetHeightAndGradient(float2 position, out sfloat height, out float2 gradient)
+        public bool GetHeightAndGradient(fp2 position, out fp height, out fp2 gradient)
         {
-            if (math.any(position < float2.zero | position >= Aabb.Max.xz))
+            if (math.any(position < fp2.zero | position >= Aabb.Max.xz))
             {
-                height = sfloat.Zero;
-                gradient = float2.zero;
+                height = fp.zero;
+                gradient = fp2.zero;
                 return false;
             }
 
             // Find the cell
-            float2 coord = position * InverseScale.xz;
+            fp2 coord = position * InverseScale.xz;
             int2 index = (int2)coord;
-            float2 fraction0 = coord - (float2)index;
-            float2 fraction1 = 1 - fraction0;
+            fp2 fraction0 = coord - (fp2)index;
+            fp2 fraction1 = 1 - fraction0;
 
             // Get heights of the corners of the cell
             int baseIndex = index.y * Size.x + index.x;
-            float4 heights = Scale.y * new float4((sfloat)Heights[baseIndex], (sfloat)Heights[baseIndex + 1], (sfloat)Heights[baseIndex + Size.x], (sfloat)Heights[baseIndex + Size.x + 1]);
+            fp4 heights = Scale.y * new fp4((fp)Heights[baseIndex], (fp)Heights[baseIndex + 1], (fp)Heights[baseIndex + Size.x], (fp)Heights[baseIndex + Size.x + 1]);
 
             // Get the height within the cell
             bool triangle0 = fraction0.x < fraction1.y; // Select the triangle within the cell
-            float4 triangleHeights = math.select(heights.wwzy, heights.yzxx, triangle0);
+            fp4 triangleHeights = fpmath.select(heights.wwzy, heights.yzxx, triangle0);
             gradient = triangleHeights.zw - triangleHeights.xy; // -(dy/dx, dy/dz)
-            sfloat height0 = heights.x - math.dot(gradient, fraction0);
-            sfloat height1 = heights.w + math.dot(gradient, fraction1);
+            fp height0 = heights.x - fpmath.dot(gradient, fraction0);
+            fp height1 = heights.w + fpmath.dot(gradient, fraction1);
             gradient *= InverseScale.xz;
-            height = math.select(height1, height0, triangle0);
+            height = fpmath.select(height1, height0, triangle0);
 
             return true;
         }
@@ -644,9 +645,9 @@ namespace Fixed.Physics
             int2 index2 = index + new int2(triangle, 1);
 
             return new ChildCollider(
-                new float3((sfloat)index0.x, (sfloat)GetHeight(index0), (sfloat)index0.y) * Scale,
-                new float3((sfloat)index1.x, (sfloat)GetHeight(index1), (sfloat)index1.y) * Scale,
-                new float3((sfloat)index2.x, (sfloat)GetHeight(index2), (sfloat)index2.y) * Scale,
+                new fp3((fp)index0.x, (fp)GetHeight(index0), (fp)index0.y) * Scale,
+                new fp3((fp)index1.x, (fp)GetHeight(index1), (fp)index1.y) * Scale,
+                new fp3((fp)index2.x, (fp)GetHeight(index2), (fp)index2.y) * Scale,
                 filter, material);
         }
 
@@ -745,16 +746,16 @@ namespace Fixed.Physics
 
                 // Calculate the AABBs of the node's children
                 m_ChildIndex = m_Index + m_Index;
-                float3 boundsX = (float3)(m_ChildIndex.x + new int3(0, 1, 2)) * level.Scale;
-                float3 boundsZ = (float3)(m_ChildIndex.y + new int3(0, 1, 2)) * level.Scale;
+                fp3 boundsX = (fp3)(m_ChildIndex.x + new int3(0, 1, 2)) * level.Scale;
+                fp3 boundsZ = (fp3)(m_ChildIndex.y + new int3(0, 1, 2)) * level.Scale;
                 Bounds = new FourTransposedAabbs
                 {
                     Lx = boundsX.xyxy,
                     Hx = boundsX.yzyz,
                     Lz = boundsZ.xxyy,
                     Hz = boundsZ.yyzz,
-                    Ly = node.Min4,
-                    Hy = node.Max4
+                    Ly = (fp4)node.Min4,
+                    Hy = (fp4)node.Max4
                 };
 
                 return true;
@@ -768,18 +769,18 @@ namespace Fixed.Physics
 
             // Returns the coordinates and vertices of one child of the current node, specified by childIndex.
             // Should only be called if the current node is a leaf.
-            public void GetQuad(int childIndex, out int2 quadIndex, out float3 a, out float3 b, out float3 c, out float3 d)
+            public void GetQuad(int childIndex, out int2 quadIndex, out fp3 a, out fp3 b, out fp3 c, out fp3 d)
             {
                 quadIndex = GetQuadIndex(childIndex);
                 int height0 = m_Terrain->GetHeight(quadIndex);
                 int height1 = m_Terrain->GetHeight(quadIndex + new int2(1, 0));
                 int height2 = m_Terrain->GetHeight(quadIndex + new int2(0, 1));
                 int height3 = m_Terrain->GetHeight(quadIndex + new int2(1, 1));
-                float4 heights = new int4(height0, height1, height2, height3);
-                a = new float3(Bounds.Lx[childIndex], heights[0], Bounds.Lz[childIndex]) * m_Terrain->Scale;
-                b = new float3(Bounds.Hx[childIndex], heights[1], Bounds.Lz[childIndex]) * m_Terrain->Scale;
-                c = new float3(Bounds.Lx[childIndex], heights[2], Bounds.Hz[childIndex]) * m_Terrain->Scale;
-                d = new float3(Bounds.Hx[childIndex], heights[3], Bounds.Hz[childIndex]) * m_Terrain->Scale;
+                int4 heights = new int4(height0, height1, height2, height3);
+                a = new fp3(Bounds.Lx[childIndex], heights[0], Bounds.Lz[childIndex]) * m_Terrain->Scale;
+                b = new fp3(Bounds.Hx[childIndex], heights[1], Bounds.Lz[childIndex]) * m_Terrain->Scale;
+                c = new fp3(Bounds.Lx[childIndex], heights[2], Bounds.Hz[childIndex]) * m_Terrain->Scale;
+                d = new fp3(Bounds.Hx[childIndex], heights[3], Bounds.Hz[childIndex]) * m_Terrain->Scale;
             }
         }
 

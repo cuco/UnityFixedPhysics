@@ -1,5 +1,5 @@
 using Unity.Entities;
-using Fixed.Mathematics;
+using Unity.Mathematics.FixedPoint;
 using Fixed.Physics.GraphicsIntegration;
 
 namespace Fixed.Physics.Authoring
@@ -46,7 +46,7 @@ namespace Fixed.Physics.Authoring
                     {
                         massProperties.MassDistribution = body.CustomMassDistribution;
                         // Increase the angular expansion factor to account for the shift in center of mass
-                        massProperties.AngularExpansionFactor += math.length(massProperties.MassDistribution.Transform.pos - body.CustomMassDistribution.Transform.pos);
+                        massProperties.AngularExpansionFactor += fpmath.length(massProperties.MassDistribution.Transform.pos - body.CustomMassDistribution.Transform.pos);
                     }
                     DstEntityManager.AddOrSetComponent(entity, body.MotionType == BodyMotionType.Dynamic ?
                         PhysicsMass.CreateDynamic(massProperties, body.Mass) :
@@ -67,7 +67,7 @@ namespace Fixed.Physics.Authoring
                             Linear = body.LinearDamping,
                             Angular = body.AngularDamping
                         });
-                        if (body.GravityFactor != sfloat.One)
+                        if (body.GravityFactor != fp.one)
                         {
                             DstEntityManager.AddOrSetComponent(entity, new PhysicsGravityFactor
                             {
@@ -79,7 +79,7 @@ namespace Fixed.Physics.Authoring
                     {
                         DstEntityManager.AddOrSetComponent(entity, new PhysicsGravityFactor
                         {
-                            Value = sfloat.Zero
+                            Value = fp.zero
                         });
                     }
 

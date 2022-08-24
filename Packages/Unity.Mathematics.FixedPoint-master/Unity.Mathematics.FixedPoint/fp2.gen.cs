@@ -28,7 +28,7 @@ namespace Unity.Mathematics.FixedPoint
         /// <summary>Constructs a fp2 vector from two fp values.</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public fp2(fp x, fp y)
-        { 
+        {
             this.x = x;
             this.y = y;
         }
@@ -36,7 +36,7 @@ namespace Unity.Mathematics.FixedPoint
         /// <summary>Constructs a fp2 vector from a fp2 vector.</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public fp2(fp2 xy)
-        { 
+        {
             this.x = xy.x;
             this.y = xy.y;
         }
@@ -102,6 +102,8 @@ namespace Unity.Mathematics.FixedPoint
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static explicit operator fp2(uint2 v) { return new fp2(v); }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static explicit operator int2(fp2 v) { return new int2((int)v.x, (int)v.y); }
 
         /// <summary>Returns the result of a componentwise multiplication operation on two fp2 vectors.</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

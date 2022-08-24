@@ -2,7 +2,8 @@ using System;
 using System.Collections.Generic;
 using Unity.Collections;
 using Unity.Entities;
-using Fixed.Mathematics;
+using Unity.Mathematics;
+using Unity.Mathematics.FixedPoint;
 using UnityEngine;
 
 namespace Fixed.Physics.Authoring
@@ -28,7 +29,7 @@ namespace Fixed.Physics.Authoring
 
         internal override ShapeComputationData GenerateComputationData(
             PhysicsShapeAuthoring shape, ColliderInstance colliderInstance,
-            NativeList<float3> allConvexHullPoints, NativeList<float3> allMeshVertices, NativeList<int3> allMeshTriangles,
+            NativeList<fp3> allConvexHullPoints, NativeList<fp3> allMeshVertices, NativeList<int3> allMeshTriangles,
             HashSet<UnityEngine.Mesh> meshAssets
         )
         {
@@ -97,7 +98,7 @@ namespace Fixed.Physics.Authoring
                         }
                         else
                         {
-                            using (var pointCloud = new NativeList<float3>(65535, Allocator.Temp))
+                            using (var pointCloud = new NativeList<fp3>(65535, Allocator.Temp))
                             {
                                 shape.GetBakedConvexProperties(pointCloud);
                                 if (pointCloud.Length == 0)
@@ -135,7 +136,7 @@ namespace Fixed.Physics.Authoring
                         else
                         {
                             const int defaultVertexCount = 2048;
-                            using (var vertices = new NativeList<float3>(defaultVertexCount, Allocator.Temp))
+                            using (var vertices = new NativeList<fp3>(defaultVertexCount, Allocator.Temp))
                             using (var triangles = new NativeList<int3>(defaultVertexCount - 2, Allocator.Temp))
                             {
                                 shape.GetBakedMeshProperties(vertices, triangles, meshAssets);

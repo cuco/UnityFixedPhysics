@@ -3,7 +3,7 @@ using NUnit.Framework;
 using Unity.Burst;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Jobs;
-using Fixed.Mathematics;
+using Unity.Mathematics.FixedPoint;
 using TestUtils = Fixed.Physics.Tests.Utils.TestUtils;
 
 namespace Fixed.Physics.Tests.Collision.Colliders
@@ -19,7 +19,7 @@ namespace Fixed.Physics.Tests.Collision.Colliders
         struct CreateFromBurstJob : IJob
         {
             public void Execute() =>
-                BoxCollider.Create(new BoxGeometry { Orientation = quaternion.identity, Size = new float3((sfloat)1f) }).Dispose();
+                BoxCollider.Create(new BoxGeometry { Orientation = fpquaternion.identity, Size = new fp3((fp)1f) }).Dispose();
         }
 
         [Test]
@@ -33,10 +33,10 @@ namespace Fixed.Physics.Tests.Collision.Colliders
         {
             var geometry = new BoxGeometry
             {
-                Center = new float3(-(sfloat)10.10f, (sfloat)10.12f, (sfloat)0.01f),
-                Orientation = quaternion.AxisAngle(math.normalize(new float3((sfloat)1.4f, (sfloat)0.2f, (sfloat)1.1f)), (sfloat)38.50f),
-                Size = new float3((sfloat)0.01f, (sfloat)120.40f, (sfloat)5.4f),
-                BevelRadius = (sfloat)0.0f
+                Center = new fp3(-(fp)10.10f, (fp)10.12f, (fp)0.01f),
+                Orientation = fpquaternion.AxisAngle(fpmath.normalize(new fp3((fp)1.4f, (fp)0.2f, (fp)1.1f)), (fp)38.50f),
+                Size = new fp3((fp)0.01f, (fp)120.40f, (fp)5.4f),
+                BevelRadius = (fp)0.0f
             };
 
             var collider = BoxCollider.Create(geometry);
@@ -60,7 +60,7 @@ namespace Fixed.Physics.Tests.Collision.Colliders
             [Values(float.PositiveInfinity, float.NegativeInfinity, float.NaN)] float errantValue
         )
         {
-            var geometry = new BoxGeometry { Center = new float3((sfloat)errantValue), Size = new float3((sfloat)1f), Orientation = quaternion.identity };
+            var geometry = new BoxGeometry { Center = new fp3((fp)errantValue), Size = new fp3((fp)1f), Orientation = fpquaternion.identity };
 
             var ex = Assert.Throws<ArgumentException>(() => BoxCollider.Create(geometry));
             Assert.That(ex.Message, Does.Match(nameof(BoxGeometry.Center)));
@@ -71,7 +71,7 @@ namespace Fixed.Physics.Tests.Collision.Colliders
             [Values(float.PositiveInfinity, float.NegativeInfinity, float.NaN, 0f)] float errantValue
         )
         {
-            var geometry = new BoxGeometry { Size = new float3((sfloat)1f), Orientation = new quaternion((sfloat)0f, (sfloat)0f, (sfloat)0f, (sfloat)errantValue) };
+            var geometry = new BoxGeometry { Size = new fp3((fp)1f), Orientation = new fpquaternion((fp)0f, (fp)0f, (fp)0f, (fp)errantValue) };
 
             var ex = Assert.Throws<ArgumentException>(() => BoxCollider.Create(geometry));
             Assert.That(ex.Message, Does.Match(nameof(BoxGeometry.Orientation)));
@@ -82,7 +82,7 @@ namespace Fixed.Physics.Tests.Collision.Colliders
             [Values(float.PositiveInfinity, float.NegativeInfinity, float.NaN, -1f)] float errantValue
         )
         {
-            var geometry = new BoxGeometry { Size = new float3((sfloat)errantValue), Orientation = quaternion.identity };
+            var geometry = new BoxGeometry { Size = new fp3((fp)errantValue), Orientation = fpquaternion.identity };
 
             var ex = Assert.Throws<ArgumentException>(() => BoxCollider.Create(geometry));
             Assert.That(ex.Message, Does.Match(nameof(BoxGeometry.Size)));
@@ -93,7 +93,7 @@ namespace Fixed.Physics.Tests.Collision.Colliders
             [Values(float.PositiveInfinity, float.NegativeInfinity, float.NaN, -1f, 0.55f)] float errantValue
         )
         {
-            var geometry = new BoxGeometry { Size = new float3((sfloat)1f), Orientation = quaternion.identity, BevelRadius = (sfloat)errantValue};
+            var geometry = new BoxGeometry { Size = new fp3((fp)1f), Orientation = fpquaternion.identity, BevelRadius = (fp)errantValue};
 
             var ex = Assert.Throws<ArgumentException>(() => BoxCollider.Create(geometry));
             Assert.That(ex.Message, Does.Match(nameof(BoxGeometry.BevelRadius)));
@@ -111,26 +111,26 @@ namespace Fixed.Physics.Tests.Collision.Colliders
         /// <remarks>
         /// The following code was used to produce reference data for Aabbs:
         /// <code>
-        /// private Aabb CalculateBoxAabbNaive(float3 center, quaternion orientation, float3 size, quaternion bRotation, float3 bTranslation)
+        /// private Aabb CalculateBoxAabbNaive(fp3 center, fpquaternion orientation, fp3 size, fpquaternion bRotation, fp3 bTranslation)
         ///{
-        ///    float3[] points = {
-        ///        0.5f * new float3(-size.x, -size.y, -size.z),
-        ///        0.5f * new float3(-size.x, -size.y, size.z),
-        ///        0.5f * new float3(-size.x, size.y, -size.z),
-        ///        0.5f * new float3(-size.x, size.y, size.z),
-        ///        0.5f * new float3(size.x, -size.y, -size.z),
-        ///        0.5f * new float3(size.x, -size.y, size.z),
-        ///        0.5f * new float3(size.x, size.y, -size.z),
-        ///        0.5f * new float3(size.x, size.y, size.z)
+        ///    fp3[] points = {
+        ///        0.5f * new fp3(-size.x, -size.y, -size.z),
+        ///        0.5f * new fp3(-size.x, -size.y, size.z),
+        ///        0.5f * new fp3(-size.x, size.y, -size.z),
+        ///        0.5f * new fp3(-size.x, size.y, size.z),
+        ///        0.5f * new fp3(size.x, -size.y, -size.z),
+        ///        0.5f * new fp3(size.x, -size.y, size.z),
+        ///        0.5f * new fp3(size.x, size.y, -size.z),
+        ///        0.5f * new fp3(size.x, size.y, size.z)
         ///    };
         ///
         ///    for (int i = 0; i < 8; ++i)
         ///    {
-        ///        points[i] = center + math.mul(orientation, points[i]);
-        ///        points[i] = bTranslation + math.mul(bRotation, points[i]);
+        ///        points[i] = center + fpmath.mul(orientation, points[i]);
+        ///        points[i] = bTranslation + fpmath.mul(bRotation, points[i]);
         ///    }
         ///
-        ///    Aabb result = Aabb.CreateFromPoints(new float3x4(points[0], points[1], points[2], points[3]));
+        ///    Aabb result = Aabb.CreateFromPoints(new fp3x4(points[0], points[1], points[2], points[3]));
         ///    for (int i = 4; i < 8; ++i)
         ///    {
         ///        result.Include(points[i]);
@@ -146,22 +146,22 @@ namespace Fixed.Physics.Tests.Collision.Colliders
             {
                 var geometry = new BoxGeometry
                 {
-                    Center = new float3(-(sfloat)0.59f, (sfloat)0.36f, (sfloat)0.35f),
-                    Orientation = quaternion.identity,
-                    Size = new float3((sfloat)2.32f, (sfloat)10.87f, (sfloat)16.49f),
-                    BevelRadius = (sfloat)0.25f
+                    Center = new fp3(-(fp)0.59f, (fp)0.36f, (fp)0.35f),
+                    Orientation = fpquaternion.identity,
+                    Size = new fp3((fp)2.32f, (fp)10.87f, (fp)16.49f),
+                    BevelRadius = (fp)0.25f
                 };
 
                 Aabb expectedAabb = new Aabb
                 {
-                    Min = new float3(-(sfloat)1.75f, -(sfloat)5.075f, -(sfloat)7.895f),
-                    Max = new float3((sfloat)0.57f, (sfloat)5.795f, (sfloat)8.595f)
+                    Min = new fp3(-(fp)1.75f, -(fp)5.075f, -(fp)7.895f),
+                    Max = new fp3((fp)0.57f, (fp)5.795f, (fp)8.595f)
                 };
 
                 var boxCollider = BoxCollider.Create(geometry);
                 Aabb aabb = boxCollider.Value.CalculateAabb();
-                TestUtils.AreEqual(expectedAabb.Min, aabb.Min, (sfloat)1e-3f);
-                TestUtils.AreEqual(expectedAabb.Max, aabb.Max, (sfloat)1e-3f);
+                TestUtils.AreEqual(expectedAabb.Min, aabb.Min, (fp)1e-3f);
+                TestUtils.AreEqual(expectedAabb.Max, aabb.Max, (fp)1e-3f);
             }
         }
 
@@ -176,22 +176,22 @@ namespace Fixed.Physics.Tests.Collision.Colliders
         {
             var geometry = new BoxGeometry
             {
-                Center = float3.zero,
-                Orientation = quaternion.identity,
-                Size = new float3((sfloat)1.0f, (sfloat)250.0f, (sfloat)2.0f),
-                BevelRadius = (sfloat)0.25f
+                Center = fp3.zero,
+                Orientation = fpquaternion.identity,
+                Size = new fp3((fp)1.0f, (fp)250.0f, fp.two),
+                BevelRadius = (fp)0.25f
             };
 
             var boxCollider = BoxCollider.Create(geometry);
 
-            float3 expectedInertiaTensor = (sfloat)1.0f / (sfloat)12.0f * new float3(
+            fp3 expectedInertiaTensor = (fp)1.0f / (fp)12.0f * new fp3(
                 geometry.Size.y * geometry.Size.y + geometry.Size.z * geometry.Size.z,
                 geometry.Size.x * geometry.Size.x + geometry.Size.z * geometry.Size.z,
                 geometry.Size.y * geometry.Size.y + geometry.Size.x * geometry.Size.x);
 
             MassProperties massProperties = boxCollider.Value.MassProperties;
-            float3 inertiaTensor = massProperties.MassDistribution.InertiaTensor;
-            TestUtils.AreEqual(expectedInertiaTensor, inertiaTensor, (sfloat)1e-3f);
+            fp3 inertiaTensor = massProperties.MassDistribution.InertiaTensor;
+            TestUtils.AreEqual(expectedInertiaTensor, inertiaTensor, (fp)1e-3f);
         }
 
         #endregion

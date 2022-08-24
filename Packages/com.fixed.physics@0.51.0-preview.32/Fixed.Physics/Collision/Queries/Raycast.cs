@@ -1,6 +1,7 @@
 using Unity.Assertions;
 using Unity.Entities;
-using Fixed.Mathematics;
+using Unity.Mathematics;
+using Unity.Mathematics.FixedPoint;
 using static Fixed.Physics.Math;
 
 namespace Fixed.Physics
@@ -16,25 +17,25 @@ namespace Fixed.Physics
         /// The Origin point of the Ray in query space.
         /// </summary>
         /// <value> Point vector coordinate. </value>
-        public float3 Origin;
+        public fp3 Origin;
 
         /// <summary>
         /// This represents the line from the Ray's Origin to a second point on the Ray. The second point will be the Ray End if nothing is hit.
         /// </summary>
         /// <value> Line vector. </value>
-        public float3 Displacement
+        public fp3 Displacement
         {
             get => m_Displacement;
             set
             {
                 m_Displacement = value;
-                ReciprocalDisplacement = math.select(math.rcp(m_Displacement), math.sqrt(sfloat.MaxValue), m_Displacement == float3.zero);
+                ReciprocalDisplacement = fpmath.select(fpmath.rcp(m_Displacement), fpmath.sqrt(fp.max_value), m_Displacement == fp3.zero);
             }
         }
-        float3 m_Displacement;
+        fp3 m_Displacement;
 
         // Performance optimization used in the BoundingVolumeHierarchy casting functions
-        internal float3 ReciprocalDisplacement { get; private set; }
+        internal fp3 ReciprocalDisplacement { get; private set; }
     }
 
     /// <summary>
@@ -45,27 +46,27 @@ namespace Fixed.Physics
         /// <summary>
         /// The Start position of a Ray.
         /// </summary>
-        public float3 Start
+        public fp3 Start
         {
             get => Ray.Origin;
             set
             {
-                float3 end = Ray.Origin + Ray.Displacement;
+                fp3 end = Ray.Origin + Ray.Displacement;
                 Ray.Origin = value;
                 Ray.Displacement = end - value;
-                Assert.IsTrue(math.all(math.abs(Ray.Displacement) < Math.Constants.MaxDisplacement3F), "RayCast length is very long. This would lead to floating point inaccuracies and invalid results.");
+                Assert.IsTrue(math.all(fpmath.abs(Ray.Displacement) < Math.Constants.MaxDisplacement3F), "RayCast length is very long. This would lead to floating point inaccuracies and invalid results.");
             }
         }
         /// <summary>
         /// The End position of a Ray.
         /// </summary>
-        public float3 End
+        public fp3 End
         {
             get => Ray.Origin + Ray.Displacement;
             set
             {
                 Ray.Displacement = value - Ray.Origin;
-                Assert.IsTrue(math.all(math.abs(Ray.Displacement) < Math.Constants.MaxDisplacement3F), "RayCast length is very long. This would lead to floating point inaccuracies and invalid results.");
+                Assert.IsTrue(math.all(fpmath.abs(Ray.Displacement) < Math.Constants.MaxDisplacement3F), "RayCast length is very long. This would lead to floating point inaccuracies and invalid results.");
             }
         }
         /// <summary>
@@ -90,7 +91,7 @@ namespace Fixed.Physics
         /// Fraction of the distance along the Ray where the hit occurred.
         /// </summary>
         /// <value> Returns a value between 0 and 1. </value>
-        public sfloat Fraction { get; set; }
+        public fp Fraction { get; set; }
 
         /// <summary>
         ///
@@ -120,13 +121,13 @@ namespace Fixed.Physics
         /// The point in query space where the hit occurred.
         /// </summary>
         /// <value> Returns the position of the point where the hit occurred. </value>
-        public float3 Position { get; set; }
+        public fp3 Position { get; set; }
 
         /// <summary>
         ///
         /// </summary>
         /// <value> Returns the normal of the point where the hit occurred. </value>
-        public float3 SurfaceNormal { get; set; }
+        public fp3 SurfaceNormal { get; set; }
 
         public override string ToString() =>
             $"RaycastHit {{ Fraction = {Fraction}, RigidBodyIndex = {RigidBodyIndex}, ColliderKey = {ColliderKey}, Entity = {Entity}, Position = {Position}, SurfaceNormal = {SurfaceNormal} }}";
@@ -143,40 +144,40 @@ namespace Fixed.Physics
         // will be the negation of the ray displacement vector.
 
         public static bool RaySphere(
-            float3 rayOrigin, float3 rayDisplacement,
-            float3 sphereCenter, sfloat sphereRadius,
-            ref sfloat fraction, out float3 normal)
+            fp3 rayOrigin, fp3 rayDisplacement,
+            fp3 sphereCenter, fp sphereRadius,
+            ref fp fraction, out fp3 normal)
         {
-            normal = float3.zero;
+            normal = fp3.zero;
 
-            // TODO.ma lots of sfloat inaccuracy problems with this
-            float3 diff = rayOrigin - sphereCenter;
-            sfloat a = math.dot(rayDisplacement, rayDisplacement);
-            sfloat b = (sfloat)2.0f * math.dot(rayDisplacement, diff);
-            sfloat c = math.dot(diff, diff) - sphereRadius * sphereRadius;
-            sfloat discriminant = b * b - (sfloat)4.0f * a * c;
+            // TODO.ma lots of fp inaccuracy problems with this
+            fp3 diff = rayOrigin - sphereCenter;
+            fp a = fpmath.dot(rayDisplacement, rayDisplacement);
+            fp b = fp.two * fpmath.dot(rayDisplacement, diff);
+            fp c = fpmath.dot(diff, diff) - sphereRadius * sphereRadius;
+            fp discriminant = b * b - (fp)4.0f * a * c;
 
-            if (c < sfloat.Zero)
+            if (c < fp.zero)
             {
                 // Inside hit.
-                fraction = sfloat.Zero;
-                normal = math.normalize(-rayDisplacement);
+                fraction = fp.zero;
+                normal = fpmath.normalize(-rayDisplacement);
                 return true;
             }
 
-            if (discriminant < sfloat.Zero)
+            if (discriminant < fp.zero)
             {
                 return false;
             }
 
-            sfloat sqrtDiscriminant = math.sqrt(discriminant);
-            sfloat invDenom = (sfloat)0.5f / a;
+            fp sqrtDiscriminant = fpmath.sqrt(discriminant);
+            fp invDenom = fp.half / a;
 
-            sfloat t0 = (sqrtDiscriminant - b) * invDenom;
-            sfloat t1 = (-sqrtDiscriminant - b) * invDenom;
-            sfloat tMin = math.min(t0, t1);
+            fp t0 = (sqrtDiscriminant - b) * invDenom;
+            fp t1 = (-sqrtDiscriminant - b) * invDenom;
+            fp tMin = fpmath.min(t0, t1);
 
-            if (tMin >= sfloat.Zero && tMin < fraction)
+            if (tMin >= fp.zero && tMin < fraction)
             {
                 fraction = tMin;
                 normal = (rayOrigin + rayDisplacement * fraction - sphereCenter) / sphereRadius;
@@ -188,29 +189,29 @@ namespace Fixed.Physics
         }
 
         public static bool RayCapsule(
-            float3 rayOrigin, float3 rayDisplacement,
-            float3 vertex0, float3 vertex1, sfloat radius,
-            ref sfloat fraction, out float3 normal)
+            fp3 rayOrigin, fp3 rayDisplacement,
+            fp3 vertex0, fp3 vertex1, fp radius,
+            ref fp fraction, out fp3 normal)
         {
-            sfloat axisLength = NormalizeWithLength(vertex1 - vertex0, out float3 axis);
+            fp axisLength = NormalizeWithLength(vertex1 - vertex0, out fp3 axis);
 
             // Ray vs infinite cylinder
             {
-                sfloat directionDotAxis = math.dot(rayDisplacement, axis);
-                sfloat originDotAxis = math.dot(rayOrigin - vertex0, axis);
-                float3 rayDisplacement2D = rayDisplacement - axis * directionDotAxis;
-                float3 rayOrigin2D = rayOrigin - axis * originDotAxis;
-                sfloat cylinderFraction = fraction;
+                fp directionDotAxis = fpmath.dot(rayDisplacement, axis);
+                fp originDotAxis = fpmath.dot(rayOrigin - vertex0, axis);
+                fp3 rayDisplacement2D = rayDisplacement - axis * directionDotAxis;
+                fp3 rayOrigin2D = rayOrigin - axis * originDotAxis;
+                fp cylinderFraction = fraction;
 
                 if (RaySphere(rayOrigin2D, rayDisplacement2D, vertex0, radius, ref cylinderFraction, out normal))
                 {
-                    sfloat t = originDotAxis + cylinderFraction * directionDotAxis; // distance of the hit from Vertex0 along axis
-                    if (t >= sfloat.Zero && t <= axisLength)
+                    fp t = originDotAxis + cylinderFraction * directionDotAxis; // distance of the hit from Vertex0 along axis
+                    if (t >= fp.zero && t <= axisLength)
                     {
-                        if (cylinderFraction.IsZero())
+                        if (cylinderFraction == fp.zero)
                         {
                             // Inside hit
-                            normal = math.normalize(-rayDisplacement);
+                            normal = fpmath.normalize(-rayDisplacement);
                         }
 
                         fraction = cylinderFraction;
@@ -222,7 +223,7 @@ namespace Fixed.Physics
             // Ray vs caps
             {
                 bool hadHit = false;
-                float3 capNormal;
+                fp3 capNormal;
                 if (RaySphere(rayOrigin, rayDisplacement, vertex0, radius, ref fraction, out capNormal))
                 {
                     hadHit = true;
@@ -238,45 +239,45 @@ namespace Fixed.Physics
         }
 
         public static bool RayTriangle(
-            float3 rayOrigin, float3 rayDisplacement,
-            float3 a, float3 b, float3 c, // TODO: float3x3?
-            ref sfloat fraction, out float3 unnormalizedNormal)
+            fp3 rayOrigin, fp3 rayDisplacement,
+            fp3 a, fp3 b, fp3 c, // TODO: fp3x3?
+            ref fp fraction, out fp3 unnormalizedNormal)
         {
-            float3 vAb = b - a;
-            float3 vCa = a - c;
+            fp3 vAb = b - a;
+            fp3 vCa = a - c;
 
-            float3 vN = math.cross(vAb, vCa);
-            float3 vAp = rayOrigin - a;
-            float3 end0 = vAp + rayDisplacement * fraction;
+            fp3 vN = fpmath.cross(vAb, vCa);
+            fp3 vAp = rayOrigin - a;
+            fp3 end0 = vAp + rayDisplacement * fraction;
 
-            sfloat d = math.dot(vN, vAp);
-            sfloat e = math.dot(vN, end0);
+            fp d = fpmath.dot(vN, vAp);
+            fp e = fpmath.dot(vN, end0);
 
-            if (d * e >= sfloat.Zero)
+            if (d * e >= fp.zero)
             {
-                unnormalizedNormal = float3.zero;
+                unnormalizedNormal = fp3.zero;
                 return false;
             }
 
-            float3 vBc = c - b;
+            fp3 vBc = c - b;
             fraction *= d / (d - e);
-            unnormalizedNormal = vN * math.sign(d);
+            unnormalizedNormal = vN * fpmath.sign(d);
 
             // edge normals
-            float3 c0 = math.cross(vAb, rayDisplacement);
-            float3 c1 = math.cross(vBc, rayDisplacement);
-            float3 c2 = math.cross(vCa, rayDisplacement);
+            fp3 c0 = fpmath.cross(vAb, rayDisplacement);
+            fp3 c1 = fpmath.cross(vBc, rayDisplacement);
+            fp3 c2 = fpmath.cross(vCa, rayDisplacement);
 
-            float3 dots;
+            fp3 dots;
             {
-                float3 o2 = rayOrigin + rayOrigin;
-                float3 r0 = o2 - (a + b);
-                float3 r1 = o2 - (b + c);
-                float3 r2 = o2 - (c + a);
+                fp3 o2 = rayOrigin + rayOrigin;
+                fp3 r0 = o2 - (a + b);
+                fp3 r1 = o2 - (b + c);
+                fp3 r2 = o2 - (c + a);
 
-                dots.x = math.dot(r0, c0);
-                dots.y = math.dot(r1, c1);
-                dots.z = math.dot(r2, c2);
+                dots.x = fpmath.dot(r0, c0);
+                dots.y = fpmath.dot(r1, c1);
+                dots.z = fpmath.dot(r2, c2);
             }
 
             // hit if all dots have the same sign
@@ -284,50 +285,50 @@ namespace Fixed.Physics
         }
 
         public static bool RayQuad(
-            float3 rayOrigin, float3 rayDisplacement,
-            float3 a, float3 b, float3 c, float3 d, // TODO: float3x4?
-            ref sfloat fraction, out float3 unnormalizedNormal)
+            fp3 rayOrigin, fp3 rayDisplacement,
+            fp3 a, fp3 b, fp3 c, fp3 d, // TODO: fp3x4?
+            ref fp fraction, out fp3 unnormalizedNormal)
         {
-            float3 vAb = b - a;
-            float3 vCa = a - c;
+            fp3 vAb = b - a;
+            fp3 vCa = a - c;
 
-            float3 vN = math.cross(vAb, vCa);
-            float3 vAp = rayOrigin - a;
-            float3 end0 = vAp + rayDisplacement * fraction;
+            fp3 vN = fpmath.cross(vAb, vCa);
+            fp3 vAp = rayOrigin - a;
+            fp3 end0 = vAp + rayDisplacement * fraction;
 
-            sfloat nDotAp = math.dot(vN, vAp);
-            sfloat e = math.dot(vN, end0);
+            fp nDotAp = fpmath.dot(vN, vAp);
+            fp e = fpmath.dot(vN, end0);
 
-            if (nDotAp * e >= sfloat.Zero)
+            if (nDotAp * e >= fp.zero)
             {
-                unnormalizedNormal = float3.zero;
+                unnormalizedNormal = fp3.zero;
                 return false;
             }
 
-            float3 vBc = c - b;
-            float3 vDa = a - d;
-            float3 vCd = d - c;
+            fp3 vBc = c - b;
+            fp3 vDa = a - d;
+            fp3 vCd = d - c;
             fraction *= nDotAp / (nDotAp - e);
-            unnormalizedNormal = vN * math.sign(nDotAp);
+            unnormalizedNormal = vN * fpmath.sign(nDotAp);
 
             // edge normals
-            float3 c0 = math.cross(vAb, rayDisplacement);
-            float3 c1 = math.cross(vBc, rayDisplacement);
-            float3 c2 = math.cross(vCd, rayDisplacement);
-            float3 c3 = math.cross(vDa, rayDisplacement);
+            fp3 c0 = fpmath.cross(vAb, rayDisplacement);
+            fp3 c1 = fpmath.cross(vBc, rayDisplacement);
+            fp3 c2 = fpmath.cross(vCd, rayDisplacement);
+            fp3 c3 = fpmath.cross(vDa, rayDisplacement);
 
-            float4 dots;
+            fp4 dots;
             {
-                float3 o2 = rayOrigin + rayOrigin;
-                float3 r0 = o2 - (a + b);
-                float3 r1 = o2 - (b + c);
-                float3 r2 = o2 - (c + d);
-                float3 r3 = o2 - (d + a);
+                fp3 o2 = rayOrigin + rayOrigin;
+                fp3 r0 = o2 - (a + b);
+                fp3 r1 = o2 - (b + c);
+                fp3 r2 = o2 - (c + d);
+                fp3 r3 = o2 - (d + a);
 
-                dots.x = math.dot(r0, c0);
-                dots.y = math.dot(r1, c1);
-                dots.z = math.dot(r2, c2);
-                dots.w = math.dot(r3, c3);
+                dots.x = fpmath.dot(r0, c0);
+                dots.y = fpmath.dot(r1, c1);
+                dots.z = fpmath.dot(r2, c2);
+                dots.w = fpmath.dot(r3, c3);
             }
 
             bool4 notOutSide = dots < 0;
@@ -336,26 +337,26 @@ namespace Fixed.Physics
         }
 
         public static bool RayConvex(
-            float3 rayOrigin, float3 rayDisplacement,
-            ref ConvexHull hull, ref sfloat fraction, out float3 normal)
+            fp3 rayOrigin, fp3 rayDisplacement,
+            ref ConvexHull hull, ref fp fraction, out fp3 normal)
         {
             // TODO: Call RaySphere/Capsule/Triangle() if num vertices <= 3 ?
 
-            sfloat convexRadius = hull.ConvexRadius;
-            sfloat fracEnter = -sfloat.One;
-            sfloat fracExit = (sfloat)2.0f;
-            float3 start = rayOrigin;
-            float3 end = start + rayDisplacement * fraction;
-            normal = new float3(sfloat.One, sfloat.Zero, sfloat.Zero);
+            fp convexRadius = hull.ConvexRadius;
+            fp fracEnter = fp.minusOne;
+            fp fracExit = fp.two;
+            fp3 start = rayOrigin;
+            fp3 end = start + rayDisplacement * fraction;
+            normal = new fp3(fp.one, fp.zero, fp.zero);
             for (int i = 0; i < hull.NumFaces; i++) // TODO.ma vectorize
             {
                 // Calculate the plane's hit fraction
                 Plane plane = hull.Planes[i];
-                sfloat startDistance = math.dot(start, plane.Normal) + plane.Distance - convexRadius;
-                sfloat endDistance = math.dot(end, plane.Normal) + plane.Distance - convexRadius;
-                sfloat newFraction = startDistance / (startDistance - endDistance);
-                bool startInside = (startDistance < sfloat.Zero);
-                bool endInside = (endDistance < sfloat.Zero);
+                fp startDistance = fpmath.dot(start, plane.Normal) + plane.Distance - convexRadius;
+                fp endDistance = fpmath.dot(end, plane.Normal) + plane.Distance - convexRadius;
+                fp newFraction = startDistance / (startDistance - endDistance);
+                bool startInside = (startDistance < fp.zero);
+                bool endInside = (endDistance < fp.zero);
 
                 // If the ray is entirely outside of any plane, then it misses
                 if (!(startInside || endInside))
@@ -366,16 +367,16 @@ namespace Fixed.Physics
                 // If the ray crosses the plane, update the enter or exit fraction
                 bool enter = !startInside && newFraction > fracEnter;
                 bool exit = !endInside && newFraction < fracExit;
-                fracEnter = math.select(fracEnter, newFraction, enter);
-                normal = math.select(normal, plane.Normal, enter);
-                fracExit = math.select(fracExit, newFraction, exit);
+                fracEnter = fpmath.select(fracEnter, newFraction, enter);
+                normal = fpmath.select(normal, plane.Normal, enter);
+                fracExit = fpmath.select(fracExit, newFraction, exit);
             }
 
-            if (fracEnter < sfloat.Zero)
+            if (fracEnter < fp.zero)
             {
                 // Inside hit.
-                fraction = sfloat.Zero;
-                normal = math.normalize(-rayDisplacement);
+                fraction = fp.zero;
+                normal = fpmath.normalize(-rayDisplacement);
                 return true;
             }
 
@@ -406,8 +407,8 @@ namespace Fixed.Physics
             }
 
             Material material = Material.Default;
-            sfloat fraction = collector.MaxFraction;
-            float3 normal;
+            fp fraction = collector.MaxFraction;
+            fp3 normal;
             bool hadHit;
             switch (collider->Type)
             {
@@ -424,16 +425,16 @@ namespace Fixed.Physics
                 case ColliderType.Triangle:
                 {
                     var triangle = (PolygonCollider*)collider;
-                    hadHit = RayTriangle(input.Ray.Origin, input.Ray.Displacement, triangle->Vertices[0], triangle->Vertices[1], triangle->Vertices[2], ref fraction, out float3 unnormalizedNormal);
-                    normal = hadHit ? math.normalize(unnormalizedNormal) : float3.zero;
+                    hadHit = RayTriangle(input.Ray.Origin, input.Ray.Displacement, triangle->Vertices[0], triangle->Vertices[1], triangle->Vertices[2], ref fraction, out fp3 unnormalizedNormal);
+                    normal = hadHit ? fpmath.normalize(unnormalizedNormal) : fp3.zero;
                     material = triangle->Material;
                     break;
                 }
                 case ColliderType.Quad:
                 {
                     var quad = (PolygonCollider*)collider;
-                    hadHit = RayQuad(input.Ray.Origin, input.Ray.Displacement, quad->Vertices[0], quad->Vertices[1], quad->Vertices[2], quad->Vertices[3], ref fraction, out float3 unnormalizedNormal);
-                    normal = hadHit ? math.normalize(unnormalizedNormal) : float3.zero;
+                    hadHit = RayQuad(input.Ray.Origin, input.Ray.Displacement, quad->Vertices[0], quad->Vertices[1], quad->Vertices[2], quad->Vertices[3], ref fraction, out fp3 unnormalizedNormal);
+                    normal = hadHit ? fpmath.normalize(unnormalizedNormal) : fp3.zero;
                     material = quad->Material;
                     break;
                 }
@@ -460,7 +461,7 @@ namespace Fixed.Physics
                 {
                     Fraction = fraction,
                     Position = Mul(input.QueryContext.WorldFromLocalTransform, input.Ray.Origin + (input.Ray.Displacement * fraction)),
-                    SurfaceNormal = math.mul(input.QueryContext.WorldFromLocalTransform.Rotation, normal),
+                    SurfaceNormal = fpmath.mul(input.QueryContext.WorldFromLocalTransform.Rotation, normal),
                     RigidBodyIndex = input.QueryContext.RigidBodyIndex,
                     ColliderKey = input.QueryContext.ColliderKey,
                     Material = material,
@@ -486,7 +487,7 @@ namespace Fixed.Physics
 
             public bool RayLeaf<T>(RaycastInput input, int primitiveKey, ref T collector) where T : struct, ICollector<RaycastHit>
             {
-                m_Mesh->GetPrimitive(primitiveKey, out float3x4 vertices, out Mesh.PrimitiveFlags flags, out CollisionFilter filter, out Material material);
+                m_Mesh->GetPrimitive(primitiveKey, out fp3x4 vertices, out Mesh.PrimitiveFlags flags, out CollisionFilter filter, out Material material);
 
                 if (!CollisionFilter.IsCollisionEnabled(input.Filter, filter)) // TODO: could do this check within GetPrimitive()
                 {
@@ -497,11 +498,11 @@ namespace Fixed.Physics
                 bool isQuad = Mesh.IsPrimitiveFlagSet(flags, Mesh.PrimitiveFlags.IsQuad);
 
                 bool acceptHit = false;
-                float3 unnormalizedNormal;
+                fp3 unnormalizedNormal;
 
                 for (int polygonIndex = 0; polygonIndex < numPolygons; polygonIndex++)
                 {
-                    sfloat fraction = collector.MaxFraction;
+                    fp fraction = collector.MaxFraction;
                     bool hadHit;
                     if (isQuad)
                     {
@@ -514,13 +515,13 @@ namespace Fixed.Physics
 
                     if (hadHit && fraction < collector.MaxFraction)
                     {
-                        var normalizedNormal = math.normalize(unnormalizedNormal);
+                        var normalizedNormal = fpmath.normalize(unnormalizedNormal);
 
                         var hit = new RaycastHit
                         {
                             Fraction = fraction,
                             Position = Mul(input.QueryContext.WorldFromLocalTransform, input.Ray.Origin + input.Ray.Displacement * fraction),
-                            SurfaceNormal = math.mul(input.QueryContext.WorldFromLocalTransform.Rotation, normalizedNormal),
+                            SurfaceNormal = fpmath.mul(input.QueryContext.WorldFromLocalTransform.Rotation, normalizedNormal),
                             RigidBodyIndex = input.QueryContext.RigidBodyIndex,
                             ColliderKey = input.QueryContext.SetSubKey(m_NumColliderKeyBits, (uint)(primitiveKey << 1 | polygonIndex)),
                             Material = material,
@@ -567,7 +568,7 @@ namespace Fixed.Physics
                 {
                     MTransform childFromCompound = Inverse(compoundFromChild);
                     inputLs.Ray.Origin = Mul(childFromCompound, input.Ray.Origin);
-                    inputLs.Ray.Displacement = math.mul(childFromCompound.Rotation, input.Ray.Displacement);
+                    inputLs.Ray.Displacement = fpmath.mul(childFromCompound.Rotation, input.Ray.Displacement);
                     inputLs.QueryContext.ColliderKey = input.QueryContext.PushSubKey(m_CompoundCollider->NumColliderKeyBits, (uint)leafData);
                     inputLs.QueryContext.NumColliderKeyBits = input.QueryContext.NumColliderKeyBits;
                     inputLs.QueryContext.WorldFromLocalTransform = Mul(input.QueryContext.WorldFromLocalTransform, compoundFromChild);
@@ -603,11 +604,11 @@ namespace Fixed.Physics
             };
             Terrain.QuadTreeWalker walker;
             {
-                float3 maxDisplacement = ray.Displacement * collector.MaxFraction;
+                fp3 maxDisplacement = ray.Displacement * collector.MaxFraction;
                 var rayAabb = new Aabb
                 {
-                    Min = ray.Origin + math.min(maxDisplacement, float3.zero),
-                    Max = ray.Origin + math.max(maxDisplacement, float3.zero),
+                    Min = ray.Origin + fpmath.min(maxDisplacement, fp3.zero),
+                    Max = ray.Origin + fpmath.max(maxDisplacement, fp3.zero),
                 };
                 walker = new Terrain.QuadTreeWalker(&terrainCollider->Terrain, rayAabb);
             }
@@ -615,7 +616,7 @@ namespace Fixed.Physics
             // Traverse the tree
             while (walker.Pop())
             {
-                bool4 hitMask = walker.Bounds.Raycast(ray, collector.MaxFraction, out float4 hitFractions);
+                bool4 hitMask = walker.Bounds.Raycast(ray, collector.MaxFraction, out fp4 hitFractions);
                 hitMask &= (walker.Bounds.Ly <= walker.Bounds.Hy); // Mask off empty children
                 if (walker.IsLeaf)
                 {
@@ -625,24 +626,24 @@ namespace Fixed.Physics
                     for (int iHit = 0; iHit < hitCount; iHit++)
                     {
                         // Get the quad vertices
-                        walker.GetQuad(hitIndex[iHit], out int2 quadIndex, out float3 a, out float3 b, out float3 c, out float3 d);
+                        walker.GetQuad(hitIndex[iHit], out int2 quadIndex, out fp3 a, out fp3 b, out fp3 c, out fp3 d);
 
                         // Test each triangle in the quad
                         for (int iTriangle = 0; iTriangle < 2; iTriangle++)
                         {
                             // Cast
-                            sfloat fraction = collector.MaxFraction;
-                            bool triangleHit = RayTriangle(input.Ray.Origin, input.Ray.Displacement, a, b, c, ref fraction, out float3 unnormalizedNormal);
+                            fp fraction = collector.MaxFraction;
+                            bool triangleHit = RayTriangle(input.Ray.Origin, input.Ray.Displacement, a, b, c, ref fraction, out fp3 unnormalizedNormal);
 
                             if (triangleHit && fraction < collector.MaxFraction)
                             {
-                                var normalizedNormal = math.normalize(unnormalizedNormal);
+                                var normalizedNormal = fpmath.normalize(unnormalizedNormal);
 
                                 var hit = new RaycastHit
                                 {
                                     Fraction = fraction,
                                     Position = Mul(input.QueryContext.WorldFromLocalTransform, input.Ray.Origin + input.Ray.Displacement * fraction),
-                                    SurfaceNormal = math.mul(input.QueryContext.WorldFromLocalTransform.Rotation, normalizedNormal),
+                                    SurfaceNormal = fpmath.mul(input.QueryContext.WorldFromLocalTransform.Rotation, normalizedNormal),
                                     RigidBodyIndex = input.QueryContext.RigidBodyIndex,
                                     ColliderKey = input.QueryContext.SetSubKey(terrain.NumColliderKeyBits, terrain.GetSubKey(quadIndex, iTriangle)),
                                     Material = material,

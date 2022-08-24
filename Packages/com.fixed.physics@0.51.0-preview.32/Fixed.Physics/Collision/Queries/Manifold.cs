@@ -2,7 +2,8 @@ using System;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
-using Fixed.Mathematics;
+using Unity.Mathematics;
+using Unity.Mathematics.FixedPoint;
 using static Fixed.Physics.Math;
 
 namespace Fixed.Physics
@@ -14,9 +15,9 @@ namespace Fixed.Physics
         public CustomTagsPair BodyCustomTags;
         public JacobianFlags JacobianFlags;
         public int NumContacts;
-        public float3 Normal;
-        public sfloat CoefficientOfFriction;
-        public sfloat CoefficientOfRestitution;
+        public fp3 Normal;
+        public fp CoefficientOfFriction;
+        public fp CoefficientOfRestitution;
         public ColliderKeyPair ColliderKeys;
 
         // followed by NumContacts * ContactPoint
@@ -25,8 +26,8 @@ namespace Fixed.Physics
     // A contact point in a manifold. All contacts share the same normal.
     public struct ContactPoint
     {
-        public float3 Position; // world space position on object B
-        public sfloat Distance;  // separating distance along the manifold normal
+        public fp3 Position; // world space position on object B
+        public fp Distance;  // separating distance along the manifold normal
     }
 
     // Contact manifold stream generation functions
@@ -43,7 +44,7 @@ namespace Fixed.Physics
 
         // Write a set of contact manifolds for a pair of bodies to the given stream.
         public static unsafe void BodyBody(in RigidBody rigidBodyA, in RigidBody rigidBodyB, in MotionVelocity motionVelocityA, in MotionVelocity motionVelocityB,
-            sfloat collisionTolerance, sfloat timeStep, BodyIndexPair pair, ref NativeStream.Writer contactWriter)
+            fp collisionTolerance, fp timeStep, BodyIndexPair pair, ref NativeStream.Writer contactWriter)
         {
             var colliderA = (Collider*)rigidBodyA.Collider.GetUnsafePtr();
             var colliderB = (Collider*)rigidBodyB.Collider.GetUnsafePtr();
@@ -207,7 +208,7 @@ namespace Fixed.Physics
         private static unsafe void ConvexConvex(
             Context context, ColliderKeyPair colliderKeys,
             Collider* convexColliderA, Collider* convexColliderB, [NoAlias] in MTransform worldFromA, [NoAlias] in MTransform worldFromB,
-            sfloat maxDistance, bool flipped)
+            fp maxDistance, bool flipped)
         {
             Material materialA = ((ConvexColliderHeader*)convexColliderA)->Material;
             Material materialB = ((ConvexColliderHeader*)convexColliderB)->Material;
@@ -400,8 +401,8 @@ namespace Fixed.Physics
             // Calculate swept AABB of A in B
             MTransform bFromWorld = Inverse(worldFromB);
             MTransform bFromA = Mul(bFromWorld, worldFromA);
-            expansion.Linear = math.mul(bFromWorld.Rotation, expansion.Linear);
-            var transform = new RigidTransform(new quaternion(bFromA.Rotation), bFromA.Translation); // TODO: avoid this conversion to and back from float3x3
+            expansion.Linear = fpmath.mul(bFromWorld.Rotation, expansion.Linear);
+            var transform = new FpRigidTransform(new fpquaternion(bFromA.Rotation), bFromA.Translation); // TODO: avoid this conversion to and back from fp3x3
             Aabb aabbAinB = expansion.ExpandAabb(convexColliderA->CalculateAabb(transform));
 
             // Do the midphase query and build manifolds for any overlapping leaf colliders
@@ -432,7 +433,7 @@ namespace Fixed.Physics
             readonly Collider* m_CompositeColliderB;
             readonly MTransform m_WorldFromA;
             readonly MTransform m_WorldFromB;
-            readonly sfloat m_CollisionTolerance;
+            readonly fp m_CollisionTolerance;
             readonly bool m_Flipped;
 
             ColliderKeyPath m_CompositeColliderKeyPath;
@@ -440,7 +441,7 @@ namespace Fixed.Physics
             public ConvexCompositeOverlapCollector(
                 Context context,
                 Collider* convexCollider, ColliderKey convexColliderKey, Collider* compositeCollider,
-                MTransform worldFromA, MTransform worldFromB, sfloat collisionTolerance, bool flipped)
+                MTransform worldFromA, MTransform worldFromB, fp collisionTolerance, bool flipped)
             {
                 m_Context = context;
                 m_ConvexColliderA = convexCollider;
@@ -639,7 +640,7 @@ namespace Fixed.Physics
 
         private static unsafe void ConvexTerrain(
             Context context, ColliderKeyPair colliderKeys, [NoAlias] Collider* convexColliderA, [NoAlias] Collider* terrainColliderB, [NoAlias] in MTransform worldFromA, [NoAlias] in MTransform worldFromB,
-            sfloat maxDistance, bool flipped)
+            fp maxDistance, bool flipped)
         {
             ref var terrain = ref ((TerrainCollider*)terrainColliderB)->Terrain;
 
@@ -667,17 +668,17 @@ namespace Fixed.Physics
 
             // Get vertices from hull
             ref ConvexHull hull = ref ((ConvexCollider*)convexColliderA)->ConvexHull;
-            float3* capsuleVertices = stackalloc float3[8];
-            float3* vertices;
+            fp3* capsuleVertices = stackalloc fp3[8];
+            fp3* vertices;
             int numVertices = hull.NumVertices;
             if (numVertices == 2)
             {
                 // Add extra sample points along the capsule
-                float3 v0 = hull.Vertices[0];
-                float3 v1 = hull.Vertices[1];
-                float3 t0 = sfloat.Zero;
-                float3 t1 = sfloat.One;
-                float3 d = sfloat.FromRaw(0x3e124925);
+                fp3 v0 = hull.Vertices[0];
+                fp3 v1 = hull.Vertices[1];
+                fp3 t0 = fp.zero;
+                fp3 t1 = fp.one;
+                fp3 d = fp.FromRaw(0x3e124925);
                 for (int i = 0; i < 8; i++)
                 {
                     capsuleVertices[i] = v0 * t0 + v1 * t1;
@@ -697,21 +698,21 @@ namespace Fixed.Physics
             MTransform bFromA = Math.Mul(Math.Inverse(worldFromB), worldFromA);
             for (int iVertex = 0; iVertex < numVertices; iVertex++)
             {
-                float3 pointAInB = Math.Mul(bFromA, vertices[iVertex]);
-                float3 normalInB = float3.zero;
-                if (terrain.GetHeightAndGradient(pointAInB.xz, out sfloat height, out float2 gradient))
+                fp3 pointAInB = Math.Mul(bFromA, vertices[iVertex]);
+                fp3 normalInB = fp3.zero;
+                if (terrain.GetHeightAndGradient(pointAInB.xz, out fp height, out fp2 gradient))
                 {
-                    float3 normal = math.normalize(new float3(gradient.x, sfloat.One, gradient.y));
-                    sfloat distance = (pointAInB.y - height) * normal.y;
+                    fp3 normal = fpmath.normalize(new fp3(gradient.x, fp.one, gradient.y));
+                    fp distance = (pointAInB.y - height) * normal.y;
                     if (distance < maxDistance + hull.ConvexRadius)
                     {
                         // The current manifold must be flushed if it's full or the normals don't match
-                        if (math.dot(normalInB, normal) < sfloat.FromRaw(0x3f7fff58) || manifold.NumContacts == ConvexConvexManifoldQueries.Manifold.k_MaxNumContacts)
+                        if (fpmath.dot(normalInB, normal) < fp.FromRaw(0x3f7fff58) || manifold.NumContacts == ConvexConvexManifoldQueries.Manifold.k_MaxNumContacts)
                         {
                             WriteManifold(manifold, context, colliderKeys, materialA, materialB, flipped);
                             manifold = new ConvexConvexManifoldQueries.Manifold
                             {
-                                Normal = math.mul(worldFromB.Rotation, normal)
+                                Normal = fpmath.mul(worldFromB.Rotation, normal)
                             };
                             normalInB = normal;
                         }
@@ -732,14 +733,14 @@ namespace Fixed.Physics
         private static unsafe void TerrainConvex(
             Context context, ColliderKeyPair colliderKeys,
             Collider* terrainColliderA, Collider* convexColliderB, MTransform worldFromA, MTransform worldFromB,
-            sfloat maxDistance, bool flipped)
+            fp maxDistance, bool flipped)
         {
             ConvexTerrain(context, colliderKeys, convexColliderB, terrainColliderA, worldFromB, worldFromA, maxDistance, !flipped);
         }
 
         private static unsafe void CompositeTerrain(
             Context context, Collider* compositeColliderA, Collider* terrainColliderB, MTransform worldFromA, MTransform worldFromB,
-            sfloat maxDistance, bool flipped)
+            fp maxDistance, bool flipped)
         {
             var collector = new CompositeTerrainLeafCollector(
                 context, compositeColliderA, terrainColliderB, worldFromA, worldFromB, maxDistance, flipped);
@@ -748,7 +749,7 @@ namespace Fixed.Physics
 
         private static unsafe void TerrainComposite(
             Context context, Collider* terrainColliderA, Collider* compositeColliderB, MTransform worldFromA, MTransform worldFromB,
-            sfloat maxDistance, bool flipped)
+            fp maxDistance, bool flipped)
         {
             CompositeTerrain(context, compositeColliderB, terrainColliderA, worldFromB, worldFromA, maxDistance, !flipped);
         }
@@ -760,7 +761,7 @@ namespace Fixed.Physics
             readonly Collider* m_TerrainColliderB;
             MTransform m_WorldFromA;
             readonly MTransform m_WorldFromB;
-            readonly sfloat m_MaxDistance;
+            readonly fp m_MaxDistance;
             readonly bool m_Flipped;
 
             ColliderKeyPath m_KeyPath;
@@ -768,7 +769,7 @@ namespace Fixed.Physics
             public CompositeTerrainLeafCollector(
                 Context context,
                 Collider* compositeColliderA, Collider* terrainColliderB,
-                MTransform worldFromA, MTransform worldFromB, sfloat maxDistance, bool flipped)
+                MTransform worldFromA, MTransform worldFromB, fp maxDistance, bool flipped)
             {
                 m_Context = context;
                 m_CompositeColliderA = compositeColliderA;

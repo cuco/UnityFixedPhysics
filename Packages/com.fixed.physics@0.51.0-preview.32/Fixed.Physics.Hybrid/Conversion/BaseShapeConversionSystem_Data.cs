@@ -1,6 +1,7 @@
 using System;
 using Unity.Entities;
-using Fixed.Mathematics;
+using Unity.Mathematics;
+using Unity.Mathematics.FixedPoint;
 using UnityEngine;
 using Hash128 = Unity.Entities.Hash128;
 
@@ -15,14 +16,14 @@ namespace Fixed.Physics.Authoring
         public Entity BodyEntity;
         public Entity ShapeEntity;
         public Entity ChildEntity;
-        public RigidTransform BodyFromShape;
+        public FpRigidTransform BodyFromShape;
         public Hash128 Hash;
 
-        public static RigidTransform GetCompoundFromChild(Transform shape, Transform body)
+        public static FpRigidTransform GetCompoundFromChild(Transform shape, Transform body)
         {
             var worldFromBody = Math.DecomposeRigidBodyTransform(body.transform.localToWorldMatrix);
             var worldFromShape = Math.DecomposeRigidBodyTransform(shape.transform.localToWorldMatrix);
-            return math.mul(math.inverse(worldFromBody), worldFromShape);
+            return fpmath.mul(fpmath.inverse(worldFromBody), worldFromShape);
         }
 
         public bool Equals(ColliderInstance other)
@@ -94,11 +95,11 @@ namespace Fixed.Physics.Authoring
             public CapsuleGeometry CapsuleProperties;
             public CylinderGeometry CylinderProperties;
             public SphereGeometry SphereProperties;
-            public float3x4 PlaneVertices;
+            public fp3x4 PlaneVertices;
             public ConvexInput ConvexHullProperties;
             public MeshInput MeshProperties;
 
-            public float4x4 BodyFromShape => new float4x4(Instance.BodyFromShape);
+            public fp4x4 BodyFromShape => new fp4x4(Instance.BodyFromShape);
         }
     }
 }

@@ -13,12 +13,12 @@ First you need to make a `ComponentSystem` that is going to iterate over all bod
 using Unity.Entities;
 using Fixed.Transforms;
 using Fixed.Physics;
-using Fixed.Mathematics;
+using Unity.Mathematics.FixedPoint;
 using UnityEngine;
 
 public class AttractSystem : ComponentSystem
 {
-    public float3 center;
+    public fp3 center;
     public float maxDistanceSqrd;
     public float strength;
 
@@ -29,12 +29,12 @@ public class AttractSystem : ComponentSystem
               ref Translation position,
               ref Rotation rotation) =>
             {
-                float3 diff = center - position.Value;
-                float distSqrd = math.lengthsq(diff);
+                fp3 diff = center - position.Value;
+                float distSqrd = fpmath.lengthsq(diff);
                 if (distSqrd < maxDistanceSqrd)
                 {
                     // Alter linear velocity
-                    velocity.Linear += strength * (diff / math.sqrt(distSqrd));
+                    velocity.Linear += strength * (diff / fpmath.sqrt(distSqrd));
                 }
             });
     }
@@ -88,11 +88,11 @@ The most efficient way to get all the bodies close to that point is to either us
 
 Now you have seen how to alter velocity in code, but it can be tricky to work out what velocity values to set in order to get a desired outcome. A common thing you want to do is applying an impulse at a given point on the body and having it react – for example, shooting the object with a gun.
 
-Unity Physics provides a few `Fixed.Physics.Extensions.ComponentExtensions` methods to do the math for you, for example `ApplyImpulse()`. Here's its current implementation:
+Unity Physics provides a few `Fixed.Physics.Extensions.ComponentExtensions` methods to do the fpmath for you, for example `ApplyImpulse()`. Here's its current implementation:
 
 ```csharp
     public static void ApplyImpulse(ref PhysicsVelocity pv, PhysicsMass pm,
-        Translation t, Rotation r, float3 impulse, float3 point)
+        Translation t, Rotation r, fp3 impulse, fp3 point)
         {
             // Linear
             pv.Linear += impulse;
@@ -100,10 +100,10 @@ Unity Physics provides a few `Fixed.Physics.Extensions.ComponentExtensions` meth
             // Angular
             {
                 // Calculate point impulse
-                var worldFromEntity = new RigidTransform(r.Value, t.Value);
-                var worldFromMotion = math.mul(worldFromEntity, pm.Transform);
-                float3 angularImpulseWorldSpace = math.cross(point - worldFromMotion.pos, impulse);
-                float3 angularImpulseInertiaSpace = math.rotate(math.inverse(worldFromMotion.rot), angularImpulseWorldSpace);
+                var worldFromEntity = new FpRigidTransform(r.Value, t.Value);
+                var worldFromMotion = fpmath.mul(worldFromEntity, pm.Transform);
+                fp3 angularImpulseWorldSpace = fpmath.cross(point - worldFromMotion.pos, impulse);
+                fp3 angularImpulseInertiaSpace = fpmath.rotate(fpmath.inverse(worldFromMotion.rot), angularImpulseWorldSpace);
 
                 pv.Angular += angularImpulseInertiaSpace * pm.InverseInertia;
             }
@@ -141,7 +141,7 @@ First, you need these namespaces for your script:
 
 ```csharp
 using Unity.Entities;
-using Fixed.Mathematics;
+using Unity.Mathematics.FixedPoint;
 using Fixed.Physics;
 using Unity.Rendering;
 using Fixed.Transforms;
@@ -153,8 +153,8 @@ Here's the method for creating bodies:
 ```csharp
 public unsafe Entity CreateBody(
     EntityManager entityManager,
-    RenderMesh displayMesh, float3 position, quaternion orientation, BlobAssetReference<Collider> collider,
-    float3 linearVelocity, float3 angularVelocity, float mass, bool isDynamic
+    RenderMesh displayMesh, fp3 position, fpquaternion orientation, BlobAssetReference<Collider> collider,
+    fp3 linearVelocity, fp3 angularVelocity, float mass, bool isDynamic
 )
 {
     ComponentType[] componentTypes = new ComponentType[isDynamic ? 9 : 6];
@@ -187,7 +187,7 @@ public unsafe Entity CreateBody(
         Collider* colliderPtr = (Collider*)collider.GetUnsafePtr();
         entityManager.SetComponentData(entity, PhysicsMass.CreateDynamic(colliderPtr->MassProperties, mass));
         // Calculate the angular velocity in local space from rotation and world angular velocity
-        float3 angularVelocityLocal = math.mul(math.inverse(colliderPtr->MassProperties.MassDistribution.Transform.rot), angularVelocity);
+        fp3 angularVelocityLocal = fpmath.mul(fpmath.inverse(colliderPtr->MassProperties.MassDistribution.Transform.rot), angularVelocity);
         entityManager.SetComponentData(entity, new PhysicsVelocity()
         {
             Linear = linearVelocity,
@@ -207,11 +207,11 @@ public unsafe Entity CreateBody(
 Getting your `RenderMesh` (etc.) is up to you, and you can create a Collider through the `Create()` function on each of the different Collider types, like this:
 
 ```csharp
-  public Entity CreateDynamicSphere(RenderMesh displayMesh, float radius, float3 position, quaternion orientation)
+  public Entity CreateDynamicSphere(RenderMesh displayMesh, float radius, fp3 position, fpquaternion orientation)
     {
         // Sphere with default filter and material. Add to Create() call if you want non default:
-        BlobAssetReference<Fixed.Physics.Collider> spCollider = Fixed.Physics.SphereCollider.Create(float3.zero, radius);
-        return CreateBody(displayMesh, position, orientation, spCollider, float3.zero, float3.zero, 1.0f, true);
+        BlobAssetReference<Fixed.Physics.Collider> spCollider = Fixed.Physics.SphereCollider.Create(fp3.zero, radius);
+        return CreateBody(displayMesh, position, orientation, spCollider, fp3.zero, fp3.zero, 1.0f, true);
     };
 ```
 

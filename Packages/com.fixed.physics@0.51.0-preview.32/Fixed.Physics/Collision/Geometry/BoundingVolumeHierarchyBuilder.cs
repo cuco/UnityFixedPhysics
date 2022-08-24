@@ -4,7 +4,8 @@ using Unity.Burst;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Jobs;
-using Fixed.Mathematics;
+using Unity.Mathematics;
+using Unity.Mathematics.FixedPoint;
 using UnityEngine.Assertions;
 using static Fixed.Physics.Math;
 
@@ -23,7 +24,7 @@ namespace Fixed.Physics
 
         public struct PointAndIndex
         {
-            public float3 Position;
+            public fp3 Position;
             public int Index;
         }
 
@@ -56,7 +57,7 @@ namespace Fixed.Physics
                 for (int i = range.Start; i < range.Start + range.Length; ++i)
                 {
                     PointAndIndex value = Points[i];
-                    sfloat key = value.Position[axis];
+                    fp key = value.Position[axis];
                     int j = i;
                     while (j > range.Start && key < Points[j - 1].Position[axis])
                     {
@@ -73,7 +74,7 @@ namespace Fixed.Physics
             /// <param name="range"></param>
             /// <param name="axis"></param>
             /// <param name="pivot"></param>
-            static void ComputeAxisAndPivot(ref Range range, out int axis, out sfloat pivot)
+            static void ComputeAxisAndPivot(ref Range range, out int axis, out fp pivot)
             {
                 // Compute axis and pivot.
                 axis = IndexOfMaxComponent(range.Domain.Extents);
@@ -88,9 +89,9 @@ namespace Fixed.Physics
                 rRange.Length = range.Length - lRange.Length;
             }
 
-            struct CompareVertices : IComparer<float4>
+            struct CompareVertices : IComparer<fp4>
             {
-                public int Compare(float4 x, float4 y)
+                public int Compare(fp4 x, fp4 y)
                 {
                     return x[SortAxis].CompareTo(y[SortAxis]);
                 }
@@ -98,11 +99,11 @@ namespace Fixed.Physics
                 public int SortAxis;
             }
 
-            void ProcessAxis(int rangeLength, int axis, NativeArray<sfloat> scores, NativeArray<float4> points, ref int bestAxis, ref int pivot, ref sfloat minScore)
+            void ProcessAxis(int rangeLength, int axis, NativeArray<fp> scores, NativeArray<fp4> points, ref int bestAxis, ref int pivot, ref fp minScore)
             {
                 CompareVertices comparator;
                 comparator.SortAxis = axis;
-                NativeSortExtension.Sort((float4*)points.GetUnsafePtr(), rangeLength, comparator);
+                NativeSortExtension.Sort((fp4*)points.GetUnsafePtr(), rangeLength, comparator);
 
                 PointAndIndex* p = (PointAndIndex*)points.GetUnsafePtr();
 
@@ -111,7 +112,7 @@ namespace Fixed.Physics
                 for (int i = 0; i < rangeLength; i++)
                 {
                     runningAabb.Include(Aabbs[p[i].Index]);
-                    scores[i] = (sfloat)(i + 1) * runningAabb.SurfaceArea;
+                    scores[i] = (fp)(i + 1) * runningAabb.SurfaceArea;
                 }
 
                 runningAabb = Aabb.Empty;
@@ -119,7 +120,7 @@ namespace Fixed.Physics
                 for (int i = rangeLength - 1, j = 1; i > 0; --i, ++j)
                 {
                     runningAabb.Include(Aabbs[p[i].Index]);
-                    sfloat sum = scores[i - 1] + (sfloat)j * runningAabb.SurfaceArea;
+                    fp sum = scores[i - 1] + (fp)j * runningAabb.SurfaceArea;
                     if (sum < minScore)
                     {
                         pivot = i;
@@ -133,17 +134,17 @@ namespace Fixed.Physics
             {
                 if (!ScratchScores.IsCreated)
                 {
-                    ScratchScores = new NativeArray<sfloat>(Aabbs.Length, Allocator.Temp);
-                    ScratchPointsX = new NativeArray<float4>(Aabbs.Length, Allocator.Temp);
-                    ScratchPointsY = new NativeArray<float4>(Aabbs.Length, Allocator.Temp);
-                    ScratchPointsZ = new NativeArray<float4>(Aabbs.Length, Allocator.Temp);
+                    ScratchScores = new NativeArray<fp>(Aabbs.Length, Allocator.Temp);
+                    ScratchPointsX = new NativeArray<fp4>(Aabbs.Length, Allocator.Temp);
+                    ScratchPointsY = new NativeArray<fp4>(Aabbs.Length, Allocator.Temp);
+                    ScratchPointsZ = new NativeArray<fp4>(Aabbs.Length, Allocator.Temp);
                 }
 
                 // This code relies on range.length always being less than or equal to the number of primitives, which
                 // happens to be Aabbs.length.  If that ever becomes not true then scratch memory size should be increased.
                 Assert.IsTrue(range.Length <= ScratchScores.Length /*, "Aabbs.Length isn't a large enough scratch memory size for SegregateSah3"*/);
 
-                float4* p = PointsAsFloat4 + range.Start;
+                fp4* p = PointsAfp4 + range.Start;
 
                 for (int i = 0; i < range.Length; i++)
                 {
@@ -153,7 +154,7 @@ namespace Fixed.Physics
                 }
 
                 int bestAxis = -1, pivot = -1;
-                sfloat minScore = sfloat.MaxValue;
+                fp minScore = fp.max_value;
 
                 ProcessAxis(range.Length, 0, ScratchScores, ScratchPointsX, ref bestAxis, ref pivot, ref minScore);
                 ProcessAxis(range.Length, 1, ScratchScores, ScratchPointsY, ref bestAxis, ref pivot, ref minScore);
@@ -172,19 +173,19 @@ namespace Fixed.Physics
                     SplitRange(ref range, lSize, ref lRange, ref rRange);
                 }
 
-                float4* sortedPoints;
+                fp4* sortedPoints;
 
                 if (bestAxis == 0)
                 {
-                    sortedPoints = (float4*)ScratchPointsX.GetUnsafePtr();
+                    sortedPoints = (fp4*)ScratchPointsX.GetUnsafePtr();
                 }
                 else if (bestAxis == 1)
                 {
-                    sortedPoints = (float4*)ScratchPointsY.GetUnsafePtr();
+                    sortedPoints = (fp4*)ScratchPointsY.GetUnsafePtr();
                 }
                 else // bestAxis == 2
                 {
-                    sortedPoints = (float4*)ScratchPointsZ.GetUnsafePtr();
+                    sortedPoints = (fp4*)ScratchPointsZ.GetUnsafePtr();
                 }
 
                 // Write back sorted points.
@@ -194,16 +195,16 @@ namespace Fixed.Physics
                 }
             }
 
-            void Segregate(int axis, sfloat pivot, Range range, int minItems, ref Range lRange, ref Range rRange)
+            void Segregate(int axis, fp pivot, Range range, int minItems, ref Range lRange, ref Range rRange)
             {
                 Assert.IsTrue(range.Length > 1 /*, "Range length must be greater than 1."*/);
 
                 Aabb lDomain = Aabb.Empty;
                 Aabb rDomain = Aabb.Empty;
 
-                float4* p = PointsAsFloat4;
-                float4* start = p + range.Start;
-                float4* end = start + range.Length - 1;
+                fp4* p = PointsAfp4;
+                fp4* start = p + range.Start;
+                fp4* end = start + range.Length - 1;
 
                 do
                 {
@@ -237,8 +238,8 @@ namespace Fixed.Physics
                     // Make sure sub-ranges contains at least minItems nodes, in these rare cases (i.e. all points at the same position), we just split the set in half regardless of positions.
                     SplitRange(ref range, range.Length / 2, ref lRange, ref rRange);
 
-                    SetAabbFromPoints(ref lDomain, PointsAsFloat4 + lRange.Start, lRange.Length);
-                    SetAabbFromPoints(ref rDomain, PointsAsFloat4 + rRange.Start, rRange.Length);
+                    SetAabbFromPoints(ref lDomain, PointsAfp4 + lRange.Start, lRange.Length);
+                    SetAabbFromPoints(ref rDomain, PointsAfp4 + rRange.Start, rRange.Length);
                 }
                 else
                 {
@@ -289,13 +290,13 @@ namespace Fixed.Physics
 
             Node* GetNode(int nodeIndex) => Bvh.m_Nodes + nodeIndex;
 
-            float4* PointsAsFloat4 => (float4*)Points.GetUnsafePtr();
+            fp4* PointsAfp4 => (fp4*)Points.GetUnsafePtr();
 
             void ProcessSmallRange(Range baseRange, ref int freeNodeIndex)
             {
                 Range range = baseRange;
 
-                ComputeAxisAndPivot(ref range, out int axis, out sfloat pivot);
+                ComputeAxisAndPivot(ref range, out int axis, out fp pivot);
                 SortRange(axis, ref range);
 
                 Range* subRanges = stackalloc Range[4];
@@ -333,15 +334,15 @@ namespace Fixed.Physics
             {
                 if (!UseSah)
                 {
-                    ComputeAxisAndPivot(ref range, out int axis, out sfloat pivot);
+                    ComputeAxisAndPivot(ref range, out int axis, out fp pivot);
 
                     Range* temps = stackalloc Range[2];
                     Segregate(axis, pivot, range, 2, ref temps[0], ref temps[1]);
 
-                    ComputeAxisAndPivot(ref temps[0], out int lAxis, out sfloat lPivot);
+                    ComputeAxisAndPivot(ref temps[0], out int lAxis, out fp lPivot);
                     Segregate(lAxis, lPivot, temps[0], 1, ref subRanges[0], ref subRanges[1]);
 
-                    ComputeAxisAndPivot(ref temps[1], out int rAxis, out sfloat rPivot);
+                    ComputeAxisAndPivot(ref temps[1], out int rAxis, out fp rPivot);
                     Segregate(rAxis, rPivot, temps[1], 1, ref subRanges[2], ref subRanges[3]);
                 }
                 else
@@ -408,10 +409,10 @@ namespace Fixed.Physics
             public bool UseSah;
 
             // These arrays are only used if SAH is used for BVH building.
-            private NativeArray<sfloat> ScratchScores;
-            private NativeArray<float4> ScratchPointsX;
-            private NativeArray<float4> ScratchPointsY;
-            private NativeArray<float4> ScratchPointsZ;
+            private NativeArray<fp> ScratchScores;
+            private NativeArray<fp4> ScratchPointsX;
+            private NativeArray<fp4> ScratchPointsY;
+            private NativeArray<fp4> ScratchPointsZ;
         }
 
         public unsafe JobHandle ScheduleBuildJobs(
@@ -483,7 +484,7 @@ namespace Fixed.Physics
                 };
 
                 Aabb aabb = new Aabb();
-                SetAabbFromPoints(ref aabb, (float4*)points.GetUnsafePtr(), points.Length);
+                SetAabbFromPoints(ref aabb, (fp4*)points.GetUnsafePtr(), points.Length);
                 builder.Build(new Builder.Range(0, points.Length, 1, aabb));
                 nodeCount = builder.FreeNodeIndex;
 
@@ -648,7 +649,7 @@ namespace Fixed.Physics
             int level1Size = 0;
 
             Aabb aabb = new Aabb();
-            SetAabbFromPoints(ref aabb, (float4*)points.GetUnsafePtr(), points.Length);
+            SetAabbFromPoints(ref aabb, (fp4*)points.GetUnsafePtr(), points.Length);
             level0[0] = new Builder.Range(0, points.Length, 1, aabb);
 
             int largestAllowedRange = math.max(level0[0].Length / threadCount, Constants.SmallRangeSize);
@@ -744,14 +745,14 @@ namespace Fixed.Physics
         }
 
         // helper
-        private static unsafe void SetAabbFromPoints(ref Aabb aabb, float4* points, int length)
+        private static unsafe void SetAabbFromPoints(ref Aabb aabb, fp4* points, int length)
         {
             aabb.Min = Math.Constants.Max3F;
             aabb.Max = Math.Constants.Min3F;
             for (int i = 0; i < length; i++)
             {
-                aabb.Min = math.min(aabb.Min, points[i].xyz);
-                aabb.Max = math.max(aabb.Max, points[i].xyz);
+                aabb.Min = fpmath.min(aabb.Min, points[i].xyz);
+                aabb.Max = fpmath.max(aabb.Max, points[i].xyz);
             }
         }
 

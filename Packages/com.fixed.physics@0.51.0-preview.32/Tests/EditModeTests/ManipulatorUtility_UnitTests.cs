@@ -1,6 +1,6 @@
 using System.Linq;
 using NUnit.Framework;
-using Fixed.Mathematics;
+using Unity.Mathematics.FixedPoint;
 using Fixed.Physics.Editor;
 using UnityEngine;
 
@@ -10,14 +10,14 @@ namespace Fixed.Physics.Tests.Editor
     {
         static TestCaseData[] k_GetMatrixStateReturnValueTestCases =
         {
-            new TestCaseData(new float4x4()).Returns(MatrixState.NotValidTRS).SetName("Not valid TRS"),
-            new TestCaseData(new float4x4 { c3 = new float4 { w = (sfloat)1f } }).Returns(MatrixState.ZeroScale).SetName("Zero scale"),
-            new TestCaseData(float4x4.Scale((sfloat)3f)).Returns(MatrixState.UniformScale).SetName("Uniform scale"),
-            new TestCaseData(float4x4.Scale((sfloat)3f, (sfloat)2f, (sfloat)1f)).Returns(MatrixState.NonUniformScale).SetName("Non-uniform scale")
+            new TestCaseData(new fp4x4()).Returns(MatrixState.NotValidTRS).SetName("Not valid TRS"),
+            new TestCaseData(new fp4x4 { c3 = new fp4 { w = (fp)1f } }).Returns(MatrixState.ZeroScale).SetName("Zero scale"),
+            new TestCaseData(fp4x4.Scale((fp)3f)).Returns(MatrixState.UniformScale).SetName("Uniform scale"),
+            new TestCaseData(fp4x4.Scale((fp)3f, (fp)2f, (fp)1f)).Returns(MatrixState.NonUniformScale).SetName("Non-uniform scale")
         };
 
         [TestCaseSource(nameof(k_GetMatrixStateReturnValueTestCases))]
-        public MatrixState GetMatrixState_ReturnsExpectedState(float4x4 localToWorld)
+        public MatrixState GetMatrixState_ReturnsExpectedState(fp4x4 localToWorld)
         {
             return ManipulatorUtility.GetMatrixState(ref localToWorld);
         }
@@ -27,7 +27,7 @@ namespace Fixed.Physics.Tests.Editor
         .ToArray();
 
         [TestCaseSource(nameof(k_GetMatrixStatMutateTestCases))]
-        public void GetMatrixState_DoesNotMutateLTWArgument(float4x4 localToWorld)
+        public void GetMatrixState_DoesNotMutateLTWArgument(fp4x4 localToWorld)
         {
             var previous = localToWorld;
             ManipulatorUtility.GetMatrixState(ref localToWorld);

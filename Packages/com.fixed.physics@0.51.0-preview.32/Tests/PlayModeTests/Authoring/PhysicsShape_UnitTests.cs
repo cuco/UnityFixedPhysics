@@ -1,5 +1,5 @@
 using NUnit.Framework;
-using Fixed.Mathematics;
+using Unity.Mathematics.FixedPoint;
 using Fixed.Physics.Authoring;
 using UnityEngine;
 
@@ -7,7 +7,7 @@ namespace Fixed.Physics.Tests.Authoring
 {
     class PhysicsShape_UnitTests
     {
-        static readonly sfloat k_Tolerance = (sfloat)0.001f;
+        static readonly fp k_Tolerance = (fp)0.001f;
 
         PhysicsShapeAuthoring m_Shape;
 
@@ -24,11 +24,11 @@ namespace Fixed.Physics.Tests.Authoring
         [Test]
         public void SetBoxProperties_WithSizeLessThanZero_ClampsToZero()
         {
-            m_Shape.SetBox(new BoxGeometry { Size = -(sfloat)3f, Orientation = quaternion.identity });
+            m_Shape.SetBox(new BoxGeometry { Size = -(fp)3f, Orientation = fpquaternion.identity });
 
             var box = m_Shape.GetBoxProperties();
 
-            Assert.That(box.Size, Is.EqualTo(new float3((sfloat)0f)));
+            Assert.That(box.Size, Is.EqualTo(new fp3((fp)0f)));
         }
 
         [Test]
@@ -38,13 +38,13 @@ namespace Fixed.Physics.Tests.Authoring
             [Values(0f, 1f, 2f, 3f)] float sizeZ
         )
         {
-            var size = new float3((sfloat)sizeX, (sfloat)sizeY, (sfloat)sizeZ);
-            m_Shape.SetBox(new BoxGeometry { Size = size, Orientation = quaternion.identity });
+            var size = new fp3((fp)sizeX, (fp)sizeY, (fp)sizeZ);
+            m_Shape.SetBox(new BoxGeometry { Size = size, Orientation = fpquaternion.identity });
 
             var capsule = m_Shape.GetCapsuleProperties();
 
             var height = capsule.Height;
-            Assert.That(height, Is.EqualTo(math.cmax(size)));
+            Assert.That(height, Is.EqualTo(fpmath.cmax(size)));
         }
 
         [Test]
@@ -54,32 +54,32 @@ namespace Fixed.Physics.Tests.Authoring
             [Values(0f, 1f, 2f, 3f)] float sizeZ
         )
         {
-            var size = new float3((sfloat)sizeX, (sfloat)sizeY, (sfloat)sizeZ);
-            m_Shape.SetBox(new BoxGeometry { Size = size, Orientation = quaternion.identity });
+            var size = new fp3((fp)sizeX, (fp)sizeY, (fp)sizeZ);
+            m_Shape.SetBox(new BoxGeometry { Size = size, Orientation = fpquaternion.identity });
 
             var capsule = m_Shape.GetCapsuleProperties();
 
             var cmaxI = size.GetMaxAxis();
-            var expectedRadius = (sfloat)0.5f * math.cmax(cmaxI == 0 ? size.yz : cmaxI == 1 ? size.xz : size.xy);
+            var expectedRadius = fp.half * fpmath.cmax(cmaxI == 0 ? size.yz : cmaxI == 1 ? size.xz : size.xy);
             Assert.That(capsule.Radius, Is.EqualTo(expectedRadius));
         }
 
         static readonly TestCaseData[] k_CapsuleOrientationTestCases =
         {
-            new TestCaseData(new float3((sfloat)2f, (sfloat)1f, (sfloat)1f), new float3((sfloat)1f, (sfloat)0f, (sfloat)0f)).SetName("Aligned to x-axis"),
-            new TestCaseData(new float3((sfloat)1f, (sfloat)2f, (sfloat)1f), new float3((sfloat)0f, (sfloat)1f, (sfloat)0f)).SetName("Aligned to y-axis"),
-            new TestCaseData(new float3((sfloat)1f, (sfloat)1f, (sfloat)2f), new float3((sfloat)0f, (sfloat)0f, (sfloat)1f)).SetName("Aligned to z-axis")
+            new TestCaseData(new fp3((fp)2f, (fp)1f, (fp)1f), new fp3((fp)1f, (fp)0f, (fp)0f)).SetName("Aligned to x-axis"),
+            new TestCaseData(new fp3((fp)1f, (fp)2f, (fp)1f), new fp3((fp)0f, (fp)1f, (fp)0f)).SetName("Aligned to y-axis"),
+            new TestCaseData(new fp3((fp)1f, (fp)1f, (fp)2f), new fp3((fp)0f, (fp)0f, (fp)1f)).SetName("Aligned to z-axis")
         };
         [TestCaseSource(nameof(k_CapsuleOrientationTestCases))]
-        public void GetCapsuleProperties_WhenShapeIsElongatedBox_OrientationPointsDownLongAxis(float3 boxSize, float3 expectedLookVector)
+        public void GetCapsuleProperties_WhenShapeIsElongatedBox_OrientationPointsDownLongAxis(fp3 boxSize, fp3 expectedLookVector)
         {
-            m_Shape.SetBox(new BoxGeometry { Size = boxSize, Orientation = quaternion.identity });
+            m_Shape.SetBox(new BoxGeometry { Size = boxSize, Orientation = fpquaternion.identity });
 
             var capsule = m_Shape.GetCapsuleProperties();
 
-            var lookVector = math.mul(capsule.Orientation, new float3((sfloat)0f, (sfloat)0f, (sfloat)1f));
+            var lookVector = fpmath.mul(capsule.Orientation, new fp3((fp)0f, (fp)0f, (fp)1f));
             Assert.That(
-                math.dot(lookVector, expectedLookVector), Is.EqualTo((sfloat)1f).Within(k_Tolerance),
+                fpmath.dot(lookVector, expectedLookVector), Is.EqualTo((fp)1f).Within(k_Tolerance),
                 $"Expected {expectedLookVector} but got {lookVector}"
             );
         }
@@ -91,9 +91,9 @@ namespace Fixed.Physics.Tests.Authoring
             [Values(0f, 1f, 2f, 3f)] float sizeZ
         )
         {
-            var size = new float3((sfloat)sizeX, (sfloat)sizeY, (sfloat)sizeZ);
-            var orientation = quaternion.LookRotation(new float3((sfloat)1f), math.up());
-            var expectedCenter = new float3((sfloat)4f, (sfloat)5f, (sfloat)6f);
+            var size = new fp3((fp)sizeX, (fp)sizeY, (fp)sizeZ);
+            var orientation = fpquaternion.LookRotation(new fp3((fp)1f), fpmath.up());
+            var expectedCenter = new fp3((fp)4f, (fp)5f, (fp)6f);
             m_Shape.SetBox(new BoxGeometry { Size = size, Center = expectedCenter, Orientation = orientation });
 
             var capsule = m_Shape.GetCapsuleProperties();
@@ -108,8 +108,8 @@ namespace Fixed.Physics.Tests.Authoring
             [Values(0f, 1f, 2f, 3f)] float sizeZ
         )
         {
-            var size = new float3((sfloat)sizeX, (sfloat)sizeY, (sfloat)sizeZ);
-            m_Shape.SetBox(new BoxGeometry { Size = size, Orientation = quaternion.identity });
+            var size = new fp3((fp)sizeX, (fp)sizeY, (fp)sizeZ);
+            m_Shape.SetBox(new BoxGeometry { Size = size, Orientation = fpquaternion.identity });
 
             var cylinder = m_Shape.GetCylinderProperties();
 
@@ -124,13 +124,13 @@ namespace Fixed.Physics.Tests.Authoring
             [Values(0f, 1f, 2f, 3f)] float sizeZ
         )
         {
-            var size = new float3((sfloat)sizeX, (sfloat)sizeY, (sfloat)sizeZ);
-            m_Shape.SetBox(new BoxGeometry { Size = size, Orientation = quaternion.identity });
+            var size = new fp3((fp)sizeX, (fp)sizeY, (fp)sizeZ);
+            m_Shape.SetBox(new BoxGeometry { Size = size, Orientation = fpquaternion.identity });
 
             var cylinder = m_Shape.GetCylinderProperties();
 
             var heightAxis = size.GetDeviantAxis();
-            var expectedRadius = (sfloat)0.5f * math.cmax(heightAxis == 0 ? size.yz : heightAxis == 1 ? size.xz : size.xy);
+            var expectedRadius = fp.half * fpmath.cmax(heightAxis == 0 ? size.yz : heightAxis == 1 ? size.xz : size.xy);
             Assert.That(cylinder.Radius, Is.EqualTo(expectedRadius));
         }
 
@@ -141,28 +141,28 @@ namespace Fixed.Physics.Tests.Authoring
             [Values(0f, 1f, 2f, 3f)] float sizeZ
         )
         {
-            var size = new float3((sfloat)sizeX, (sfloat)sizeY, (sfloat)sizeZ);
-            m_Shape.SetBox(new BoxGeometry { Size = size, Orientation = quaternion.identity });
+            var size = new fp3((fp)sizeX, (fp)sizeY, (fp)sizeZ);
+            m_Shape.SetBox(new BoxGeometry { Size = size, Orientation = fpquaternion.identity });
 
-            var sphere = m_Shape.GetSphereProperties(out quaternion _);
+            var sphere = m_Shape.GetSphereProperties(out fpquaternion _);
 
-            var expectedRadius = (sfloat)0.5f * math.cmax(size);
+            var expectedRadius = fp.half * fpmath.cmax(size);
             Assert.That(sphere.Radius, Is.EqualTo(expectedRadius));
         }
 
         static readonly TestCaseData[] k_PlaneSizeTestCases =
         {
-            new TestCaseData(new float3((sfloat)2f, (sfloat)3f, (sfloat)1f), 0, 1).SetName("xy"),
-            new TestCaseData(new float3((sfloat)2f, (sfloat)1f, (sfloat)3f), 0, 2).SetName("xz"),
-            new TestCaseData(new float3((sfloat)1f, (sfloat)2f, (sfloat)3f), 1, 2).SetName("yz")
+            new TestCaseData(new fp3((fp)2f, (fp)3f, (fp)1f), 0, 1).SetName("xy"),
+            new TestCaseData(new fp3((fp)2f, (fp)1f, (fp)3f), 0, 2).SetName("xz"),
+            new TestCaseData(new fp3((fp)1f, (fp)2f, (fp)3f), 1, 2).SetName("yz")
         };
 
         [TestCaseSource(nameof(k_PlaneSizeTestCases))]
-        public void GetPlaneProperties_WhenShapeIsBox_SizeIsTwoGreatestDimensions(float3 boxSize, int ax1, int ax2)
+        public void GetPlaneProperties_WhenShapeIsBox_SizeIsTwoGreatestDimensions(fp3 boxSize, int ax1, int ax2)
         {
-            m_Shape.SetBox(new BoxGeometry { Size = boxSize, Orientation = quaternion.identity });
+            m_Shape.SetBox(new BoxGeometry { Size = boxSize, Orientation = fpquaternion.identity });
 
-            m_Shape.GetPlaneProperties(out _, out var size, out quaternion _);
+            m_Shape.GetPlaneProperties(out _, out var size, out fpquaternion _);
 
             Assert.That(
                 new[] { size.x, size.y }, Is.EquivalentTo(new[] { boxSize[ax1], boxSize[ax2] }),
@@ -172,32 +172,32 @@ namespace Fixed.Physics.Tests.Authoring
 
         static readonly TestCaseData[] k_PlaneOrientationTestCases =
         {
-            new TestCaseData(new float3((sfloat)3f, (sfloat)2f, (sfloat)1f), quaternion.LookRotation(new float3((sfloat)1f, (sfloat)0f, (sfloat)0f), new float3((sfloat)0f, (sfloat)0f, (sfloat)1f))).SetName("look x, up z"),
-            new TestCaseData(new float3((sfloat)2f, (sfloat)3f, (sfloat)1f), quaternion.LookRotation(new float3((sfloat)0f, (sfloat)1f, (sfloat)0f), new float3((sfloat)0f, (sfloat)0f, (sfloat)1f))).SetName("look y, up z"),
-            new TestCaseData(new float3((sfloat)3f, (sfloat)1f, (sfloat)2f), quaternion.LookRotation(new float3((sfloat)1f, (sfloat)0f, (sfloat)0f), new float3((sfloat)0f, (sfloat)1f, (sfloat)0f))).SetName("look x, up y"),
-            new TestCaseData(new float3((sfloat)2f, (sfloat)1f, (sfloat)3f), quaternion.LookRotation(new float3((sfloat)0f, (sfloat)0f, (sfloat)1f), new float3((sfloat)0f, (sfloat)1f, (sfloat)0f))).SetName("look z, up y"),
-            new TestCaseData(new float3((sfloat)1f, (sfloat)3f, (sfloat)2f), quaternion.LookRotation(new float3((sfloat)0f, (sfloat)1f, (sfloat)0f), new float3((sfloat)1f, (sfloat)0f, (sfloat)0f))).SetName("look y, up x"),
-            new TestCaseData(new float3((sfloat)1f, (sfloat)2f, (sfloat)3f), quaternion.LookRotation(new float3((sfloat)0f, (sfloat)0f, (sfloat)1f), new float3((sfloat)1f, (sfloat)0f, (sfloat)0f))).SetName("look z, up x")
+            new TestCaseData(new fp3((fp)3f, (fp)2f, (fp)1f), fpquaternion.LookRotation(new fp3((fp)1f, (fp)0f, (fp)0f), new fp3((fp)0f, (fp)0f, (fp)1f))).SetName("look x, up z"),
+            new TestCaseData(new fp3((fp)2f, (fp)3f, (fp)1f), fpquaternion.LookRotation(new fp3((fp)0f, (fp)1f, (fp)0f), new fp3((fp)0f, (fp)0f, (fp)1f))).SetName("look y, up z"),
+            new TestCaseData(new fp3((fp)3f, (fp)1f, (fp)2f), fpquaternion.LookRotation(new fp3((fp)1f, (fp)0f, (fp)0f), new fp3((fp)0f, (fp)1f, (fp)0f))).SetName("look x, up y"),
+            new TestCaseData(new fp3((fp)2f, (fp)1f, (fp)3f), fpquaternion.LookRotation(new fp3((fp)0f, (fp)0f, (fp)1f), new fp3((fp)0f, (fp)1f, (fp)0f))).SetName("look z, up y"),
+            new TestCaseData(new fp3((fp)1f, (fp)3f, (fp)2f), fpquaternion.LookRotation(new fp3((fp)0f, (fp)1f, (fp)0f), new fp3((fp)1f, (fp)0f, (fp)0f))).SetName("look y, up x"),
+            new TestCaseData(new fp3((fp)1f, (fp)2f, (fp)3f), fpquaternion.LookRotation(new fp3((fp)0f, (fp)0f, (fp)1f), new fp3((fp)1f, (fp)0f, (fp)0f))).SetName("look z, up x")
         };
 
         [TestCaseSource(nameof(k_PlaneOrientationTestCases))]
-        public void GetPlaneProperties_WhenShapeIsBox_OrientationPointsDownLongAxisUpFlatAxis(float3 boxSize, quaternion expected)
+        public void GetPlaneProperties_WhenShapeIsBox_OrientationPointsDownLongAxisUpFlatAxis(fp3 boxSize, fpquaternion expected)
         {
-            m_Shape.SetBox(new BoxGeometry { Size = boxSize, Orientation = quaternion.identity });
+            m_Shape.SetBox(new BoxGeometry { Size = boxSize, Orientation = fpquaternion.identity });
 
-            m_Shape.GetPlaneProperties(out _, out _, out quaternion orientation);
+            m_Shape.GetPlaneProperties(out _, out _, out fpquaternion orientation);
 
-            var expectedLook = math.mul(expected, new float3 { z = (sfloat)1f });
-            var expectedUp = math.mul(expected, new float3 { y = (sfloat)1f });
-            var actualLook = math.mul(orientation, new float3 { z = (sfloat)1f });
-            var actualUp = math.mul(orientation, new float3 { y = (sfloat)1f });
-            var dotProducts = math.abs(new float3(
-                math.dot(expectedLook, actualLook),
-                math.dot(expectedUp, actualUp),
-                (sfloat)0f
+            var expectedLook = fpmath.mul(expected, new fp3 { z = (fp)1f });
+            var expectedUp = fpmath.mul(expected, new fp3 { y = (fp)1f });
+            var actualLook = fpmath.mul(orientation, new fp3 { z = (fp)1f });
+            var actualUp = fpmath.mul(orientation, new fp3 { y = (fp)1f });
+            var dotProducts = fpmath.abs(new fp3(
+                fpmath.dot(expectedLook, actualLook),
+                fpmath.dot(expectedUp, actualUp),
+                (fp)0f
             ));
             Assert.That(
-                dotProducts, Is.PrettyCloseTo(new float3((sfloat)1f, (sfloat)1f, (sfloat)0f)),
+                dotProducts, Is.PrettyCloseTo(new fp3((fp)1f, (fp)1f, (fp)0f)),
                 $"Expected look axis to be parallel to {expectedLook} and up axis to be parallel to {expectedUp} but got {actualLook} and {actualUp}"
             );
         }

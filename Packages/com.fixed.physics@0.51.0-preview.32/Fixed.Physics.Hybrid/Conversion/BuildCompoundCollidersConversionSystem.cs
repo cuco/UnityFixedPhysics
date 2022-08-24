@@ -5,7 +5,7 @@ using Unity.Collections.LowLevel.Unsafe;
 using Unity.Collections.NotBurstCompatible;
 using Unity.Entities;
 using Unity.Jobs;
-using Fixed.Mathematics;
+using Unity.Mathematics.FixedPoint;
 using UnityEngine;
 using UnityEngine.Profiling;
 using Hash128 = Unity.Entities.Hash128;
@@ -171,7 +171,7 @@ namespace Fixed.Physics.Authoring
 
                             // otherwise it is a compound
                             var childHashes = new NativeArray<Hash128>(colliders.Length, Allocator.TempJob, NativeArrayOptions.UninitializedMemory);
-                            var childOffsets = new NativeArray<RigidTransform>(colliders.Length, Allocator.TempJob, NativeArrayOptions.UninitializedMemory);
+                            var childOffsets = new NativeArray<FpRigidTransform>(colliders.Length, Allocator.TempJob, NativeArrayOptions.UninitializedMemory);
                             var childBlobs = new NativeArray<CompoundCollider.ColliderBlobInstance>(colliders.Length, Allocator.TempJob, NativeArrayOptions.UninitializedMemory);
                             for (var i = 0; i < children.Count(); ++i)
                             {
@@ -252,7 +252,7 @@ namespace Fixed.Physics.Authoring
             [DeallocateOnJobCompletion]
             [ReadOnly] public NativeArray<Hash128> ChildHashes;
             [DeallocateOnJobCompletion]
-            [ReadOnly] public NativeArray<RigidTransform> ChildOffsets;
+            [ReadOnly] public NativeArray<FpRigidTransform> ChildOffsets;
 
             public NativeArray<Hash128> Output;
 

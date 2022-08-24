@@ -3,7 +3,7 @@ using NUnit.Framework;
 using Unity.Burst;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Jobs;
-using Fixed.Mathematics;
+using Unity.Mathematics.FixedPoint;
 using TestUtils = Fixed.Physics.Tests.Utils.TestUtils;
 
 namespace Fixed.Physics.Tests.Collision.Colliders
@@ -19,7 +19,7 @@ namespace Fixed.Physics.Tests.Collision.Colliders
         struct CreateQuadFromBurstJob : IJob
         {
             public void Execute() =>
-                PolygonCollider.CreateQuad(new float3(-(sfloat)1f, (sfloat)1f, (sfloat)0f), new float3((sfloat)1f, (sfloat)1f, (sfloat)0f), new float3((sfloat)1f, -(sfloat)1f, (sfloat)0f), new float3(-(sfloat)1f, -(sfloat)1f, (sfloat)0f)).Dispose();
+                PolygonCollider.CreateQuad(new fp3(-(fp)1f, (fp)1f, (fp)0f), new fp3((fp)1f, (fp)1f, (fp)0f), new fp3((fp)1f, -(fp)1f, (fp)0f), new fp3(-(fp)1f, -(fp)1f, (fp)0f)).Dispose();
         }
 
         [Test]
@@ -29,7 +29,7 @@ namespace Fixed.Physics.Tests.Collision.Colliders
         struct CreateTriangleFromBurstJob : IJob
         {
             public void Execute() =>
-                PolygonCollider.CreateTriangle(new float3(-(sfloat)1f, (sfloat)1f, (sfloat)0f), new float3((sfloat)1f, (sfloat)1f, (sfloat)0f), new float3((sfloat)1f, -(sfloat)1f, (sfloat)0f)).Dispose();
+                PolygonCollider.CreateTriangle(new fp3(-(fp)1f, (fp)1f, (fp)0f), new fp3((fp)1f, (fp)1f, (fp)0f), new fp3((fp)1f, -(fp)1f, (fp)0f)).Dispose();
         }
 
         [Test]
@@ -41,25 +41,25 @@ namespace Fixed.Physics.Tests.Collision.Colliders
         [Test]
         unsafe public void TestCreateTriangle()
         {
-            float3[] vertices =
+            fp3[] vertices =
             {
-                new float3(-(sfloat)1.4f, (sfloat)1.4f, (sfloat)5.6f),
-                new float3((sfloat)1.4f, (sfloat)1.4f, (sfloat)3.6f),
-                new float3((sfloat)0.2f, (sfloat)1.2f, (sfloat)5.6f)
+                new fp3(-(fp)1.4f, (fp)1.4f, (fp)5.6f),
+                new fp3((fp)1.4f, (fp)1.4f, (fp)3.6f),
+                new fp3((fp)0.2f, (fp)1.2f, (fp)5.6f)
             };
-            float3 normal = math.normalize(math.cross(vertices[1] - vertices[0], vertices[2] - vertices[0]));
+            fp3 normal = fpmath.normalize(fpmath.cross(vertices[1] - vertices[0], vertices[2] - vertices[0]));
 
             var collider = PolygonCollider.CreateTriangle(vertices[0], vertices[1], vertices[2]);
             var triangleCollider = UnsafeUtility.AsRef<PolygonCollider>(collider.GetUnsafePtr());
             Assert.IsTrue(triangleCollider.IsTriangle);
             Assert.IsFalse(triangleCollider.IsQuad);
 
-            TestUtils.AreEqual(triangleCollider.Vertices[0], vertices[0], (sfloat)1e-3f);
-            TestUtils.AreEqual(triangleCollider.Vertices[1], vertices[1], (sfloat)1e-3f);
-            TestUtils.AreEqual(triangleCollider.Vertices[2], vertices[2], (sfloat)1e-3f);
+            TestUtils.AreEqual(triangleCollider.Vertices[0], vertices[0], (fp)1e-3f);
+            TestUtils.AreEqual(triangleCollider.Vertices[1], vertices[1], (fp)1e-3f);
+            TestUtils.AreEqual(triangleCollider.Vertices[2], vertices[2], (fp)1e-3f);
             Assert.AreEqual(2, triangleCollider.Planes.Length);
-            TestUtils.AreEqual(normal, triangleCollider.Planes[0].Normal, (sfloat)1e-3f);
-            TestUtils.AreEqual(-normal, triangleCollider.Planes[1].Normal, (sfloat)1e-3f);
+            TestUtils.AreEqual(normal, triangleCollider.Planes[0].Normal, (fp)1e-3f);
+            TestUtils.AreEqual(-normal, triangleCollider.Planes[1].Normal, (fp)1e-3f);
             Assert.AreEqual(ColliderType.Triangle, triangleCollider.Type);
             Assert.AreEqual(CollisionType.Convex, triangleCollider.CollisionType);
         }
@@ -70,27 +70,27 @@ namespace Fixed.Physics.Tests.Collision.Colliders
         [Test]
         unsafe public void TestCreateQuad()
         {
-            float3[] vertices =
+            fp3[] vertices =
             {
-                new float3(-(sfloat)4.5f, (sfloat)0.0f, (sfloat)1.0f),
-                new float3((sfloat)3.4f, (sfloat)0.7f, (sfloat)1.0f),
-                new float3((sfloat)3.4f, (sfloat)2.7f, (sfloat)1.0f),
-                new float3(-(sfloat)3.4f, (sfloat)1.2f, (sfloat)1.0f)
+                new fp3(-(fp)4.5f, (fp)0.0f, (fp)1.0f),
+                new fp3((fp)3.4f, (fp)0.7f, (fp)1.0f),
+                new fp3((fp)3.4f, (fp)2.7f, (fp)1.0f),
+                new fp3(-(fp)3.4f, (fp)1.2f, (fp)1.0f)
             };
-            float3 normal = math.normalize(math.cross(vertices[2] - vertices[1], vertices[0] - vertices[1]));
+            fp3 normal = fpmath.normalize(fpmath.cross(vertices[2] - vertices[1], vertices[0] - vertices[1]));
 
             var collider = PolygonCollider.CreateQuad(vertices[0], vertices[1], vertices[2], vertices[3]);
             var quadCollider = UnsafeUtility.AsRef<PolygonCollider>(collider.GetUnsafePtr());
             Assert.IsFalse(quadCollider.IsTriangle);
             Assert.IsTrue(quadCollider.IsQuad);
 
-            TestUtils.AreEqual(quadCollider.Vertices[0], vertices[0], (sfloat)1e-3f);
-            TestUtils.AreEqual(quadCollider.Vertices[1], vertices[1], (sfloat)1e-3f);
-            TestUtils.AreEqual(quadCollider.Vertices[2], vertices[2], (sfloat)1e-3f);
-            TestUtils.AreEqual(quadCollider.Vertices[3], vertices[3], (sfloat)1e-3f);
+            TestUtils.AreEqual(quadCollider.Vertices[0], vertices[0], (fp)1e-3f);
+            TestUtils.AreEqual(quadCollider.Vertices[1], vertices[1], (fp)1e-3f);
+            TestUtils.AreEqual(quadCollider.Vertices[2], vertices[2], (fp)1e-3f);
+            TestUtils.AreEqual(quadCollider.Vertices[3], vertices[3], (fp)1e-3f);
             Assert.AreEqual(2, quadCollider.Planes.Length);
-            TestUtils.AreEqual(normal, quadCollider.Planes[0].Normal, (sfloat)1e-3f);
-            TestUtils.AreEqual(-normal, quadCollider.Planes[1].Normal, (sfloat)1e-3f);
+            TestUtils.AreEqual(normal, quadCollider.Planes[0].Normal, (fp)1e-3f);
+            TestUtils.AreEqual(-normal, quadCollider.Planes[1].Normal, (fp)1e-3f);
             Assert.AreEqual(ColliderType.Quad, quadCollider.Type);
             Assert.AreEqual(CollisionType.Convex, quadCollider.CollisionType);
         }
@@ -101,27 +101,27 @@ namespace Fixed.Physics.Tests.Collision.Colliders
         [Test]
         unsafe public void TestCreateQuadUnsorted()
         {
-            float3[] vertices =
+            fp3[] vertices =
             {
-                new float3(-(sfloat)4.5f, (sfloat)0.0f, (sfloat)1.0f),
-                new float3((sfloat)3.4f, (sfloat)2.7f, (sfloat)1.0f),
-                new float3((sfloat)3.4f, (sfloat)0.7f, (sfloat)1.0f),
-                new float3(-(sfloat)3.4f, (sfloat)1.2f, (sfloat)1.0f)
+                new fp3(-(fp)4.5f, (fp)0.0f, (fp)1.0f),
+                new fp3((fp)3.4f, (fp)2.7f, (fp)1.0f),
+                new fp3((fp)3.4f, (fp)0.7f, (fp)1.0f),
+                new fp3(-(fp)3.4f, (fp)1.2f, (fp)1.0f)
             };
-            float3 normal = math.normalize(math.cross(vertices[2] - vertices[1], vertices[0] - vertices[1]));
+            fp3 normal = fpmath.normalize(fpmath.cross(vertices[2] - vertices[1], vertices[0] - vertices[1]));
 
             var collider = PolygonCollider.CreateQuad(vertices[0], vertices[1], vertices[2], vertices[3]);
             var quadCollider = UnsafeUtility.AsRef<PolygonCollider>(collider.GetUnsafePtr());
             Assert.IsFalse(quadCollider.IsTriangle);
             Assert.IsTrue(quadCollider.IsQuad);
 
-            TestUtils.AreEqual(quadCollider.Vertices[0], vertices[0], (sfloat)1e-3f);
-            TestUtils.AreEqual(quadCollider.Vertices[1], vertices[1], (sfloat)1e-3f);
-            TestUtils.AreEqual(quadCollider.Vertices[2], vertices[2], (sfloat)1e-3f);
-            TestUtils.AreEqual(quadCollider.Vertices[3], vertices[3], (sfloat)1e-3f);
+            TestUtils.AreEqual(quadCollider.Vertices[0], vertices[0], (fp)1e-3f);
+            TestUtils.AreEqual(quadCollider.Vertices[1], vertices[1], (fp)1e-3f);
+            TestUtils.AreEqual(quadCollider.Vertices[2], vertices[2], (fp)1e-3f);
+            TestUtils.AreEqual(quadCollider.Vertices[3], vertices[3], (fp)1e-3f);
             Assert.AreEqual(2, quadCollider.Planes.Length);
-            TestUtils.AreEqual(normal, quadCollider.Planes[0].Normal, (sfloat)1e-3f);
-            TestUtils.AreEqual(-normal, quadCollider.Planes[1].Normal, (sfloat)1e-3f);
+            TestUtils.AreEqual(normal, quadCollider.Planes[0].Normal, (fp)1e-3f);
+            TestUtils.AreEqual(-normal, quadCollider.Planes[1].Normal, (fp)1e-3f);
             Assert.AreEqual(ColliderType.Quad, quadCollider.Type);
             Assert.AreEqual(CollisionType.Convex, quadCollider.CollisionType);
         }
@@ -135,9 +135,9 @@ namespace Fixed.Physics.Tests.Collision.Colliders
         {
             var vertices = new[]
             {
-                math.select(default, new float3((sfloat)errantValue), errantArg == 0),
-                math.select(default, new float3((sfloat)errantValue), errantArg == 1),
-                math.select(default, new float3((sfloat)errantValue), errantArg == 2)
+                fpmath.select(default, new fp3((fp)errantValue), errantArg == 0),
+                fpmath.select(default, new fp3((fp)errantValue), errantArg == 1),
+                fpmath.select(default, new fp3((fp)errantValue), errantArg == 2)
             };
 
             var ex = Assert.Throws<ArgumentException>(() => PolygonCollider.CreateTriangle(vertices[0], vertices[1], vertices[2]));
@@ -152,10 +152,10 @@ namespace Fixed.Physics.Tests.Collision.Colliders
         {
             var vertices = new[]
             {
-                math.select(default, new float3((sfloat)errantValue), errantArg == 0),
-                math.select(default, new float3((sfloat)errantValue), errantArg == 1),
-                math.select(default, new float3((sfloat)errantValue), errantArg == 2),
-                math.select(default, new float3((sfloat)errantValue), errantArg == 3)
+                fpmath.select(default, new fp3((fp)errantValue), errantArg == 0),
+                fpmath.select(default, new fp3((fp)errantValue), errantArg == 1),
+                fpmath.select(default, new fp3((fp)errantValue), errantArg == 2),
+                fpmath.select(default, new fp3((fp)errantValue), errantArg == 3)
             };
 
             var ex = Assert.Throws<ArgumentException>(() => PolygonCollider.CreateQuad(vertices[0], vertices[1], vertices[2],
@@ -187,10 +187,10 @@ namespace Fixed.Physics.Tests.Collision.Colliders
             Assert.Throws<ArgumentException>(() =>
             {
                 PolygonCollider.CreateQuad(
-                    new float3((sfloat)v00, (sfloat)v01, (sfloat)v02),
-                    new float3((sfloat)v10, (sfloat)v11, (sfloat)v12),
-                    new float3((sfloat)v20, (sfloat)v21, (sfloat)v22),
-                    new float3((sfloat)v30, (sfloat)v31, (sfloat)v32)
+                    new fp3((fp)v00, (fp)v01, (fp)v02),
+                    new fp3((fp)v10, (fp)v11, (fp)v12),
+                    new fp3((fp)v20, (fp)v21, (fp)v22),
+                    new fp3((fp)v30, (fp)v31, (fp)v32)
                 );
             });
         }
@@ -207,11 +207,11 @@ namespace Fixed.Physics.Tests.Collision.Colliders
         [Test]
         public void TestCalculateAabbLocalTriangle()
         {
-            float3[] vertices =
+            fp3[] vertices =
             {
-                new float3(-(sfloat)1.8f, (sfloat)2.4f, (sfloat)4.6f),
-                new float3((sfloat)1.4f, (sfloat)1.6f, (sfloat)1.6f),
-                new float3((sfloat)0.2f, (sfloat)1.2f, (sfloat)3.6f)
+                new fp3(-(fp)1.8f, (fp)2.4f, (fp)4.6f),
+                new fp3((fp)1.4f, (fp)1.6f, (fp)1.6f),
+                new fp3((fp)0.2f, (fp)1.2f, (fp)3.6f)
             };
 
             var collider = PolygonCollider.CreateTriangle(vertices[0], vertices[1], vertices[2]);
@@ -219,12 +219,12 @@ namespace Fixed.Physics.Tests.Collision.Colliders
 
             Aabb expected = new Aabb()
             {
-                Min = math.min(math.min(vertices[0], vertices[1]), vertices[2]),
-                Max = math.max(math.max(vertices[0], vertices[1]), vertices[2])
+                Min = fpmath.min(fpmath.min(vertices[0], vertices[1]), vertices[2]),
+                Max = fpmath.max(fpmath.max(vertices[0], vertices[1]), vertices[2])
             };
 
-            TestUtils.AreEqual(expected.Min, aabb.Min, (sfloat)1e-3f);
-            TestUtils.AreEqual(expected.Max, aabb.Max, (sfloat)1e-3f);
+            TestUtils.AreEqual(expected.Min, aabb.Min, (fp)1e-3f);
+            TestUtils.AreEqual(expected.Max, aabb.Max, (fp)1e-3f);
         }
 
         /// <summary>
@@ -233,19 +233,19 @@ namespace Fixed.Physics.Tests.Collision.Colliders
         [Test]
         public void TestCalculateAabbLocalQuad()
         {
-            float3[] quadVertices =
+            fp3[] quadVertices =
             {
-                new float3(-(sfloat)4.5f, (sfloat)0.0f, (sfloat)1.0f),
-                new float3((sfloat)3.4f, (sfloat)0.7f, (sfloat)1.0f),
-                new float3((sfloat)3.4f, (sfloat)2.7f, (sfloat)1.0f),
-                new float3(-(sfloat)3.4f, (sfloat)1.2f, (sfloat)1.0f)
+                new fp3(-(fp)4.5f, (fp)0.0f, (fp)1.0f),
+                new fp3((fp)3.4f, (fp)0.7f, (fp)1.0f),
+                new fp3((fp)3.4f, (fp)2.7f, (fp)1.0f),
+                new fp3(-(fp)3.4f, (fp)1.2f, (fp)1.0f)
             };
             var collider = PolygonCollider.CreateQuad(quadVertices[0], quadVertices[1], quadVertices[2], quadVertices[3]);
             Aabb aabb = collider.Value.CalculateAabb();
-            Aabb expected = Aabb.CreateFromPoints(new float3x4(quadVertices[0], quadVertices[1], quadVertices[2], quadVertices[3]));
+            Aabb expected = Aabb.CreateFromPoints(new fp3x4(quadVertices[0], quadVertices[1], quadVertices[2], quadVertices[3]));
 
-            TestUtils.AreEqual(expected.Min, aabb.Min, (sfloat)1e-3f);
-            TestUtils.AreEqual(expected.Max, aabb.Max, (sfloat)1e-3f);
+            TestUtils.AreEqual(expected.Min, aabb.Min, (fp)1e-3f);
+            TestUtils.AreEqual(expected.Max, aabb.Max, (fp)1e-3f);
         }
 
         /// <summary>
@@ -254,32 +254,32 @@ namespace Fixed.Physics.Tests.Collision.Colliders
         [Test]
         public void TestCalculateAabbTransformedTriangle()
         {
-            float3[] vertices =
+            fp3[] vertices =
             {
-                new float3(-(sfloat)1.8f, (sfloat)2.4f, (sfloat)4.6f),
-                new float3((sfloat)1.4f, (sfloat)1.6f, (sfloat)1.6f),
-                new float3((sfloat)0.2f, (sfloat)1.2f, (sfloat)3.6f)
+                new fp3(-(fp)1.8f, (fp)2.4f, (fp)4.6f),
+                new fp3((fp)1.4f, (fp)1.6f, (fp)1.6f),
+                new fp3((fp)0.2f, (fp)1.2f, (fp)3.6f)
             };
 
-            float3 translation = new float3((sfloat)3.4f, (sfloat)2.5f, -(sfloat)1.1f);
-            quaternion rotation = quaternion.AxisAngle(math.normalize(new float3((sfloat)1.1f, (sfloat)10.1f, -(sfloat)3.4f)), (sfloat)78.0f);
+            fp3 translation = new fp3((fp)3.4f, (fp)2.5f, -(fp)1.1f);
+            fpquaternion rotation = fpquaternion.AxisAngle(fpmath.normalize(new fp3((fp)1.1f, (fp)10.1f, -(fp)3.4f)), (fp)78.0f);
 
             var collider = PolygonCollider.CreateTriangle(vertices[0], vertices[1], vertices[2]);
-            Aabb aabb = collider.Value.CalculateAabb(new RigidTransform(rotation, translation));
+            Aabb aabb = collider.Value.CalculateAabb(new FpRigidTransform(rotation, translation));
 
             for (int i = 0; i < 3; ++i)
             {
-                vertices[i] = translation + math.mul(rotation, vertices[i]);
+                vertices[i] = translation + fpmath.mul(rotation, vertices[i]);
             }
 
             Aabb expected = new Aabb()
             {
-                Min = math.min(math.min(vertices[0], vertices[1]), vertices[2]),
-                Max = math.max(math.max(vertices[0], vertices[1]), vertices[2])
+                Min = fpmath.min(fpmath.min(vertices[0], vertices[1]), vertices[2]),
+                Max = fpmath.max(fpmath.max(vertices[0], vertices[1]), vertices[2])
             };
 
-            TestUtils.AreEqual(expected.Min, aabb.Min, (sfloat)1e-3f);
-            TestUtils.AreEqual(expected.Max, aabb.Max, (sfloat)1e-3f);
+            TestUtils.AreEqual(expected.Min, aabb.Min, (fp)1e-3f);
+            TestUtils.AreEqual(expected.Max, aabb.Max, (fp)1e-3f);
         }
 
         /// <summary>
@@ -288,77 +288,77 @@ namespace Fixed.Physics.Tests.Collision.Colliders
         [Test]
         public void TestCalculateAabbTransformedQuad()
         {
-            float3[] vertices =
+            fp3[] vertices =
             {
-                new float3(-(sfloat)4.5f, (sfloat)0.0f, (sfloat)1.0f),
-                new float3((sfloat)3.4f, (sfloat)0.7f, (sfloat)1.0f),
-                new float3((sfloat)3.4f, (sfloat)2.7f, (sfloat)1.0f),
-                new float3(-(sfloat)3.4f, (sfloat)1.2f, (sfloat)1.0f)
+                new fp3(-(fp)4.5f, (fp)0.0f, (fp)1.0f),
+                new fp3((fp)3.4f, (fp)0.7f, (fp)1.0f),
+                new fp3((fp)3.4f, (fp)2.7f, (fp)1.0f),
+                new fp3(-(fp)3.4f, (fp)1.2f, (fp)1.0f)
             };
 
-            float3 translation = new float3(-(sfloat)3.4f, -(sfloat)2.5f, -(sfloat)1.1f);
-            quaternion rotation = quaternion.AxisAngle(math.normalize(new float3((sfloat)11.1f, (sfloat)10.1f, -(sfloat)3.4f)), (sfloat)178.0f);
+            fp3 translation = new fp3(-(fp)3.4f, -(fp)2.5f, -(fp)1.1f);
+            fpquaternion rotation = fpquaternion.AxisAngle(fpmath.normalize(new fp3((fp)11.1f, (fp)10.1f, -(fp)3.4f)), (fp)178.0f);
 
             var collider = PolygonCollider.CreateQuad(vertices[0], vertices[1], vertices[2], vertices[3]);
-            Aabb aabb = collider.Value.CalculateAabb(new RigidTransform(rotation, translation));
+            Aabb aabb = collider.Value.CalculateAabb(new FpRigidTransform(rotation, translation));
 
             for (int i = 0; i < 4; ++i)
             {
-                vertices[i] = translation + math.mul(rotation, vertices[i]);
+                vertices[i] = translation + fpmath.mul(rotation, vertices[i]);
             }
 
-            Aabb expected = Aabb.CreateFromPoints(new float3x4(vertices[0], vertices[1], vertices[2], vertices[3]));
+            Aabb expected = Aabb.CreateFromPoints(new fp3x4(vertices[0], vertices[1], vertices[2], vertices[3]));
 
-            TestUtils.AreEqual(expected.Min, aabb.Min, (sfloat)1e-3f);
-            TestUtils.AreEqual(expected.Max, aabb.Max, (sfloat)1e-3f);
+            TestUtils.AreEqual(expected.Min, aabb.Min, (fp)1e-3f);
+            TestUtils.AreEqual(expected.Max, aabb.Max, (fp)1e-3f);
         }
 
         //[Test] // #TODO: Add test back in once we have implemented this in Physics
         unsafe public void TestMassPropertiesTriangle()
         {
             // constructing the triangle to be parallel to the xy plane so we don't have to figure out the transformations first
-            float3[] vertices =
+            fp3[] vertices =
             {
-                new float3(-(sfloat)1.1f, -(sfloat)0.4f, (sfloat)0.0f),
-                new float3((sfloat)0.8f, -(sfloat)0.1f, (sfloat)0.0f),
-                new float3(-(sfloat)0.2f, (sfloat)1.3f, (sfloat)0.0f)
+                new fp3(-(fp)1.1f, -(fp)0.4f, (fp)0.0f),
+                new fp3((fp)0.8f, -(fp)0.1f, (fp)0.0f),
+                new fp3(-(fp)0.2f, (fp)1.3f, (fp)0.0f)
             };
 
             var collider = PolygonCollider.CreateTriangle(vertices[0], vertices[1], vertices[2]);
 
-            float3 inertiaTensor = collider.Value.MassProperties.MassDistribution.InertiaTensor;
-            float3 expectedInertiaTensor = calcTriangleInertiaTensor(vertices[0], vertices[1], vertices[2]);
-            TestUtils.AreEqual(expectedInertiaTensor, inertiaTensor, (sfloat)1e-3f);
+            fp3 inertiaTensor = collider.Value.MassProperties.MassDistribution.InertiaTensor;
+            fp3 expectedInertiaTensor = calcTriangleInertiaTensor(vertices[0], vertices[1], vertices[2]);
+            TestUtils.AreEqual(expectedInertiaTensor, inertiaTensor, (fp)1e-3f);
         }
 
         //[Test] // #TODO: Add test back in once we have implemented this in Physics
         public void TestMassPropertiesQuad()
         {
-            float3[] vertices =
+            fp3[] vertices =
             {
-                new float3(-(sfloat)1.1f, -(sfloat)0.4f, (sfloat)0.0f),
-                new float3((sfloat)0.8f, -(sfloat)0.1f, (sfloat)0.0f),
-                new float3((sfloat)1.2f, (sfloat)1.3f, (sfloat)0.0f),
-                new float3(-(sfloat)0.2f, (sfloat)1.3f, (sfloat)0.0f)
+                new fp3(-(fp)1.1f, -(fp)0.4f, (fp)0.0f),
+                new fp3((fp)0.8f, -(fp)0.1f, (fp)0.0f),
+                new fp3((fp)1.2f, (fp)1.3f, (fp)0.0f),
+                new fp3(-(fp)0.2f, (fp)1.3f, (fp)0.0f)
             };
 
             var collider = PolygonCollider.CreateQuad(vertices[0], vertices[1], vertices[2], vertices[3]);
 
-            float3 inertiaTensor = collider.Value.MassProperties.MassDistribution.InertiaTensor;
-            float3 expectedInertiaTensor = calcQuadInertiaTensor(vertices[0], vertices[1], vertices[2], vertices[3]);
-            TestUtils.AreEqual(expectedInertiaTensor, inertiaTensor, (sfloat)1e-3f);
+            fp3 inertiaTensor = collider.Value.MassProperties.MassDistribution.InertiaTensor;
+            fp3 expectedInertiaTensor = calcQuadInertiaTensor(vertices[0], vertices[1], vertices[2], vertices[3]);
+            TestUtils.AreEqual(expectedInertiaTensor, inertiaTensor, (fp)1e-3f);
         }
 
-        private float3 calcTriangleInertiaTensor(float3 v0, float3 v1, float3 v2)
+        private fp3 calcTriangleInertiaTensor(fp3 v0, fp3 v1, fp3 v2)
         {
             // #TODO: Add function once inertia is properly computed in Physics
-            return new float3((sfloat)0, (sfloat)0, (sfloat)0);
+            return new fp3((fp)0, (fp)0, (fp)0);
         }
 
-        private float3 calcQuadInertiaTensor(float3 v0, float3 v1, float3 v2, float3 v3)
+        private fp3 calcQuadInertiaTensor(fp3 v0, fp3 v1, fp3 v2, fp3 v3)
         {
             // #TODO: Add function once inertia is properly computed in Physics
-            return new float3((sfloat)0, (sfloat)0, (sfloat)0);
+            return new fp3((fp)0, (fp)0, (fp)0);
         }
 
         #endregion

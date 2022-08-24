@@ -4,7 +4,8 @@ using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
 using Unity.Jobs;
-using Fixed.Mathematics;
+using Unity.Mathematics;
+using Unity.Mathematics.FixedPoint;
 
 namespace Fixed.Physics.Authoring
 {
@@ -21,12 +22,12 @@ namespace Fixed.Physics.Authoring
         }
 
         NativeParallelHashMap<Hash128, MeshInput> m_MeshColliderJobs;
-        NativeList<float3> m_MeshColliderVertices;
+        NativeList<fp3> m_MeshColliderVertices;
         NativeList<int3> m_MeshColliderTriangles;
 
         JobHandle ProduceMeshColliders(
             NativeParallelHashMap<Hash128, MeshInput> inputs,
-            NativeList<float3> vertices,
+            NativeList<fp3> vertices,
             NativeList<int3> indices,
             out NativeParallelHashMap<Hash128, BlobAssetReference<Collider>> meshColliders,
             JobHandle inputDeps = default
@@ -64,7 +65,7 @@ namespace Fixed.Physics.Authoring
             [DeallocateOnJobCompletion]
             [ReadOnly] public NativeArray<MeshInput> InputValues;
             [NativeDisableUnsafePtrRestriction]
-            [ReadOnly] public NativeArray<float3> AllVertices;
+            [ReadOnly] public NativeArray<fp3> AllVertices;
             [NativeDisableUnsafePtrRestriction]
             [ReadOnly] public NativeArray<int3> AllIndices;
 

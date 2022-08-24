@@ -2,9 +2,10 @@ using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
-using Fixed.Mathematics;
+using Unity.Mathematics.FixedPoint;
 using Fixed.Physics;
 using Fixed.Physics.Systems;
+using Unity.Mathematics;
 
 namespace Fixed.Physics.Authoring
 {
@@ -31,8 +32,8 @@ namespace Fixed.Physics.Authoring
                     if (leavesValid[l])
                     {
                         Aabb aabb = nodes[nodeIndex].Bounds.GetAabb(l);
-                        float3 center = aabb.Center;
-                        OutputStream.Box(aabb.Extents, center, quaternion.identity, color);
+                        fp3 center = aabb.Center;
+                        OutputStream.Box(aabb.Extents, center, fpquaternion.identity, color);
                     }
                 }
 

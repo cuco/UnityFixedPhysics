@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Fixed.Physics.Systems;
 using Unity.Collections;
 using Unity.Entities;
-using Fixed.Mathematics;
+using Unity.Mathematics.FixedPoint;
 using UnityEngine;
 
 namespace Fixed.Physics.Authoring
@@ -62,10 +62,10 @@ namespace Fixed.Physics.Authoring
                 public Quaternion Orientation;
 
                 [Preserve]
-                public float4x4 Transform => float4x4.TRS(Position, Orientation, Scale);
+                public fp4x4 Transform => fp4x4.TRS(Position, Orientation, Scale);
             }
 
-            private static void AppendConvex(ref ConvexHull hull, RigidTransform worldFromCollider, ref List<DisplayResult> results)
+            private static void AppendConvex(ref ConvexHull hull, FpRigidTransform worldFromCollider, ref List<DisplayResult> results)
             {
                 int totalNumVertices = 0;
                 for (int f = 0; f < hull.NumFaces; f++)
@@ -122,45 +122,45 @@ namespace Fixed.Physics.Authoring
                 });
             }
 
-            public static void AppendSphere(SphereCollider* sphere, RigidTransform worldFromCollider, ref List<DisplayResult> results)
+            public static void AppendSphere(SphereCollider* sphere, FpRigidTransform worldFromCollider, ref List<DisplayResult> results)
             {
-                sfloat r = sphere->Radius * (sfloat)2.0f;
+                fp r = sphere->Radius * fp.two;
                 results.Add(new DisplayResult
                 {
                     Mesh = ReferenceSphere,
                     Scale = new Vector4((float)r, (float)r, (float)r),
-                    Position = math.transform(worldFromCollider, sphere->Center),
+                    Position = fpmath.transform(worldFromCollider, sphere->Center),
                     Orientation = worldFromCollider.rot,
                 });
             }
 
-            public static void AppendCapsule(CapsuleCollider* capsule, RigidTransform worldFromCollider, ref List<DisplayResult> results)
+            public static void AppendCapsule(CapsuleCollider* capsule, FpRigidTransform worldFromCollider, ref List<DisplayResult> results)
             {
-                sfloat r = capsule->Radius * (sfloat)2.0f;
+                fp r = capsule->Radius * fp.two;
                 results.Add(new DisplayResult
                 {
                     Mesh = ReferenceSphere,
                     Scale = new Vector4((float)r, (float)r, (float)r),
-                    Position = math.transform(worldFromCollider, capsule->Vertex0),
+                    Position = fpmath.transform(worldFromCollider, capsule->Vertex0),
                     Orientation = worldFromCollider.rot
                 });
                 results.Add(new DisplayResult
                 {
                     Mesh = ReferenceSphere,
                     Scale = new Vector4((float)r, (float)r, (float)r),
-                    Position = math.transform(worldFromCollider, capsule->Vertex1),
+                    Position = fpmath.transform(worldFromCollider, capsule->Vertex1),
                     Orientation = worldFromCollider.rot
                 });
                 results.Add(new DisplayResult
                 {
                     Mesh = ReferenceCylinder,
-                    Scale = new Vector4((float)r, (float)math.length(capsule->Vertex1 - capsule->Vertex0) * 0.5f, (float)r),
-                    Position = math.transform(worldFromCollider, (capsule->Vertex0 + capsule->Vertex1) * (sfloat)0.5f),
-                    Orientation = math.mul(worldFromCollider.rot, Quaternion.FromToRotation(new float3(sfloat.Zero, sfloat.One, sfloat.Zero), math.normalizesafe(capsule->Vertex1 - capsule->Vertex0)))
+                    Scale = new Vector4((float)r, (float)fpmath.length(capsule->Vertex1 - capsule->Vertex0) * 0.5f, (float)r),
+                    Position = fpmath.transform(worldFromCollider, (capsule->Vertex0 + capsule->Vertex1) * fp.half),
+                    Orientation = fpmath.mul(worldFromCollider.rot, Quaternion.FromToRotation(new fp3(fp.zero, fp.one, fp.zero), fpmath.normalizesafe(capsule->Vertex1 - capsule->Vertex0)))
                 });
             }
 
-            public static void AppendMesh(MeshCollider* meshCollider, RigidTransform worldFromCollider, ref List<DisplayResult> results)
+            public static void AppendMesh(MeshCollider* meshCollider, FpRigidTransform worldFromCollider, ref List<DisplayResult> results)
             {
                 var vertices = new List<Vector3>();
                 var normals = new List<Vector3>();
@@ -178,7 +178,7 @@ namespace Fixed.Physics.Authoring
                         Mesh.PrimitiveFlags flags = section.PrimitiveFlags[primitiveIndex];
                         int numTriangles = flags.HasFlag(Mesh.PrimitiveFlags.IsTrianglePair) ? 2 : 1;
 
-                        float3x4 v = new float3x4(
+                        fp3x4 v = new fp3x4(
                             section.Vertices[vertexIndices.A],
                             section.Vertices[vertexIndices.B],
                             section.Vertices[vertexIndices.C],
@@ -186,9 +186,9 @@ namespace Fixed.Physics.Authoring
 
                         for (int triangleIndex = 0; triangleIndex < numTriangles; triangleIndex++)
                         {
-                            float3 a = v[0];
-                            float3 b = v[1 + triangleIndex];
-                            float3 c = v[2 + triangleIndex];
+                            fp3 a = v[0];
+                            fp3 b = v[1 + triangleIndex];
+                            fp3 c = v[2 + triangleIndex];
                             vertices.Add(a);
                             vertices.Add(b);
                             vertices.Add(c);
@@ -197,7 +197,7 @@ namespace Fixed.Physics.Authoring
                             triangles.Add(vertexIndex++);
                             triangles.Add(vertexIndex++);
 
-                            float3 n = math.normalize(math.cross((b - a), (c - a)));
+                            fp3 n = fpmath.normalize(fpmath.cross((b - a), (c - a)));
                             normals.Add(n);
                             normals.Add(n);
                             normals.Add(n);
@@ -225,17 +225,17 @@ namespace Fixed.Physics.Authoring
                 });
             }
 
-            public static void AppendCompound(CompoundCollider* compoundCollider, RigidTransform worldFromCollider, ref List<DisplayResult> results)
+            public static void AppendCompound(CompoundCollider* compoundCollider, FpRigidTransform worldFromCollider, ref List<DisplayResult> results)
             {
                 for (int i = 0; i < compoundCollider->Children.Length; i++)
                 {
                     ref CompoundCollider.Child child = ref compoundCollider->Children[i];
-                    RigidTransform worldFromChild = math.mul(worldFromCollider, child.CompoundFromChild);
+                    FpRigidTransform worldFromChild = fpmath.mul(worldFromCollider, child.CompoundFromChild);
                     AppendCollider(child.Collider, worldFromChild, ref results);
                 }
             }
 
-            public static void AppendTerrain(TerrainCollider* terrainCollider, RigidTransform worldFromCollider, ref List<DisplayResult> results)
+            public static void AppendTerrain(TerrainCollider* terrainCollider, FpRigidTransform worldFromCollider, ref List<DisplayResult> results)
             {
                 ref var terrain = ref terrainCollider->Terrain;
 
@@ -253,12 +253,12 @@ namespace Fixed.Physics.Authoring
                         int i1 = i + 1;
                         int j0 = j;
                         int j1 = j + 1;
-                        float3 v0 = new float3((sfloat)i0, (sfloat)terrain.Heights[i0 + terrain.Size.x * j0], (sfloat)j0) * terrain.Scale;
-                        float3 v1 = new float3((sfloat)i1, (sfloat)terrain.Heights[i1 + terrain.Size.x * j0], (sfloat)j0) * terrain.Scale;
-                        float3 v2 = new float3((sfloat)i0, (sfloat)terrain.Heights[i0 + terrain.Size.x * j1], (sfloat)j1) * terrain.Scale;
-                        float3 v3 = new float3((sfloat)i1, (sfloat)terrain.Heights[i1 + terrain.Size.x * j1], (sfloat)j1) * terrain.Scale;
-                        float3 n0 = math.normalize(new float3(v0.y - v1.y, sfloat.One, v0.y - v2.y));
-                        float3 n1 = math.normalize(new float3(v2.y - v3.y, sfloat.One, v1.y - v3.y));
+                        fp3 v0 = new fp3((fp)i0, (fp)terrain.Heights[i0 + terrain.Size.x * j0], (fp)j0) * terrain.Scale;
+                        fp3 v1 = new fp3((fp)i1, (fp)terrain.Heights[i1 + terrain.Size.x * j0], (fp)j0) * terrain.Scale;
+                        fp3 v2 = new fp3((fp)i0, (fp)terrain.Heights[i0 + terrain.Size.x * j1], (fp)j1) * terrain.Scale;
+                        fp3 v3 = new fp3((fp)i1, (fp)terrain.Heights[i1 + terrain.Size.x * j1], (fp)j1) * terrain.Scale;
+                        fp3 n0 = fpmath.normalize(new fp3(v0.y - v1.y, fp.one, v0.y - v2.y));
+                        fp3 n1 = fpmath.normalize(new fp3(v2.y - v3.y, fp.one, v1.y - v3.y));
 
                         vertices.Add(v1);
                         vertices.Add(v0);
@@ -303,7 +303,7 @@ namespace Fixed.Physics.Authoring
                 });
             }
 
-            public static void AppendCollider(Collider* collider, RigidTransform worldFromCollider, ref List<DisplayResult> results)
+            public static void AppendCollider(Collider* collider, FpRigidTransform worldFromCollider, ref List<DisplayResult> results)
             {
                 switch (collider->Type)
                 {
@@ -338,7 +338,7 @@ namespace Fixed.Physics.Authoring
             static List<DisplayResult> BuildDebugDisplayMesh(Collider* collider)
             {
                 List<DisplayResult> results = new List<DisplayResult>();
-                AppendCollider(collider, RigidTransform.identity, ref results);
+                AppendCollider(collider, FpRigidTransform.identity, ref results);
                 return results;
             }
 
@@ -375,8 +375,8 @@ namespace Fixed.Physics.Authoring
                         {
                             if (EnableColliders != 0)
                             {
-                                Vector3 position = math.transform(body.WorldFromBody, dr.Position);
-                                Quaternion orientation = math.mul(body.WorldFromBody.rot, dr.Orientation);
+                                Vector3 position = fpmath.transform(body.WorldFromBody, dr.Position);
+                                Quaternion orientation = fpmath.mul(body.WorldFromBody.rot, dr.Orientation);
                                 Gizmos.DrawMesh(dr.Mesh, position, orientation, dr.Scale);
                             }
                             if (dr.Mesh != CachedReferenceCylinder && dr.Mesh != CachedReferenceSphere)

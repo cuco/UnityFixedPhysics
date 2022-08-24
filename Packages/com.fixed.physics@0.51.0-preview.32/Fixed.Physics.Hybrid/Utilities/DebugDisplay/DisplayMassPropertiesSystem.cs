@@ -3,7 +3,7 @@ using Fixed.Physics.Systems;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
-using Fixed.Mathematics;
+using Unity.Mathematics.FixedPoint;
 using UnityEngine;
 using Unity.Burst;
 
@@ -59,12 +59,12 @@ namespace Fixed.Physics.Authoring
                 OutputStream.Begin(0);
                 for (int m = 0; m < MotionDatas.Length; m++)
                 {
-                    float3 com = MotionDatas[m].WorldFromMotion.pos;
-                    quaternion o = MotionDatas[m].WorldFromMotion.rot;
+                    fp3 com = MotionDatas[m].WorldFromMotion.pos;
+                    fpquaternion o = MotionDatas[m].WorldFromMotion.rot;
 
-                    float3 invInertiaLocal = MotionVelocities[m].InverseInertia;
-                    float3 il = new float3(sfloat.One / invInertiaLocal.x, sfloat.One / invInertiaLocal.y, sfloat.One / invInertiaLocal.z);
-                    sfloat invMass = MotionVelocities[m].InverseMass;
+                    fp3 invInertiaLocal = MotionVelocities[m].InverseInertia;
+                    fp3 il = new fp3(fp.one / invInertiaLocal.x, fp.one / invInertiaLocal.y, fp.one / invInertiaLocal.z);
+                    fp invMass = MotionVelocities[m].InverseMass;
 
                     // Reverse the inertia tensor computation to build a box which has the inerta tensor 'il'
                     // The diagonal inertia of a box with dimensions h,w,d and mass m is:
@@ -79,14 +79,14 @@ namespace Fixed.Physics.Authoring
                     // 2ww = Kx - Ky + Kz
                     // => w = ((0.5)(Kx - Ky + Kz))^-1
                     // Then, substitution gives h and d.
-                    var temp = (sfloat)12;
+                    var temp = (fp)12;
 
-                    float3 k = new float3(il.x * temp * invMass, il.y * temp * invMass, il.z * temp * invMass);
-                    sfloat w = math.sqrt((k.x - k.y + k.z) * (sfloat)0.5f);
-                    sfloat h = math.sqrt(k.z - w * w);
-                    sfloat d = math.sqrt(k.y - h * h);
+                    fp3 k = new fp3(il.x * temp * invMass, il.y * temp * invMass, il.z * temp * invMass);
+                    fp w = fpmath.sqrt((k.x - k.y + k.z) * fp.half);
+                    fp h = fpmath.sqrt(k.z - w * w);
+                    fp d = fpmath.sqrt(k.y - h * h);
 
-                    float3 boxSize = new float3(h, w, d);
+                    fp3 boxSize = new fp3(h, w, d);
                     OutputStream.Box(boxSize, com, o, DebugDisplay.ColorIndex.Magenta);
                 }
                 OutputStream.End();

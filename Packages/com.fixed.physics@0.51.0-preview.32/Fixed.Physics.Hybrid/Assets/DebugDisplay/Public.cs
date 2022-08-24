@@ -1,19 +1,20 @@
 using System;
 using Unity.Burst;
 using Unity.Collections;
-using Fixed.Mathematics;
+using Unity.Mathematics;
+using Unity.Mathematics.FixedPoint;
 
 namespace Fixed.DebugDisplay
 {
     internal struct Color
     {
-        internal static ColorIndex Quantize(float4 rgba)
+        internal static ColorIndex Quantize(fp4 rgba)
         {
             var oldi = 0;
-            var oldd = math.lengthsq(rgba - Unmanaged.Instance.Data.m_ColorData[0]);
+            var oldd = fpmath.lengthsq(rgba - Unmanaged.Instance.Data.m_ColorData[0]);
             for (var i = 1; i < Unmanaged.kMaxColors; ++i)
             {
-                var newd = math.lengthsq(rgba - Unmanaged.Instance.Data.m_ColorData[0]);
+                var newd = fpmath.lengthsq(rgba - Unmanaged.Instance.Data.m_ColorData[0]);
                 if (newd < oldd)
                 {
                     oldi = i;
@@ -32,20 +33,20 @@ namespace Fixed.DebugDisplay
             m_Lines = new Lines(count * 5);
         }
 
-        internal void Draw(float3 x, float3 v, Fixed.DebugDisplay.ColorIndex color)
+        internal void Draw(fp3 x, fp3 v, Fixed.DebugDisplay.ColorIndex color)
         {
             var X0 = x;
             var X1 = x + v;
 
             m_Lines.Draw(X0, X1, color);
 
-            float3 dir;
-            sfloat length = Physics.Math.NormalizeWithLength(v, out dir);
-            float3 perp, perp2;
+            fp3 dir;
+            fp length = Physics.Math.NormalizeWithLength(v, out dir);
+            fp3 perp, perp2;
             Physics.Math.CalculatePerpendicularNormalized(dir, out perp, out perp2);
             //TODO
-            //float3 scale = length * 0.2f;
-            float3 scale = length / (sfloat)5;
+            //fp3 scale = length * 0.2f;
+            fp3 scale = length / (fp)5;
 
             m_Lines.Draw(X1, X1 + (perp - dir) * scale, color);
             m_Lines.Draw(X1, X1 - (perp + dir) * scale, color);
@@ -60,7 +61,7 @@ namespace Fixed.DebugDisplay
     }
     internal struct Arrow
     {
-        internal static void Draw(float3 x, float3 v, Fixed.DebugDisplay.ColorIndex color)
+        internal static void Draw(fp3 x, fp3 v, Fixed.DebugDisplay.ColorIndex color)
         {
             new Arrows(1).Draw(x, v, color);
         }
@@ -74,20 +75,20 @@ namespace Fixed.DebugDisplay
             m_Lines = new Lines(count * 9);
         }
 
-        internal void Draw(float3 x, float3 v, Fixed.DebugDisplay.ColorIndex color)
+        internal void Draw(fp3 x, fp3 v, Fixed.DebugDisplay.ColorIndex color)
         {
             var X0 = x;
             var X1 = x + v;
 
             m_Lines.Draw(X0, X1, color);
 
-            float3 dir;
-            sfloat length = Physics.Math.NormalizeWithLength(v, out dir);
-            float3 perp, perp2;
+            fp3 dir;
+            fp length = Physics.Math.NormalizeWithLength(v, out dir);
+            fp3 perp, perp2;
             Physics.Math.CalculatePerpendicularNormalized(dir, out perp, out perp2);
             //TODO
-            //float3 scale = length * 0.2f;
-            float3 scale = length / (sfloat)5;
+            //fp3 scale = length * 0.2f;
+            fp3 scale = length / (fp)5;
 
             m_Lines.Draw(X1, X1 + (perp - dir) * scale, color);
             m_Lines.Draw(X1, X1 - (perp + dir) * scale, color);
@@ -110,7 +111,7 @@ namespace Fixed.DebugDisplay
     }
     internal struct Plane
     {
-        internal static void Draw(float3 x, float3 v, Fixed.DebugDisplay.ColorIndex color)
+        internal static void Draw(fp3 x, fp3 v, Fixed.DebugDisplay.ColorIndex color)
         {
             new Planes(1).Draw(x, v, color);
         }
@@ -126,14 +127,14 @@ namespace Fixed.DebugDisplay
             m_Lines = new Lines(count * (2 + res));
         }
 
-        internal void Draw(float3 center, float3 normal, float3 arm, sfloat angle, Fixed.DebugDisplay.ColorIndex color)
+        internal void Draw(fp3 center, fp3 normal, fp3 arm, fp angle, Fixed.DebugDisplay.ColorIndex color)
         {
-            quaternion q = quaternion.AxisAngle(normal, angle / (sfloat)res);
-            float3 currentArm = arm;
+            fpquaternion q = fpquaternion.AxisAngle(normal, angle / (fp)res);
+            fp3 currentArm = arm;
             m_Lines.Draw(center, center + currentArm, color);
             for (int i = 0; i < res; i++)
             {
-                float3 nextArm = math.mul(q, currentArm);
+                fp3 nextArm = fpmath.mul(q, currentArm);
                 m_Lines.Draw(center + currentArm, center + nextArm, color);
                 currentArm = nextArm;
             }
@@ -147,7 +148,7 @@ namespace Fixed.DebugDisplay
     }
     internal struct Arc
     {
-        internal static void Draw(float3 center, float3 normal, float3 arm, sfloat angle,
+        internal static void Draw(fp3 center, fp3 normal, fp3 arm, fp angle,
             Fixed.DebugDisplay.ColorIndex color)
         {
             new Arcs(1).Draw(center, normal, arm, angle, color);
@@ -163,20 +164,20 @@ namespace Fixed.DebugDisplay
             m_Lines = new Lines(count * 12);
         }
 
-        internal void Draw(float3 Size, float3 Center, quaternion Orientation, Fixed.DebugDisplay.ColorIndex color)
+        internal void Draw(fp3 Size, fp3 Center, fpquaternion Orientation, Fixed.DebugDisplay.ColorIndex color)
         {
-            float3x3 mat = math.float3x3(Orientation);
-            float3 x = mat.c0 * Size.x * (sfloat)0.5f;
-            float3 y = mat.c1 * Size.y * (sfloat)0.5f;
-            float3 z = mat.c2 * Size.z * (sfloat)0.5f;
-            float3 c0 = Center - x - y - z;
-            float3 c1 = Center - x - y + z;
-            float3 c2 = Center - x + y - z;
-            float3 c3 = Center - x + y + z;
-            float3 c4 = Center + x - y - z;
-            float3 c5 = Center + x - y + z;
-            float3 c6 = Center + x + y - z;
-            float3 c7 = Center + x + y + z;
+            fp3x3 mat = fpmath.fp3x3(Orientation);
+            fp3 x = mat.c0 * Size.x * fp.half;
+            fp3 y = mat.c1 * Size.y * fp.half;
+            fp3 z = mat.c2 * Size.z * fp.half;
+            fp3 c0 = Center - x - y - z;
+            fp3 c1 = Center - x - y + z;
+            fp3 c2 = Center - x + y - z;
+            fp3 c3 = Center - x + y + z;
+            fp3 c4 = Center + x - y - z;
+            fp3 c5 = Center + x - y + z;
+            fp3 c6 = Center + x + y - z;
+            fp3 c7 = Center + x + y + z;
 
             m_Lines.Draw(c0, c1, color); // ring 0
             m_Lines.Draw(c1, c3, color);
@@ -201,7 +202,7 @@ namespace Fixed.DebugDisplay
     }
     internal struct Box
     {
-        internal static void Draw(float3 Size, float3 Center, quaternion Orientation, Fixed.DebugDisplay.ColorIndex color)
+        internal static void Draw(fp3 Size, fp3 Center, fpquaternion Orientation, Fixed.DebugDisplay.ColorIndex color)
         {
             new Boxes(1).Draw(Size, Center, Orientation, color);
         }
@@ -217,21 +218,21 @@ namespace Fixed.DebugDisplay
             m_Lines = new Lines(count * res * 2);
         }
 
-        internal void Draw(float3 point, float3 axis, sfloat angle, Fixed.DebugDisplay.ColorIndex color)
+        internal void Draw(fp3 point, fp3 axis, fp angle, Fixed.DebugDisplay.ColorIndex color)
         {
-            float3 dir;
-            sfloat scale = Physics.Math.NormalizeWithLength(axis, out dir);
-            float3 arm;
+            fp3 dir;
+            fp scale = Physics.Math.NormalizeWithLength(axis, out dir);
+            fp3 arm;
             {
-                float3 perp1, perp2;
+                fp3 perp1, perp2;
                 Physics.Math.CalculatePerpendicularNormalized(dir, out perp1, out perp2);
-                arm = math.mul(quaternion.AxisAngle(perp1, angle), dir) * scale;
+                arm = fpmath.mul(fpquaternion.AxisAngle(perp1, angle), dir) * scale;
             }
-            quaternion q = quaternion.AxisAngle(dir, (sfloat)2.0f * (sfloat)math.PI / (sfloat)res);
+            fpquaternion q = fpquaternion.AxisAngle(dir, fp.two * (fp)fpmath.PI / (fp)res);
 
             for (int i = 0; i < res; i++)
             {
-                float3 nextArm = math.mul(q, arm);
+                fp3 nextArm = fpmath.mul(q, arm);
                 m_Lines.Draw(point, point + arm, color);
                 m_Lines.Draw(point + arm, point + nextArm, color);
                 arm = nextArm;
@@ -245,7 +246,7 @@ namespace Fixed.DebugDisplay
     }
     internal struct Cone
     {
-        internal static void Draw(float3 point, float3 axis, sfloat angle, Fixed.DebugDisplay.ColorIndex color)
+        internal static void Draw(fp3 point, fp3 axis, fp angle, Fixed.DebugDisplay.ColorIndex color)
         {
             new Cones(1).Draw(point, axis, angle, color);
         }
@@ -260,7 +261,7 @@ namespace Fixed.DebugDisplay
             m_Unit = Unmanaged.Instance.Data.m_LineBufferAllocations.AllocateAtomic(count);
         }
 
-        internal void Draw(float3 begin, float3 end, ColorIndex color)
+        internal void Draw(fp3 begin, fp3 end, ColorIndex color)
         {
             if (m_Unit.m_Next < m_Unit.m_End)
                 Unmanaged.Instance.Data.m_LineBuffer.SetLine(begin, end, color, m_Unit.m_Next++);
@@ -274,7 +275,7 @@ namespace Fixed.DebugDisplay
     }
     internal struct Line
     {
-        internal static void Draw(float3 begin, float3 end, ColorIndex color)
+        internal static void Draw(fp3 begin, fp3 end, ColorIndex color)
         {
             new Lines(1).Draw(begin, end, color);
         }
@@ -295,7 +296,7 @@ namespace Fixed.DebugDisplay
 
     internal struct Label
     {
-        internal static void Draw(float3 position, in FixedString128Bytes s, ColorIndex fg, ColorIndex bg)
+        internal static void Draw(fp3 position, in FixedString128Bytes s, ColorIndex fg, ColorIndex bg)
         {
             DebugDisplay.Instantiate();
             var unit = Unmanaged.Instance.Data.m_TextBufferAllocations.AllocateAtomic(1);
@@ -361,20 +362,20 @@ namespace Fixed.DebugDisplay
             m_unit = Unmanaged.Instance.Data.m_GraphDataBufferAllocations.AllocateAtomic(count);
         }
 
-        internal sfloat GetValue(int offset)
+        internal fp GetValue(int offset)
         {
             return Unmanaged.Instance.Data.m_GraphBuffer.m_Data[m_unit.m_Begin + (offset & (m_unit.Length - 1))];
         }
 
-        internal void SetValue(int offset, sfloat value)
+        internal void SetValue(int offset, fp value)
         {
             Unmanaged.Instance.Data.m_GraphBuffer.m_Data[m_unit.m_Begin + (offset & (m_unit.Length - 1))] = value;
         }
 
-        internal unsafe ref sfloat this[int offset] =>
-            ref ((sfloat*)Unmanaged.Instance.Data.m_GraphBuffer.m_Data.GetUnsafePtr())[m_unit.m_Begin + (offset & (m_unit.Length - 1))];
+        internal unsafe ref fp this[int offset] =>
+            ref ((fp*)Unmanaged.Instance.Data.m_GraphBuffer.m_Data.GetUnsafePtr())[m_unit.m_Begin + (offset & (m_unit.Length - 1))];
 
-        internal void AddValue(sfloat value)
+        internal void AddValue(fp value)
         {
             if (m_unit.m_Next >= m_unit.m_End)
                 m_unit.m_Next = m_unit.m_Begin;
@@ -386,12 +387,12 @@ namespace Fixed.DebugDisplay
             return new Data { offset = m_unit.m_Begin, length = m_unit.Length };
         }
 
-        internal unsafe void CalcMinMaxMean(out sfloat minValue, out sfloat maxValue, out sfloat mean)
+        internal unsafe void CalcMinMaxMean(out fp minValue, out fp maxValue, out fp mean)
         {
-            sfloat* f = (sfloat*)Unmanaged.Instance.Data.m_GraphBuffer.m_Data.GetUnsafePtr();
+            fp* f = (fp*)Unmanaged.Instance.Data.m_GraphBuffer.m_Data.GetUnsafePtr();
             minValue = f[m_unit.m_Begin];
             maxValue = f[m_unit.m_Begin];
-            sfloat sum = f[m_unit.m_Begin];
+            fp sum = f[m_unit.m_Begin];
             for (var i = m_unit.m_Begin + 1; i < m_unit.m_End; i++)
             {
                 var x = f[i];
@@ -400,22 +401,22 @@ namespace Fixed.DebugDisplay
                 if (x > maxValue) maxValue = x;
             }
 
-            mean = sum / (sfloat)m_unit.Length;
+            mean = sum / (fp)m_unit.Length;
         }
 
-        internal unsafe void CalcStatistics(out sfloat mean, out sfloat variance, out sfloat minValue,
-            out sfloat maxValue)
+        internal unsafe void CalcStatistics(out fp mean, out fp variance, out fp minValue,
+            out fp maxValue)
         {
             CalcMinMaxMean(out minValue, out maxValue, out mean);
-            sfloat* f = (sfloat*)Unmanaged.Instance.Data.m_GraphBuffer.m_Data.GetUnsafePtr();
-            sfloat sum2 = sfloat.Zero;
+            fp* f = (fp*)Unmanaged.Instance.Data.m_GraphBuffer.m_Data.GetUnsafePtr();
+            fp sum2 = fp.zero;
             for (var i = m_unit.m_Begin; i < m_unit.m_End; i++)
             {
-                sfloat d = f[i] - mean;
+                fp d = f[i] - mean;
                 sum2 += d * d;
             }
 
-            variance = sum2 / (sfloat)m_unit.Length;
+            variance = sum2 / (fp)m_unit.Length;
         }
     }
 
@@ -424,10 +425,10 @@ namespace Fixed.DebugDisplay
         internal int Color;
         internal Unit DataSeries0;
         internal Unit DataSeries1;
-        internal sfloat YMin;
-        internal sfloat YMax;
+        internal fp YMin;
+        internal fp YMax;
 
-        internal Graph(int color, sfloat yMin, sfloat yMax, int Length0, int Length1 = 0)
+        internal Graph(int color, fp yMin, fp yMax, int Length0, int Length1 = 0)
         {
             DebugDisplay.Instantiate();
             Color = color;
@@ -449,17 +450,17 @@ namespace Fixed.DebugDisplay
             if (DataSeries1.Length > 0)
                 Unmanaged.Instance.Data.m_GraphBuffer.SetGraph(x, y, w, h, new GraphBuffer.Sample
                 {
-                    data = DataSeries0, ColorIndex = ColorIndex.Foreground(Color), xMin = (sfloat)(frame - 1 - w * 8), xMax = (sfloat)(frame - 1),
+                    data = DataSeries0, ColorIndex = ColorIndex.Foreground(Color), xMin = (fp)(frame - 1 - w * 8), xMax = (fp)(frame - 1),
                     yMin = YMin, yMax = YMax
                 }, new GraphBuffer.Sample
                     {
-                        data = DataSeries1, ColorIndex = ColorIndex.Background(Color), xMin = (sfloat)(frame - 1 - w * 8), xMax = (sfloat)(frame - 1),
+                        data = DataSeries1, ColorIndex = ColorIndex.Background(Color), xMin = (fp)(frame - 1 - w * 8), xMax = (fp)(frame - 1),
                         yMin = YMin, yMax = YMax
                     }, unit.m_Next);
             else
                 Unmanaged.Instance.Data.m_GraphBuffer.SetGraph(x, y, w, h, new GraphBuffer.Sample
                 {
-                    data = DataSeries0, ColorIndex = ColorIndex.Foreground(Color), xMin = (sfloat)(frame - 1 - w * 8), xMax = (sfloat)(frame - 1),
+                    data = DataSeries0, ColorIndex = ColorIndex.Foreground(Color), xMin = (fp)(frame - 1 - w * 8), xMax = (fp)(frame - 1),
                     yMin = YMin, yMax = YMax
                 }, unit.m_Next);
         }

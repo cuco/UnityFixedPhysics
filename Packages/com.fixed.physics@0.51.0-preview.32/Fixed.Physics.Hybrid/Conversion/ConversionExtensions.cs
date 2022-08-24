@@ -1,5 +1,5 @@
 using Unity.Entities;
-using Fixed.Mathematics;
+using Unity.Mathematics.FixedPoint;
 using Fixed.Transforms;
 using UnityEngine;
 
@@ -37,11 +37,11 @@ namespace Fixed.Physics.Authoring
             manager.AddOrSetComponent(entity, new Translation { Value = rigidBodyTransform.pos });
             manager.AddOrSetComponent(entity, new Rotation { Value = rigidBodyTransform.rot });
 
-            if (math.lengthsq((float3)worldTransform.lossyScale - new float3(sfloat.One)) > sfloat.Zero)
+            if (fpmath.lengthsq((fp3)worldTransform.lossyScale - new fp3(fp.one)) > fp.zero)
             {
                 // bake in composite scale
-                var compositeScale = math.mul(
-                    math.inverse(new float4x4(rigidBodyTransform)),
+                var compositeScale = fpmath.mul(
+                    fpmath.inverse(new fp4x4(rigidBodyTransform)),
                     worldTransform.localToWorldMatrix
                 );
                 manager.AddOrSetComponent(entity, new CompositeScale { Value = compositeScale });

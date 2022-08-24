@@ -2,7 +2,7 @@ using System;
 using NUnit.Framework;
 using Unity.Collections;
 using Unity.Entities;
-using Fixed.Mathematics;
+using Unity.Mathematics.FixedPoint;
 using Fixed.Physics.Authoring;
 using UnityMesh = UnityEngine.Mesh;
 
@@ -17,20 +17,20 @@ namespace Fixed.Physics.Tests.Authoring
         static UnityMesh MeshB => UnityEngine.Resources.GetBuiltinResource<UnityMesh>("New-Cylinder.fbx");
 
         static Hash128 GetHash128_FromMesh(
-            UnityMesh mesh, float4x4 leafToBody,
+            UnityMesh mesh, fp4x4 leafToBody,
             ConvexHullGenerationParameters convexHullGenerationParameters = default,
             Material material = default,
             CollisionFilter filter = default,
-            float4x4 shapeFromBody = default,
+            fp4x4 shapeFromBody = default,
             uint uniqueIdentifier = default,
             int[] includedIndices = default,
-            sfloat[] blendShapeWeights = default
+            fp[] blendShapeWeights = default
         )
         {
             using (var allIncludedIndices = new NativeList<int>(0, Allocator.TempJob))
-            using (var allBlendShapeWeights = new NativeList<sfloat>(0, Allocator.TempJob))
+            using (var allBlendShapeWeights = new NativeList<fp>(0, Allocator.TempJob))
             using (var indices = new NativeArray<int>(includedIndices ?? Array.Empty<int>(), Allocator.TempJob))
-            using (var blendWeights = new NativeArray<sfloat>(blendShapeWeights ?? Array.Empty<sfloat>(), Allocator.TempJob))
+            using (var blendWeights = new NativeArray<fp>(blendShapeWeights ?? Array.Empty<fp>(), Allocator.TempJob))
                 return HashableShapeInputs.GetHash128(
                     uniqueIdentifier, convexHullGenerationParameters, material, filter, shapeFromBody,
                     new NativeArray<HashableShapeInputs>(1, Allocator.Temp)
@@ -59,16 +59,16 @@ namespace Fixed.Physics.Tests.Authoring
         public void GetHash128_WhenBothDefault_IsEqual()
         {
             var a = HashableShapeInputs.GetHash128(
-                0u, ConvexHullGenerationParameters.Default, Material.Default, CollisionFilter.Default, float4x4.identity,
+                0u, ConvexHullGenerationParameters.Default, Material.Default, CollisionFilter.Default, fp4x4.identity,
                 new NativeArray<HashableShapeInputs>(1, Allocator.Temp) { [0] = default },
                 new NativeList<int>(0, Allocator.Temp),
-                new NativeList<sfloat>(0, Allocator.Temp), HashableShapeInputs.k_DefaultLinearPrecision
+                new NativeList<fp>(0, Allocator.Temp), HashableShapeInputs.k_DefaultLinearPrecision
             );
             var b = HashableShapeInputs.GetHash128(
-                0u, ConvexHullGenerationParameters.Default, Material.Default, CollisionFilter.Default, float4x4.identity,
+                0u, ConvexHullGenerationParameters.Default, Material.Default, CollisionFilter.Default, fp4x4.identity,
                 new NativeArray<HashableShapeInputs>(1, Allocator.Temp) { [0] = default },
                 new NativeList<int>(0, Allocator.Temp),
-                new NativeList<sfloat>(0, Allocator.Temp), HashableShapeInputs.k_DefaultLinearPrecision
+                new NativeList<fp>(0, Allocator.Temp), HashableShapeInputs.k_DefaultLinearPrecision
             );
 
             Assert.That(a, Is.EqualTo(b));
@@ -104,8 +104,8 @@ namespace Fixed.Physics.Tests.Authoring
             uint idb, UnityMesh mb, ConvexHullGenerationParameters hb, Material mtb, CollisionFilter fb
         )
         {
-            var a = GetHash128_FromMesh(ma, float4x4.identity, ha, mta, fa, float4x4.identity, uniqueIdentifier: ida);
-            var b = GetHash128_FromMesh(mb, float4x4.identity, hb, mtb, fb, float4x4.identity, uniqueIdentifier: idb);
+            var a = GetHash128_FromMesh(ma, fp4x4.identity, ha, mta, fa, fp4x4.identity, uniqueIdentifier: ida);
+            var b = GetHash128_FromMesh(mb, fp4x4.identity, hb, mtb, fb, fp4x4.identity, uniqueIdentifier: idb);
 
             return a.Equals(b);
         }
@@ -122,8 +122,8 @@ namespace Fixed.Physics.Tests.Authoring
             float x, float y, float z
         )
         {
-            var a = GetHash128_FromMesh(MeshA, float4x4.identity, ConvexHullGenerationParameters.Default, Material.Default, CollisionFilter.Default, float4x4.identity);
-            var b = GetHash128_FromMesh(MeshA, float4x4.identity, ConvexHullGenerationParameters.Default, Material.Default, CollisionFilter.Default, float4x4.Scale((sfloat)x, (sfloat)y, (sfloat)z));
+            var a = GetHash128_FromMesh(MeshA, fp4x4.identity, ConvexHullGenerationParameters.Default, Material.Default, CollisionFilter.Default, fp4x4.identity);
+            var b = GetHash128_FromMesh(MeshA, fp4x4.identity, ConvexHullGenerationParameters.Default, Material.Default, CollisionFilter.Default, fp4x4.Scale((fp)x, (fp)y, (fp)z));
 
             return a.Equals(b);
         }
@@ -131,8 +131,8 @@ namespace Fixed.Physics.Tests.Authoring
         [Test]
         public void GetHash128_WhenDifferentPositions_NotEqual()
         {
-            var a = GetHash128_FromMesh(MeshA, float4x4.Translate((sfloat)1f));
-            var b = GetHash128_FromMesh(MeshA, float4x4.Translate((sfloat)1.1f));
+            var a = GetHash128_FromMesh(MeshA, fp4x4.Translate((fp)1f));
+            var b = GetHash128_FromMesh(MeshA, fp4x4.Translate((fp)1.1f));
 
             Assert.That(a, Is.Not.EqualTo(b));
         }
@@ -140,8 +140,8 @@ namespace Fixed.Physics.Tests.Authoring
         [Test]
         public void GetHash128_WhenDifferentOrientations_NotEqual()
         {
-            var a = GetHash128_FromMesh(MeshA, float4x4.RotateX(math.PI / (sfloat)180f));
-            var b = GetHash128_FromMesh(MeshA, float4x4.RotateX(math.PI / (sfloat)180f * (sfloat)1.05f));
+            var a = GetHash128_FromMesh(MeshA, fp4x4.RotateX(fpmath.PI / (fp)180f));
+            var b = GetHash128_FromMesh(MeshA, fp4x4.RotateX(fpmath.PI / (fp)180f * (fp)1.05f));
 
             Assert.That(a, Is.Not.EqualTo(b));
         }
@@ -149,8 +149,8 @@ namespace Fixed.Physics.Tests.Authoring
         [Test]
         public void GetHash128_WhenDifferentScales_NotEqual()
         {
-            var a = GetHash128_FromMesh(MeshA, float4x4.Scale((sfloat)1f));
-            var b = GetHash128_FromMesh(MeshA, float4x4.Scale((sfloat)1.01f));
+            var a = GetHash128_FromMesh(MeshA, fp4x4.Scale((fp)1f));
+            var b = GetHash128_FromMesh(MeshA, fp4x4.Scale((fp)1.01f));
 
             Assert.That(a, Is.Not.EqualTo(b));
         }
@@ -158,8 +158,8 @@ namespace Fixed.Physics.Tests.Authoring
         [Test]
         public void GetHash128_WhenDifferentShears_NotEqual()
         {
-            var a = GetHash128_FromMesh(MeshA, float4x4.Scale((sfloat)2f));
-            var b = GetHash128_FromMesh(MeshA, math.mul(float4x4.Scale((sfloat)2f), float4x4.EulerZXY(math.PI / (sfloat)4)));
+            var a = GetHash128_FromMesh(MeshA, fp4x4.Scale((fp)2f));
+            var b = GetHash128_FromMesh(MeshA, fpmath.mul(fp4x4.Scale((fp)2f), fp4x4.EulerZXY(fpmath.PI / (fp)4)));
 
             Assert.That(a, Is.Not.EqualTo(b));
         }
@@ -169,17 +169,17 @@ namespace Fixed.Physics.Tests.Authoring
             [Values(new[] { 1f }, new[] { 0f, 0f })] float[] otherSkinWeights
         )
         {
-            var a = GetHash128_FromMesh(MeshA, float4x4.identity, blendShapeWeights: new[] { (sfloat)0f });
-            sfloat[] blend = default;
+            var a = GetHash128_FromMesh(MeshA, fp4x4.identity, blendShapeWeights: new[] { (fp)0f });
+            fp[] blend = default;
             if (otherSkinWeights != null)
             {
-                blend = new sfloat[otherSkinWeights.Length];
+                blend = new fp[otherSkinWeights.Length];
                 for (int i = 0; i < otherSkinWeights.Length; i++)
                 {
-                    blend[i] = (sfloat)otherSkinWeights[i];
+                    blend[i] = (fp)otherSkinWeights[i];
                 }
             }
-            var b = GetHash128_FromMesh(MeshA, float4x4.identity, blendShapeWeights: blend);
+            var b = GetHash128_FromMesh(MeshA, fp4x4.identity, blendShapeWeights: blend);
 
             Assert.That(a, Is.Not.EqualTo(b));
         }
@@ -189,22 +189,22 @@ namespace Fixed.Physics.Tests.Authoring
             [Values(new[] { 1 }, new[] { 0, 0 })] int[] otherIncludedIndices
         )
         {
-            var a = GetHash128_FromMesh(MeshA, float4x4.identity, includedIndices: new[] { 0 });
-            var b = GetHash128_FromMesh(MeshA, float4x4.identity, includedIndices: otherIncludedIndices);
+            var a = GetHash128_FromMesh(MeshA, fp4x4.identity, includedIndices: new[] { 0 });
+            var b = GetHash128_FromMesh(MeshA, fp4x4.identity, includedIndices: otherIncludedIndices);
 
             Assert.That(a, Is.Not.EqualTo(b));
         }
 
         HashableShapeInputs InputsWithIndicesAndBlendShapeWeights(
-            int[] indices, sfloat[] weights, NativeList<int> allIncludedIndices, NativeList<sfloat> allBlendShapeWeights
+            int[] indices, fp[] weights, NativeList<int> allIncludedIndices, NativeList<fp> allBlendShapeWeights
         )
         {
             return HashableShapeInputs.FromSkinnedMesh(
                 MeshA,
-                float4x4.identity,
+                fp4x4.identity,
                 new NativeArray<int>(indices, Allocator.Temp),
                 allIncludedIndices,
-                new NativeArray<sfloat>(weights, Allocator.Temp),
+                new NativeArray<fp>(weights, Allocator.Temp),
                 allBlendShapeWeights
             );
         }
@@ -213,19 +213,19 @@ namespace Fixed.Physics.Tests.Authoring
         public void GetHash128_WhenMultipleInputs_WithDifferentIncludedIndices_NotEqual()
         {
             using (var allIndices = new NativeList<int>(0, Allocator.TempJob))
-            using (var allWeights = new NativeList<sfloat>(0, Allocator.TempJob))
+            using (var allWeights = new NativeList<fp>(0, Allocator.TempJob))
             {
                 Hash128 a, b;
 
                 using (var inputs = new NativeList<HashableShapeInputs>(2, Allocator.TempJob)
                    {
                        Length = 2,
-                       [0] = InputsWithIndicesAndBlendShapeWeights(new[] { 0 }, Array.Empty<sfloat>(), allIndices, allWeights),
-                       [1] = InputsWithIndicesAndBlendShapeWeights(new[] { 0, 0 }, Array.Empty<sfloat>(), allIndices, allWeights)
+                       [0] = InputsWithIndicesAndBlendShapeWeights(new[] { 0 }, Array.Empty<fp>(), allIndices, allWeights),
+                       [1] = InputsWithIndicesAndBlendShapeWeights(new[] { 0, 0 }, Array.Empty<fp>(), allIndices, allWeights)
                    })
                 {
                     a = HashableShapeInputs.GetHash128(
-                        default, default, default, default, float4x4.identity, inputs, allIndices, allWeights, HashableShapeInputs.k_DefaultLinearPrecision
+                        default, default, default, default, fp4x4.identity, inputs, allIndices, allWeights, HashableShapeInputs.k_DefaultLinearPrecision
                     );
                 }
 
@@ -234,12 +234,12 @@ namespace Fixed.Physics.Tests.Authoring
                 using (var inputs = new NativeList<HashableShapeInputs>(2, Allocator.TempJob)
                    {
                        Length = 2,
-                       [0] = InputsWithIndicesAndBlendShapeWeights(new[] { 0, 0 }, Array.Empty<sfloat>(), allIndices, allWeights),
-                       [1] = InputsWithIndicesAndBlendShapeWeights(new[] { 0 }, Array.Empty<sfloat>(), allIndices, allWeights)
+                       [0] = InputsWithIndicesAndBlendShapeWeights(new[] { 0, 0 }, Array.Empty<fp>(), allIndices, allWeights),
+                       [1] = InputsWithIndicesAndBlendShapeWeights(new[] { 0 }, Array.Empty<fp>(), allIndices, allWeights)
                    })
                 {
                     b = HashableShapeInputs.GetHash128(
-                        default, default, default, default, float4x4.identity, inputs, allIndices, allWeights, HashableShapeInputs.k_DefaultLinearPrecision
+                        default, default, default, default, fp4x4.identity, inputs, allIndices, allWeights, HashableShapeInputs.k_DefaultLinearPrecision
                     );
                 }
 
@@ -251,19 +251,19 @@ namespace Fixed.Physics.Tests.Authoring
         public void GetHash128_WhenMultipleInputs_WithDifferentBlendShapeWeights_NotEqual()
         {
             using (var allIndices = new NativeList<int>(0, Allocator.TempJob))
-            using (var allWeights = new NativeList<sfloat>(0, Allocator.TempJob))
+            using (var allWeights = new NativeList<fp>(0, Allocator.TempJob))
             {
                 Hash128 a, b;
 
                 using (var inputs = new NativeList<HashableShapeInputs>(2, Allocator.TempJob)
                    {
                        Length = 2,
-                       [0] = InputsWithIndicesAndBlendShapeWeights(Array.Empty<int>(), new[] { (sfloat)0f }, allIndices, allWeights),
-                       [1] = InputsWithIndicesAndBlendShapeWeights(Array.Empty<int>(), new[] { (sfloat)0f, (sfloat)0f }, allIndices, allWeights)
+                       [0] = InputsWithIndicesAndBlendShapeWeights(Array.Empty<int>(), new[] { (fp)0f }, allIndices, allWeights),
+                       [1] = InputsWithIndicesAndBlendShapeWeights(Array.Empty<int>(), new[] { (fp)0f, (fp)0f }, allIndices, allWeights)
                    })
                 {
                     a = HashableShapeInputs.GetHash128(
-                        default, default, default, default, float4x4.identity, inputs, allIndices, allWeights, HashableShapeInputs.k_DefaultLinearPrecision
+                        default, default, default, default, fp4x4.identity, inputs, allIndices, allWeights, HashableShapeInputs.k_DefaultLinearPrecision
                     );
                 }
 
@@ -272,12 +272,12 @@ namespace Fixed.Physics.Tests.Authoring
                 using (var inputs = new NativeList<HashableShapeInputs>(2, Allocator.TempJob)
                    {
                        Length = 2,
-                       [0] = InputsWithIndicesAndBlendShapeWeights(Array.Empty<int>(), new[] { (sfloat)0f, (sfloat)0f }, allIndices, allWeights),
-                       [1] = InputsWithIndicesAndBlendShapeWeights(Array.Empty<int>(), new[] { (sfloat)0f }, allIndices, allWeights)
+                       [0] = InputsWithIndicesAndBlendShapeWeights(Array.Empty<int>(), new[] { (fp)0f, (fp)0f }, allIndices, allWeights),
+                       [1] = InputsWithIndicesAndBlendShapeWeights(Array.Empty<int>(), new[] { (fp)0f }, allIndices, allWeights)
                    })
                 {
                     b = HashableShapeInputs.GetHash128(
-                        default, default, default, default, float4x4.identity, inputs, allIndices, allWeights, HashableShapeInputs.k_DefaultLinearPrecision
+                        default, default, default, default, fp4x4.identity, inputs, allIndices, allWeights, HashableShapeInputs.k_DefaultLinearPrecision
                     );
                 }
 
@@ -287,25 +287,25 @@ namespace Fixed.Physics.Tests.Authoring
 
         static readonly TestCaseData[] k_EqualsWithinToleranceTestCases =
         {
-            new TestCaseData(float4x4.identity).SetName("Identity (equal)").Returns(true),
-            new TestCaseData(float4x4.Translate((sfloat)0.00001f)).SetName("Small translation (equal)").Returns(true),
-            new TestCaseData(float4x4.Translate((sfloat)1000f)).SetName("Large translation (equal)").Returns(true),
-            new TestCaseData(float4x4.EulerZXY(math.PI / (sfloat)720f)).SetName("Small rotation (equal)").Returns(true),
-            new TestCaseData(float4x4.EulerZXY(math.PI * (sfloat)0.95f)).SetName("Large rotation (equal)").Returns(true),
-            new TestCaseData(float4x4.Scale((sfloat)0.00001f)).SetName("Small scale (equal)").Returns(true),
-            new TestCaseData(float4x4.Scale((sfloat)1000f)).SetName("Large scale (equal)").Returns(true),
-            new TestCaseData(float4x4.TRS(new float3((sfloat)1000f), quaternion.EulerZXY(math.PI / (sfloat)9f), new float3((sfloat)0.1f))).SetName("Several transformations (equal)").Returns(true),
+            new TestCaseData(fp4x4.identity).SetName("Identity (equal)").Returns(true),
+            new TestCaseData(fp4x4.Translate((fp)0.00001f)).SetName("Small translation (equal)").Returns(true),
+            new TestCaseData(fp4x4.Translate((fp)1000f)).SetName("Large translation (equal)").Returns(true),
+            new TestCaseData(fp4x4.EulerZXY(fpmath.PI / (fp)720f)).SetName("Small rotation (equal)").Returns(true),
+            new TestCaseData(fp4x4.EulerZXY(fpmath.PI * (fp)0.95f)).SetName("Large rotation (equal)").Returns(true),
+            new TestCaseData(fp4x4.Scale((fp)0.00001f)).SetName("Small scale (equal)").Returns(true),
+            new TestCaseData(fp4x4.Scale((fp)1000f)).SetName("Large scale (equal)").Returns(true),
+            new TestCaseData(fp4x4.TRS(new fp3((fp)1000f), fpquaternion.EulerZXY(fpmath.PI / (fp)9f), new fp3((fp)0.1f))).SetName("Several transformations (equal)").Returns(true),
         };
 
         [TestCaseSource(nameof(k_EqualsWithinToleranceTestCases))]
-        public bool GetHash128_WhenInputsImprecise_ReturnsExpectedValue(float4x4 leafToBody)
+        public bool GetHash128_WhenInputsImprecise_ReturnsExpectedValue(fp4x4 leafToBody)
         {
             var a = GetHash128_FromMesh(MeshA, leafToBody);
 
-            var t = float4x4.TRS(new float3((sfloat)1 / (sfloat)9f), quaternion.EulerZXY(math.PI / (sfloat)9f), new float3((sfloat)1 / (sfloat)27f));
-            t = math.mul(t, math.inverse(t));
-            Assume.That(t, Is.Not.EqualTo(float4x4.identity));
-            t = math.mul(t, leafToBody);
+            var t = fp4x4.TRS(new fp3((fp)1 / (fp)9f), fpquaternion.EulerZXY(fpmath.PI / (fp)9f), new fp3((fp)1 / (fp)27f));
+            t = fpmath.mul(t, fpmath.inverse(t));
+            Assume.That(t, Is.Not.EqualTo(fp4x4.identity));
+            t = fpmath.mul(t, leafToBody);
             Assume.That(t, Is.Not.EqualTo(leafToBody));
             var b = GetHash128_FromMesh(MeshA, t);
 
@@ -321,7 +321,7 @@ namespace Fixed.Physics.Tests.Authoring
             [Values(-360f, -270f, -180f, -90f, 0f, 90f, 180f, 270f, 360f)]float rotateZ
         )
         {
-            var leafToBody = float4x4.EulerZXY(math.radians(rotateZ), math.radians(rotateY), math.radians(rotateX));
+            var leafToBody = fp4x4.EulerZXY(fpmath.radians(rotateZ), fpmath.radians(rotateY), fpmath.radians(rotateX));
 
             var equalsWithinTolerance = GetHash128_WhenInputsImprecise_ReturnsExpectedValue(leafToBody);
 

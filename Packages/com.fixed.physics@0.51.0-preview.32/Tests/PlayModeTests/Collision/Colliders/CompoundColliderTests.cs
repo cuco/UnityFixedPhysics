@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using NUnit.Framework;
 using Unity.Collections;
 using Unity.Entities;
-using Fixed.Mathematics;
+using Unity.Mathematics.FixedPoint;
 using Fixed.Physics.Tests.Utils;
 
 namespace Fixed.Physics.Tests.Collision.Colliders
@@ -16,35 +16,35 @@ namespace Fixed.Physics.Tests.Collision.Colliders
         [Test]
         public void MassProperties_BuiltFromChildren_MatchesExpected()
         {
-            void TestCompoundBox(RigidTransform transform)
+            void TestCompoundBox(FpRigidTransform transform)
             {
                 // Create a unit box
                 var box = BoxCollider.Create(new BoxGeometry
                 {
                     Center = transform.pos,
                     Orientation = transform.rot,
-                    Size = new float3(1),
-                    BevelRadius = (sfloat)0.0f
+                    Size = new fp3(1),
+                    BevelRadius = (fp)0.0f
                 });
 
                 // Create a compound of mini boxes, matching the volume of the single box
                 var miniBox = BoxCollider.Create(new BoxGeometry
                 {
-                    Center = float3.zero,
-                    Orientation = quaternion.identity,
-                    Size = new float3((sfloat)0.5f, (sfloat)0.5f, (sfloat)0.5f),
-                    BevelRadius = (sfloat)0.0f
+                    Center = fp3.zero,
+                    Orientation = fpquaternion.identity,
+                    Size = new fp3(fp.half, fp.half, fp.half),
+                    BevelRadius = (fp)0.0f
                 });
                 var children = new NativeArray<CompoundCollider.ColliderBlobInstance>(8, Allocator.Temp)
                 {
-                    [0] = new CompoundCollider.ColliderBlobInstance { Collider = miniBox, CompoundFromChild = math.mul(transform, new RigidTransform(quaternion.identity, new float3(+(sfloat)0.25f, +(sfloat)0.25f, +(sfloat)0.25f))) },
-                    [1] = new CompoundCollider.ColliderBlobInstance { Collider = miniBox, CompoundFromChild = math.mul(transform, new RigidTransform(quaternion.identity, new float3(-(sfloat)0.25f, +(sfloat)0.25f, +(sfloat)0.25f))) },
-                    [2] = new CompoundCollider.ColliderBlobInstance { Collider = miniBox, CompoundFromChild = math.mul(transform, new RigidTransform(quaternion.identity, new float3(+(sfloat)0.25f, -(sfloat)0.25f, +(sfloat)0.25f))) },
-                    [3] = new CompoundCollider.ColliderBlobInstance { Collider = miniBox, CompoundFromChild = math.mul(transform, new RigidTransform(quaternion.identity, new float3(+(sfloat)0.25f, +(sfloat)0.25f, -(sfloat)0.25f))) },
-                    [4] = new CompoundCollider.ColliderBlobInstance { Collider = miniBox, CompoundFromChild = math.mul(transform, new RigidTransform(quaternion.identity, new float3(-(sfloat)0.25f, -(sfloat)0.25f, +(sfloat)0.25f))) },
-                    [5] = new CompoundCollider.ColliderBlobInstance { Collider = miniBox, CompoundFromChild = math.mul(transform, new RigidTransform(quaternion.identity, new float3(+(sfloat)0.25f, -(sfloat)0.25f, -(sfloat)0.25f))) },
-                    [6] = new CompoundCollider.ColliderBlobInstance { Collider = miniBox, CompoundFromChild = math.mul(transform, new RigidTransform(quaternion.identity, new float3(-(sfloat)0.25f, +(sfloat)0.25f, -(sfloat)0.25f))) },
-                    [7] = new CompoundCollider.ColliderBlobInstance { Collider = miniBox, CompoundFromChild = math.mul(transform, new RigidTransform(quaternion.identity, new float3(-(sfloat)0.25f, -(sfloat)0.25f, -(sfloat)0.25f))) }
+                    [0] = new CompoundCollider.ColliderBlobInstance { Collider = miniBox, CompoundFromChild = fpmath.mul(transform, new FpRigidTransform(fpquaternion.identity, new fp3(+(fp)0.25f, +(fp)0.25f, +(fp)0.25f))) },
+                    [1] = new CompoundCollider.ColliderBlobInstance { Collider = miniBox, CompoundFromChild = fpmath.mul(transform, new FpRigidTransform(fpquaternion.identity, new fp3(-(fp)0.25f, +(fp)0.25f, +(fp)0.25f))) },
+                    [2] = new CompoundCollider.ColliderBlobInstance { Collider = miniBox, CompoundFromChild = fpmath.mul(transform, new FpRigidTransform(fpquaternion.identity, new fp3(+(fp)0.25f, -(fp)0.25f, +(fp)0.25f))) },
+                    [3] = new CompoundCollider.ColliderBlobInstance { Collider = miniBox, CompoundFromChild = fpmath.mul(transform, new FpRigidTransform(fpquaternion.identity, new fp3(+(fp)0.25f, +(fp)0.25f, -(fp)0.25f))) },
+                    [4] = new CompoundCollider.ColliderBlobInstance { Collider = miniBox, CompoundFromChild = fpmath.mul(transform, new FpRigidTransform(fpquaternion.identity, new fp3(-(fp)0.25f, -(fp)0.25f, +(fp)0.25f))) },
+                    [5] = new CompoundCollider.ColliderBlobInstance { Collider = miniBox, CompoundFromChild = fpmath.mul(transform, new FpRigidTransform(fpquaternion.identity, new fp3(+(fp)0.25f, -(fp)0.25f, -(fp)0.25f))) },
+                    [6] = new CompoundCollider.ColliderBlobInstance { Collider = miniBox, CompoundFromChild = fpmath.mul(transform, new FpRigidTransform(fpquaternion.identity, new fp3(-(fp)0.25f, +(fp)0.25f, -(fp)0.25f))) },
+                    [7] = new CompoundCollider.ColliderBlobInstance { Collider = miniBox, CompoundFromChild = fpmath.mul(transform, new FpRigidTransform(fpquaternion.identity, new fp3(-(fp)0.25f, -(fp)0.25f, -(fp)0.25f))) }
                 };
                 var compound = CompoundCollider.Create(children);
                 children.Dispose();
@@ -52,18 +52,18 @@ namespace Fixed.Physics.Tests.Collision.Colliders
                 var boxMassProperties = box.Value.MassProperties;
                 var compoundMassProperties = compound.Value.MassProperties;
 
-                TestUtils.AreEqual(compoundMassProperties.Volume, boxMassProperties.Volume, (sfloat)1e-3f);
-                TestUtils.AreEqual(compoundMassProperties.AngularExpansionFactor, boxMassProperties.AngularExpansionFactor, (sfloat)1e-3f);
-                TestUtils.AreEqual(compoundMassProperties.MassDistribution.Transform.pos, boxMassProperties.MassDistribution.Transform.pos, (sfloat)1e-3f);
+                TestUtils.AreEqual(compoundMassProperties.Volume, boxMassProperties.Volume, (fp)1e-3f);
+                TestUtils.AreEqual(compoundMassProperties.AngularExpansionFactor, boxMassProperties.AngularExpansionFactor, (fp)1e-3f);
+                TestUtils.AreEqual(compoundMassProperties.MassDistribution.Transform.pos, boxMassProperties.MassDistribution.Transform.pos, (fp)1e-3f);
                 //TestUtils.AreEqual(compoundMassProperties.MassDistribution.Orientation, boxMassProperties.MassDistribution.Orientation, 1e-3f);   // TODO: Figure out why this differs, and if that is a problem
-                TestUtils.AreEqual(compoundMassProperties.MassDistribution.InertiaTensor, boxMassProperties.MassDistribution.InertiaTensor, (sfloat)1e-3f);
+                TestUtils.AreEqual(compoundMassProperties.MassDistribution.InertiaTensor, boxMassProperties.MassDistribution.InertiaTensor, (fp)1e-3f);
             }
 
             // Compare box with compound at various transforms
-            TestCompoundBox(RigidTransform.identity);
-            TestCompoundBox(new RigidTransform(quaternion.identity, new float3((sfloat)1.0f, (sfloat)2.0f, (sfloat)3.0f)));
-            TestCompoundBox(new RigidTransform(quaternion.EulerXYZ((sfloat)0.5f, (sfloat)1.0f, (sfloat)1.5f), float3.zero));
-            TestCompoundBox(new RigidTransform(quaternion.EulerXYZ((sfloat)0.5f, (sfloat)1.0f, (sfloat)1.5f), new float3((sfloat)1.0f, (sfloat)2.0f, (sfloat)3.0f)));
+            TestCompoundBox(FpRigidTransform.identity);
+            TestCompoundBox(new FpRigidTransform(fpquaternion.identity, new fp3((fp)1.0f, fp.two, (fp)3.0f)));
+            TestCompoundBox(new FpRigidTransform(fpquaternion.EulerXYZ(fp.half, (fp)1.0f, (fp)1.5f), fp3.zero));
+            TestCompoundBox(new FpRigidTransform(fpquaternion.EulerXYZ(fp.half, (fp)1.0f, (fp)1.5f), new fp3((fp)1.0f, fp.two, (fp)3.0f)));
         }
 
         [Test]
@@ -76,19 +76,19 @@ namespace Fixed.Physics.Tests.Collision.Colliders
             try
             {
                 // 3 unique instance inputs
-                boxBlob = BoxCollider.Create(new BoxGeometry { Orientation = quaternion.identity, Size = new float3(1) });
-                capsuleBlob = CapsuleCollider.Create(new CapsuleGeometry { Radius = (sfloat)0.5f, Vertex0 = new float3((sfloat)1f), Vertex1 = new float3(-(sfloat)1f) });
-                sphereBlob = SphereCollider.Create(new SphereGeometry { Radius = (sfloat)0.5f });
+                boxBlob = BoxCollider.Create(new BoxGeometry { Orientation = fpquaternion.identity, Size = new fp3(1) });
+                capsuleBlob = CapsuleCollider.Create(new CapsuleGeometry { Radius = fp.half, Vertex0 = new fp3((fp)1f), Vertex1 = new fp3(-(fp)1f) });
+                sphereBlob = SphereCollider.Create(new SphereGeometry { Radius = fp.half });
                 var children = new NativeArray<CompoundCollider.ColliderBlobInstance>(8, Allocator.Temp)
                 {
-                    [0] = new CompoundCollider.ColliderBlobInstance { Collider = boxBlob, CompoundFromChild = new RigidTransform(quaternion.identity, new float3((sfloat)0f)) },
-                    [1] = new CompoundCollider.ColliderBlobInstance { Collider = capsuleBlob, CompoundFromChild = new RigidTransform(quaternion.identity, new float3((sfloat)1f)) },
-                    [2] = new CompoundCollider.ColliderBlobInstance { Collider = boxBlob, CompoundFromChild = new RigidTransform(quaternion.identity, new float3((sfloat)2f)) },
-                    [3] = new CompoundCollider.ColliderBlobInstance { Collider = sphereBlob, CompoundFromChild = new RigidTransform(quaternion.identity, new float3((sfloat)3f)) },
-                    [4] = new CompoundCollider.ColliderBlobInstance { Collider = boxBlob, CompoundFromChild = new RigidTransform(quaternion.identity, new float3((sfloat)4f)) },
-                    [5] = new CompoundCollider.ColliderBlobInstance { Collider = capsuleBlob, CompoundFromChild = new RigidTransform(quaternion.identity, new float3((sfloat)5f)) },
-                    [6] = new CompoundCollider.ColliderBlobInstance { Collider = boxBlob, CompoundFromChild = new RigidTransform(quaternion.identity, new float3((sfloat)6f)) },
-                    [7] = new CompoundCollider.ColliderBlobInstance { Collider = sphereBlob, CompoundFromChild = new RigidTransform(quaternion.identity, new float3((sfloat)7f)) }
+                    [0] = new CompoundCollider.ColliderBlobInstance { Collider = boxBlob, CompoundFromChild = new FpRigidTransform(fpquaternion.identity, new fp3((fp)0f)) },
+                    [1] = new CompoundCollider.ColliderBlobInstance { Collider = capsuleBlob, CompoundFromChild = new FpRigidTransform(fpquaternion.identity, new fp3((fp)1f)) },
+                    [2] = new CompoundCollider.ColliderBlobInstance { Collider = boxBlob, CompoundFromChild = new FpRigidTransform(fpquaternion.identity, new fp3((fp)2f)) },
+                    [3] = new CompoundCollider.ColliderBlobInstance { Collider = sphereBlob, CompoundFromChild = new FpRigidTransform(fpquaternion.identity, new fp3((fp)3f)) },
+                    [4] = new CompoundCollider.ColliderBlobInstance { Collider = boxBlob, CompoundFromChild = new FpRigidTransform(fpquaternion.identity, new fp3((fp)4f)) },
+                    [5] = new CompoundCollider.ColliderBlobInstance { Collider = capsuleBlob, CompoundFromChild = new FpRigidTransform(fpquaternion.identity, new fp3((fp)5f)) },
+                    [6] = new CompoundCollider.ColliderBlobInstance { Collider = boxBlob, CompoundFromChild = new FpRigidTransform(fpquaternion.identity, new fp3((fp)6f)) },
+                    [7] = new CompoundCollider.ColliderBlobInstance { Collider = sphereBlob, CompoundFromChild = new FpRigidTransform(fpquaternion.identity, new fp3((fp)7f)) }
                 };
 
                 compoundBlob = CompoundCollider.Create(children);
@@ -126,13 +126,13 @@ namespace Fixed.Physics.Tests.Collision.Colliders
                 () =>
                 {
                     int numSpheres = 17;
-                    sfloat sphereRadius = (sfloat)0.5f;
-                    sfloat ringRadius = (sfloat)2f;
+                    fp sphereRadius = fp.half;
+                    fp ringRadius = (fp)2f;
                     BlobAssetReference<Collider> compound = default;
                     for (int i = 0; i < numSpheres; ++i)
                     {
-                        var t = (sfloat)i / (sfloat)numSpheres * (sfloat)2f * math.PI;
-                        var p = ringRadius * new float3(math.cos(t), (sfloat)0f, math.sin(t));
+                        var t = (fp)i / (fp)numSpheres * (fp)2f * fpmath.PI;
+                        var p = ringRadius * new fp3(fpmath.cos(t), (fp)0f, fpmath.sin(t));
                         var sphere = SphereCollider.Create(new SphereGeometry { Center = p, Radius = sphereRadius });
                         CreatedColliders.Add(sphere);
                         if (compound.IsCreated)
@@ -140,8 +140,8 @@ namespace Fixed.Physics.Tests.Collision.Colliders
                             compound = CompoundCollider.Create(
                                 new NativeArray<CompoundCollider.ColliderBlobInstance>(2, Allocator.Temp)
                                 {
-                                    [0] = new CompoundCollider.ColliderBlobInstance { Collider = sphere, CompoundFromChild = RigidTransform.identity },
-                                    [1] = new CompoundCollider.ColliderBlobInstance { Collider = compound, CompoundFromChild = RigidTransform.identity }
+                                    [0] = new CompoundCollider.ColliderBlobInstance { Collider = sphere, CompoundFromChild = FpRigidTransform.identity },
+                                    [1] = new CompoundCollider.ColliderBlobInstance { Collider = compound, CompoundFromChild = FpRigidTransform.identity }
                                 });
                         }
                         else
@@ -149,7 +149,7 @@ namespace Fixed.Physics.Tests.Collision.Colliders
                             compound = CompoundCollider.Create(
                                 new NativeArray<CompoundCollider.ColliderBlobInstance>(1, Allocator.Temp)
                                 {
-                                    [0] = new CompoundCollider.ColliderBlobInstance { Collider = sphere, CompoundFromChild = RigidTransform.identity }
+                                    [0] = new CompoundCollider.ColliderBlobInstance { Collider = sphere, CompoundFromChild = FpRigidTransform.identity }
                                 });
                         }
                         CreatedColliders.Add(compound);

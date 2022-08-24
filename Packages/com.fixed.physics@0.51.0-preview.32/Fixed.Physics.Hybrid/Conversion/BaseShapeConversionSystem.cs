@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
-using Fixed.Mathematics;
+using Unity.Mathematics;
+using Unity.Mathematics.FixedPoint;
 using UnityEngine;
 using UnityEngine.Profiling;
 using Hash128 = Unity.Entities.Hash128;
@@ -18,7 +19,7 @@ namespace Fixed.Physics.Authoring
 
         internal abstract ShapeComputationData GenerateComputationData(
             T shape, ColliderInstance colliderInstance,
-            NativeList<float3> allConvexHullPoints, NativeList<float3> allMeshVertices, NativeList<int3> allMeshTriangles,
+            NativeList<fp3> allConvexHullPoints, NativeList<fp3> allMeshVertices, NativeList<int3> allMeshTriangles,
             HashSet<UnityMesh> meshAssets
         );
 
@@ -118,10 +119,10 @@ namespace Fixed.Physics.Authoring
             const int defaultPointsPerShape = 1024;
 
             m_ConvexColliderJobs = new NativeParallelHashMap<Hash128, ConvexInput>(defaultShapeCount, Allocator.Persistent);
-            m_ConvexColliderPoints = new NativeList<float3>(defaultShapeCount * defaultPointsPerShape, Allocator.Persistent);
+            m_ConvexColliderPoints = new NativeList<fp3>(defaultShapeCount * defaultPointsPerShape, Allocator.Persistent);
 
             m_MeshColliderJobs = new NativeParallelHashMap<Hash128, MeshInput>(defaultShapeCount, Allocator.Persistent);
-            m_MeshColliderVertices = new NativeList<float3>(defaultShapeCount * defaultPointsPerShape, Allocator.Persistent);
+            m_MeshColliderVertices = new NativeList<fp3>(defaultShapeCount * defaultPointsPerShape, Allocator.Persistent);
             m_MeshColliderTriangles = new NativeList<int3>(defaultShapeCount * defaultPointsPerShape / 2 / 3, Allocator.Persistent);
         }
 

@@ -1,6 +1,6 @@
 using NUnit.Framework;
 using Unity.Entities;
-using Fixed.Mathematics;
+using Unity.Mathematics.FixedPoint;
 using Fixed.Physics.Systems;
 
 namespace Fixed.Physics.Tests.Systems
@@ -21,7 +21,7 @@ namespace Fixed.Physics.Tests.Systems
 
                 // Create joint entity
                 Entity jointEntity = world.EntityManager.CreateEntity(typeof(PhysicsJoint), typeof(PhysicsConstrainedBodyPair));
-                world.EntityManager.AddComponentData(jointEntity, PhysicsJoint.CreateFixed(new RigidTransform(quaternion.identity, float3.zero), new RigidTransform(quaternion.identity, float3.zero)));
+                world.EntityManager.AddComponentData(jointEntity, PhysicsJoint.CreateFixed(new FpRigidTransform(fpquaternion.identity, fp3.zero), new FpRigidTransform(fpquaternion.identity, fp3.zero)));
                 world.EntityManager.AddComponentData(jointEntity, new PhysicsConstrainedBodyPair(Entity.Null, Entity.Null, false));
 
                 // Trigger system update

@@ -6,6 +6,7 @@ using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
 using Unity.Jobs;
 using Fixed.Physics.Systems;
+using Unity.Mathematics.FixedPoint;
 
 namespace Fixed.Physics.Authoring
 {
@@ -93,7 +94,7 @@ namespace Fixed.Physics.Authoring
                 }
 
                 var averageContactPosition = details.AverageContactPointPosition;
-                OutputStreamContext->Point(averageContactPosition, (sfloat)0.01f, color);
+                OutputStreamContext->Point(averageContactPosition, (fp)0.01f, color);
                 OutputStreamContext->Arrow(averageContactPosition, collisionEvent.Normal * details.EstimatedImpulse, color);
             }
         }

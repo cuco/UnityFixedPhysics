@@ -4,6 +4,7 @@ using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
 using Fixed.Transforms;
+using Unity.Mathematics.FixedPoint;
 
 namespace Fixed.Physics.Systems
 {
@@ -69,7 +70,7 @@ namespace Fixed.Physics.Systems
             // Make sure last frame's physics jobs are complete before any new ones start
             m_InputDependencyToComplete.Complete();
 
-            sfloat timeStep = (sfloat)Time.DeltaTime;
+            fp timeStep = (fp)Time.DeltaTime;
 
             PhysicsStep stepComponent = PhysicsStep.Default;
             if (HasSingleton<PhysicsStep>())

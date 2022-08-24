@@ -4,7 +4,7 @@ using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
 using Unity.Jobs;
 using Unity.Jobs.LowLevel.Unsafe;
-using Fixed.Mathematics;
+using Unity.Mathematics.FixedPoint;
 
 namespace Fixed.Physics
 {
@@ -54,7 +54,7 @@ namespace Fixed.Physics
             }
         }
 
-        public float3 Normal
+        public fp3 Normal
         {
             get => ContactHeader.Normal;
             set
@@ -64,7 +64,7 @@ namespace Fixed.Physics
             }
         }
 
-        public sfloat CoefficientOfFriction
+        public fp CoefficientOfFriction
         {
             get => ContactHeader.CoefficientOfFriction;
             set
@@ -74,7 +74,7 @@ namespace Fixed.Physics
             }
         }
 
-        public sfloat CoefficientOfRestitution
+        public fp CoefficientOfRestitution
         {
             get => ContactHeader.CoefficientOfRestitution;
             set
@@ -93,7 +93,7 @@ namespace Fixed.Physics
         /// Index of this point, within the ModifiableContactHeader
         public int Index { get; internal set; }
 
-        public float3 Position
+        public fp3 Position
         {
             get => ContactPoint.Position;
             set
@@ -103,7 +103,7 @@ namespace Fixed.Physics
             }
         }
 
-        public sfloat Distance
+        public fp Distance
         {
             get => ContactPoint.Distance;
             set

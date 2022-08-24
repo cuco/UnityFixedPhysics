@@ -3,7 +3,7 @@ using Fixed.Physics.Systems;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
-using Fixed.Mathematics;
+using Unity.Mathematics.FixedPoint;
 using UnityEngine;
 using Unity.Burst;
 
@@ -28,7 +28,7 @@ namespace Fixed.Physics.Authoring
                 {
                     Aabb aabb = Bodies[b].Collider.Value.CalculateAabb(Bodies[b].WorldFromBody);
 
-                    float3 center = aabb.Center;
+                    fp3 center = aabb.Center;
                     OutputStream.Box(aabb.Extents, center, Quaternion.identity, DebugDisplay.ColorIndex.BrightRed);
                 }
             }

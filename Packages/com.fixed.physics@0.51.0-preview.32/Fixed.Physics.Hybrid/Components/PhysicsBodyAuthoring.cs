@@ -1,4 +1,4 @@
-using Fixed.Mathematics;
+using Unity.Mathematics.FixedPoint;
 using UnityEngine;
 
 namespace Fixed.Physics.Authoring
@@ -66,44 +66,44 @@ namespace Fixed.Physics.Authoring
         BodySmoothing m_Smoothing = BodySmoothing.None;
 
         //TODO
-        static readonly sfloat k_MinimumMass = (sfloat)0.001f;
+        static readonly fp k_MinimumMass = (fp)0.001f;
 
-        public sfloat Mass
+        public fp Mass
         {
-            get => m_MotionType == BodyMotionType.Dynamic ? m_Mass : sfloat.PositiveInfinity;
-            set => m_Mass = math.max(k_MinimumMass, value);
+            get => m_MotionType == BodyMotionType.Dynamic ? m_Mass : fp.PositiveInfinity;
+            set => m_Mass = fpmath.max(k_MinimumMass, value);
         }
         [SerializeField]
-        sfloat m_Mass = sfloat.One;
+        fp m_Mass = fp.one;
 
-        public sfloat LinearDamping { get => m_LinearDamping; set => m_LinearDamping = math.max(sfloat.Zero, value); }
+        public fp LinearDamping { get => m_LinearDamping; set => m_LinearDamping = fpmath.max(fp.zero, value); }
         [SerializeField]
         [Tooltip("This is applied to a body's linear velocity reducing it over time.")]
-        sfloat m_LinearDamping = (sfloat)0.01f;
+        fp m_LinearDamping = (fp)0.01f;
 
-        public sfloat AngularDamping { get => m_AngularDamping; set => m_AngularDamping = math.max(sfloat.Zero, value); }
+        public fp AngularDamping { get => m_AngularDamping; set => m_AngularDamping = fpmath.max(fp.zero, value); }
         [SerializeField]
         [Tooltip("This is applied to a body's angular velocity reducing it over time.")]
-        sfloat m_AngularDamping = (sfloat)0.05f;
+        fp m_AngularDamping = (fp)0.05f;
 
-        public float3 InitialLinearVelocity { get => m_InitialLinearVelocity; set => m_InitialLinearVelocity = value; }
+        public fp3 InitialLinearVelocity { get => m_InitialLinearVelocity; set => m_InitialLinearVelocity = value; }
         [SerializeField]
         [Tooltip("The initial linear velocity of the body in world space")]
-        float3 m_InitialLinearVelocity = float3.zero;
+        fp3 m_InitialLinearVelocity = fp3.zero;
 
-        public float3 InitialAngularVelocity { get => m_InitialAngularVelocity; set => m_InitialAngularVelocity = value; }
+        public fp3 InitialAngularVelocity { get => m_InitialAngularVelocity; set => m_InitialAngularVelocity = value; }
         [SerializeField]
         [Tooltip("This represents the initial rotation speed around each axis in the local motion space of the body i.e. around the center of mass")]
-        float3 m_InitialAngularVelocity = float3.zero;
+        fp3 m_InitialAngularVelocity = fp3.zero;
 
-        public sfloat GravityFactor
+        public fp GravityFactor
         {
-            get => m_MotionType == BodyMotionType.Dynamic ? m_GravityFactor : sfloat.Zero;
+            get => m_MotionType == BodyMotionType.Dynamic ? m_GravityFactor : fp.zero;
             set => m_GravityFactor = value;
         }
         [SerializeField]
         [Tooltip("Scales the amount of gravity to apply to this body.")]
-        sfloat m_GravityFactor = sfloat.One;
+        fp m_GravityFactor = fp.one;
 
         public bool OverrideDefaultMassDistribution
         {
@@ -120,9 +120,9 @@ namespace Fixed.Physics.Authoring
         {
             get => new MassDistribution
             {
-                Transform = new RigidTransform(m_Orientation, m_CenterOfMass),
+                Transform = new FpRigidTransform(m_Orientation, m_CenterOfMass),
                 InertiaTensor =
-                    m_MotionType == BodyMotionType.Dynamic ? m_InertiaTensor : new float3(sfloat.PositiveInfinity)
+                    m_MotionType == BodyMotionType.Dynamic ? m_InertiaTensor : new fp3(fp.PositiveInfinity)
             };
             set
             {
@@ -136,14 +136,14 @@ namespace Fixed.Physics.Authoring
         }
 
         [SerializeField]
-        float3 m_CenterOfMass;
+        fp3 m_CenterOfMass;
 
         [SerializeField]
         EulerAngles m_Orientation = EulerAngles.Default;
 
         [SerializeField]
         // Default value to solid unit sphere : https://en.wikipedia.org/wiki/List_of_moments_of_inertia
-        float3 m_InertiaTensor = new float3((sfloat)2f / (sfloat)5f);
+        fp3 m_InertiaTensor = new fp3((fp)2f / (fp)5f);
 
         public uint WorldIndex { get => m_WorldIndex; set => m_WorldIndex = value; }
         [SerializeField]
@@ -161,9 +161,9 @@ namespace Fixed.Physics.Authoring
 
         void OnValidate()
         {
-            m_Mass = math.max(k_MinimumMass, m_Mass);
-            m_LinearDamping = math.max(m_LinearDamping, sfloat.Zero);
-            m_AngularDamping = math.max(m_AngularDamping, sfloat.Zero);
+            m_Mass = fpmath.max(k_MinimumMass, m_Mass);
+            m_LinearDamping = fpmath.max(m_LinearDamping, fp.zero);
+            m_AngularDamping = fpmath.max(m_AngularDamping, fp.zero);
         }
     }
 }

@@ -1,7 +1,8 @@
 using System;
 using Unity.Collections;
 using Unity.Entities;
-using Fixed.Mathematics;
+using Unity.Mathematics;
+using Unity.Mathematics.FixedPoint;
 using UnityEngine.Assertions;
 using static Fixed.Physics.Math;
 
@@ -19,21 +20,21 @@ namespace Fixed.Physics
         // Current values give tau = 0.6 damping = 0.99 at 60hz
         // The values are huge and we can't get damping = 1 -- a stiff constraint is the limit of a damped spring as spring params go to infinity.
         // Rather then baking them these values could be calculated using
-        // JacobianUtilities.CalculateSpringFrequencyAndDamping(0.6f, 0.99f, math.rcp(60.0f), 4, out DefaultSpringFrequency, out DefaultSpringDamping);
+        // JacobianUtilities.CalculateSpringFrequencyAndDamping(0.6f, 0.99f, fpmath.rcp(60.0f), 4, out DefaultSpringFrequency, out DefaultSpringDamping);
         //TODO
-        //public const sfloat DefaultSpringFrequency = 74341.31f;
-        //public const sfloat DefaultSpringDamping = 2530.126f;
+        //public const fp DefaultSpringFrequency = 74341.31f;
+        //public const fp DefaultSpringDamping = 2530.126f;
 
-        public static readonly sfloat DefaultSpringFrequency = sfloat.FromRaw(0x4771fefa); // 61950.977267809007887192914302327f
-        public static readonly sfloat DefaultSpringDamping = sfloat.FromRaw(0x451e21f2); // 2530.12155587434178122630287018f
+        public static readonly fp DefaultSpringFrequency = new fp(74341, 31, 100);//fp.FromRaw(0x4771fefa); // 61950.977267809007887192914302327f
+        public static readonly fp DefaultSpringDamping = new fp(2530, 126, 1000);//fp.FromRaw(0x451e21f2); // 2530.12155587434178122630287018f
 
         public bool3 ConstrainedAxes;
         public ConstraintType Type;
 
-        public sfloat Min;
-        public sfloat Max;
-        public sfloat SpringFrequency;
-        public sfloat SpringDamping;
+        public fp Min;
+        public fp Max;
+        public fp SpringFrequency;
+        public fp SpringDamping;
 
         // Number of affected degrees of freedom.  1, 2, or 3.
         internal int Dimension
@@ -71,14 +72,14 @@ namespace Fixed.Physics
         /// </summary>
         /// <param name="springFrequency"></param>
         /// <param name="springDamping"></param>
-        public static Constraint BallAndSocket(sfloat springFrequency /* = DefaultSpringFrequency*/, sfloat springDamping /* = DefaultSpringDamping*/)
+        public static Constraint BallAndSocket(fp springFrequency /* = DefaultSpringFrequency*/, fp springDamping /* = DefaultSpringDamping*/)
         {
             return new Constraint
             {
                 ConstrainedAxes = new bool3(true),
                 Type = ConstraintType.Linear,
-                Min = sfloat.Zero,
-                Max = sfloat.Zero,
+                Min = fp.zero,
+                Max = fp.zero,
                 SpringFrequency = springFrequency,
                 SpringDamping = springDamping
             };
@@ -95,7 +96,7 @@ namespace Fixed.Physics
         /// <param name="distanceRange">The minimum required distance and maximum possible distance between the constrained bodies.</param>
         /// <param name="springFrequency"></param>
         /// <param name="springDamping"></param>
-        public static Constraint LimitedDistance(FloatRange distanceRange, sfloat springFrequency /* = DefaultSpringFrequency */, sfloat springDamping /* = DefaultSpringDamping */)
+        public static Constraint LimitedDistance(FloatRange distanceRange, fp springFrequency /* = DefaultSpringFrequency */, fp springDamping /* = DefaultSpringDamping */)
         {
             distanceRange = distanceRange.Sorted();
             return new Constraint
@@ -119,7 +120,7 @@ namespace Fixed.Physics
         /// </param>
         /// <param name="springFrequency"></param>
         /// <param name="springDamping"></param>
-        public static Constraint Cylindrical(int freeAxis, FloatRange distanceRange, sfloat springFrequency /* = DefaultSpringFrequency */, sfloat springDamping /* = DefaultSpringDamping */)
+        public static Constraint Cylindrical(int freeAxis, FloatRange distanceRange, fp springFrequency /* = DefaultSpringFrequency */, fp springDamping /* = DefaultSpringDamping */)
         {
             Assert.IsTrue(freeAxis >= 0 && freeAxis <= 2);
             distanceRange = distanceRange.Sorted();
@@ -144,7 +145,7 @@ namespace Fixed.Physics
         /// </param>
         /// <param name="springFrequency"></param>
         /// <param name="springDamping"></param>
-        public static Constraint Planar(int limitedAxis, FloatRange distanceRange, sfloat springFrequency /* = DefaultSpringFrequency */, sfloat springDamping /* = DefaultSpringDamping */)
+        public static Constraint Planar(int limitedAxis, FloatRange distanceRange, fp springFrequency /* = DefaultSpringFrequency */, fp springDamping /* = DefaultSpringDamping */)
         {
             Assert.IsTrue(limitedAxis >= 0 && limitedAxis <= 2);
             distanceRange = distanceRange.Sorted();
@@ -168,14 +169,14 @@ namespace Fixed.Physics
         /// </summary>
         /// <param name="springFrequency"></param>
         /// <param name="springDamping"></param>
-        public static Constraint FixedAngle(sfloat springFrequency /* = DefaultSpringFrequency */, sfloat springDamping /* = DefaultSpringDamping */)
+        public static Constraint FixedAngle(fp springFrequency /* = DefaultSpringFrequency */, fp springDamping /* = DefaultSpringDamping */)
         {
             return new Constraint
             {
                 ConstrainedAxes = new bool3(true),
                 Type = ConstraintType.Angular,
-                Min = sfloat.Zero,
-                Max = sfloat.Zero,
+                Min = fp.zero,
+                Max = fp.zero,
                 SpringFrequency = springFrequency,
                 SpringDamping = springDamping
             };
@@ -187,15 +188,15 @@ namespace Fixed.Physics
         /// <param name="freeAxis">The axis around which the bodies may freely rotate.</param>
         /// <param name="springFrequency"></param>
         /// <param name="springDamping"></param>
-        public static Constraint Hinge(int freeAxis, sfloat springFrequency /* = DefaultSpringFrequency */, sfloat springDamping /* = DefaultSpringDamping */)
+        public static Constraint Hinge(int freeAxis, fp springFrequency /* = DefaultSpringFrequency */, fp springDamping /* = DefaultSpringDamping */)
         {
             Assert.IsTrue(freeAxis >= 0 && freeAxis <= 2);
             return new Constraint
             {
                 ConstrainedAxes = new bool3(freeAxis != 0, freeAxis != 1, freeAxis != 2),
                 Type = ConstraintType.Angular,
-                Min = sfloat.Zero,
-                Max = sfloat.Zero,
+                Min = fp.zero,
+                Max = fp.zero,
                 SpringFrequency = springFrequency,
                 SpringDamping = springDamping
             };
@@ -211,7 +212,7 @@ namespace Fixed.Physics
         /// </param>
         /// <param name="springFrequency"></param>
         /// <param name="springDamping"></param>
-        public static Constraint Cone(int freeAxis, FloatRange angularRange, sfloat springFrequency /* = DefaultSpringFrequency */, sfloat springDamping /* = DefaultSpringDamping */)
+        public static Constraint Cone(int freeAxis, FloatRange angularRange, fp springFrequency /* = DefaultSpringFrequency */, fp springDamping /* = DefaultSpringDamping */)
         {
             Assert.IsTrue(freeAxis >= 0 && freeAxis <= 2);
             angularRange = angularRange.Sorted();
@@ -233,7 +234,7 @@ namespace Fixed.Physics
         /// <param name="angularRange">The minimum required angle and maximum possible angle of rotation between the constrained bodies around the constrained axis.</param>
         /// <param name="springFrequency"></param>
         /// <param name="springDamping"></param>
-        public static Constraint Twist(int limitedAxis, FloatRange angularRange, sfloat springFrequency /* = DefaultSpringFrequency */, sfloat springDamping /* = DefaultSpringDamping */)
+        public static Constraint Twist(int limitedAxis, FloatRange angularRange, fp springFrequency /* = DefaultSpringFrequency */, fp springDamping /* = DefaultSpringDamping */)
         {
             Assert.IsTrue(limitedAxis >= 0 && limitedAxis <= 2);
             angularRange = angularRange.Sorted();

@@ -1,6 +1,6 @@
 using NUnit.Framework;
 using Unity.Collections;
-using Fixed.Mathematics;
+using Unity.Mathematics.FixedPoint;
 using Fixed.Physics.Authoring;
 using UnityEngine;
 
@@ -30,7 +30,7 @@ namespace Fixed.Physics.Tests.Authoring
         }
 
         // static EulerAngles GetOrientation(float x, float y, float z) =>
-        //     new EulerAngles { Value = new float3(x, y, z), RotationOrder = math.RotationOrder.ZXY };
+        //     new EulerAngles { Value = new fp3(x, y, z), RotationOrder = math.RotationOrder.ZXY };
         //
         // const float k_OrientationTolerance = 0.001f;
 
@@ -44,14 +44,14 @@ namespace Fixed.Physics.Tests.Authoring
         {
             m_Shape.transform.localScale = new Vector3(sx, sy, sz);
             var expectedOrientation = GetOrientation(rx, ry, rz);
-            m_Shape.SetBox(new float3(0f), new float3(1f), expectedOrientation);
+            m_Shape.SetBox(new fp3(0f), new fp3(1f), expectedOrientation);
 
             m_Shape.GetBakedBoxProperties(
                 out var center, out var size, out var actualOrientation, out var convexRadius
             );
 
             Assert.That(
-                (quaternion)actualOrientation,
+                (fpquaternion)actualOrientation,
                 Is.OrientedEquivalentTo(expectedOrientation).EachAxisWithin(k_OrientationTolerance)
             );
         }
@@ -62,8 +62,8 @@ namespace Fixed.Physics.Tests.Authoring
             [Values(-90f, 0f, 90f)] float rx, [Values(-90f, 0f, 90f)] float ry, [Values(-90f, 0f, 90f)] float rz
         )
         {
-            var expectedSize = new float3(sx, sy, sz);
-            m_Shape.SetBox(new float3(0f), expectedSize, GetOrientation(rx, ry, rz));
+            var expectedSize = new fp3(sx, sy, sz);
+            m_Shape.SetBox(new fp3(0f), expectedSize, GetOrientation(rx, ry, rz));
 
             m_Shape.GetBakedBoxProperties(
                 out var center, out var actualSize, out var orientation, out var convexRadius
@@ -78,7 +78,7 @@ namespace Fixed.Physics.Tests.Authoring
             [Values(-90f, 0f, 90f)] float rx, [Values(-90f, 0f, 90f)] float ry, [Values(-90f, 0f, 90f)] float rz
         )
         {
-            m_Shape.SetBox(new float3(0f), new float3(sx, sy, sz), GetOrientation(rx, ry, rz));
+            m_Shape.SetBox(new fp3(0f), new fp3(sx, sy, sz), GetOrientation(rx, ry, rz));
             var expectedBevelRadius = ConvexHullGenerationParameters.Default.BevelRadius * 0.5f;
             m_Shape.BevelRadius = expectedBevelRadius;
 
@@ -104,7 +104,7 @@ namespace Fixed.Physics.Tests.Authoring
             );
 
             Assert.That(
-                (quaternion)actualOrientation,
+                (fpquaternion)actualOrientation,
                 Is.OrientedEquivalentTo(expectedOrientation).EachAxisWithin(k_OrientationTolerance)
             );
         }
@@ -114,7 +114,7 @@ namespace Fixed.Physics.Tests.Authoring
             [Values(-90f, 0f, 90f)] float rx, [Values(-90f, 0f, 90f)] float ry, [Values(-90f, 0f, 90f)] float rz
         )
         {
-            var expectedHeight = math.PI;
+            var expectedHeight = fpmath.PI;
             m_Shape.SetCapsule(0f, expectedHeight, 1f, GetOrientation(rx, ry, rz));
 
             m_Shape.GetBakedCapsuleProperties(
@@ -129,7 +129,7 @@ namespace Fixed.Physics.Tests.Authoring
             [Values(-90f, 0f, 90f)] float rx, [Values(-90f, 0f, 90f)] float ry, [Values(-90f, 0f, 90f)] float rz
         )
         {
-            var expectedRadius = math.PI;
+            var expectedRadius = fpmath.PI;
             m_Shape.SetCapsule(0f, 10f, expectedRadius, GetOrientation(rx, ry, rz));
 
             m_Shape.GetBakedCapsuleProperties(
@@ -153,7 +153,7 @@ namespace Fixed.Physics.Tests.Authoring
                 out var center, out var height, out var radius, out var actualOrientation, out var convexRadius
             );
 
-            Assert.That((quaternion)actualOrientation, Is.OrientedEquivalentTo(expectedOrientation));
+            Assert.That((fpquaternion)actualOrientation, Is.OrientedEquivalentTo(expectedOrientation));
         }
 
         [Test]
@@ -161,7 +161,7 @@ namespace Fixed.Physics.Tests.Authoring
             [Values(-90f, 0f, 90f)] float rx, [Values(-90f, 0f, 90f)] float ry, [Values(-90f, 0f, 90f)] float rz
         )
         {
-            var expectedHeight = math.PI;
+            var expectedHeight = fpmath.PI;
             m_Shape.SetCylinder(0f, expectedHeight, 1f, GetOrientation(rx, ry, rz));
 
             m_Shape.GetBakedCylinderProperties(
@@ -176,7 +176,7 @@ namespace Fixed.Physics.Tests.Authoring
             [Values(-90f, 0f, 90f)] float rx, [Values(-90f, 0f, 90f)] float ry, [Values(-90f, 0f, 90f)] float rz
         )
         {
-            var expectedRadius = math.PI;
+            var expectedRadius = fpmath.PI;
             m_Shape.SetCylinder(0f, 10f, expectedRadius, GetOrientation(rx, ry, rz));
 
             m_Shape.GetBakedCylinderProperties(
@@ -210,13 +210,13 @@ namespace Fixed.Physics.Tests.Authoring
         {
             m_Shape.transform.localScale = new Vector3(sx, sy, sz);
             var orientation = GetOrientation(rx, ry, rz);
-            var expectedOrientation = (quaternion)orientation;
-            m_Shape.SetSphere(new float3(0f), 1f, orientation);
+            var expectedOrientation = (fpquaternion)orientation;
+            m_Shape.SetSphere(new fp3(0f), 1f, orientation);
 
             m_Shape.GetBakedSphereProperties(out var center, out var radius, out var actualOrientation);
 
             Assert.That(
-                (quaternion)actualOrientation,
+                (fpquaternion)actualOrientation,
                 Is.OrientedEquivalentTo(expectedOrientation).EachAxisWithin(k_OrientationTolerance)
             );
         }
@@ -228,7 +228,7 @@ namespace Fixed.Physics.Tests.Authoring
         {
             var orientation = GetOrientation(rx, ry, rz);
             var expectedRadius = 1f;
-            m_Shape.SetSphere(new float3(0f), expectedRadius, orientation);
+            m_Shape.SetSphere(new fp3(0f), expectedRadius, orientation);
 
             m_Shape.GetBakedSphereProperties(out var center, out var actualRadius, out orientation);
 
@@ -243,7 +243,7 @@ namespace Fixed.Physics.Tests.Authoring
             m_Shape.BevelRadius = expectedBevelRadius;
 
             ConvexHullGenerationParameters actual;
-            using (var pointCloud = new NativeList<float3>(Allocator.TempJob))
+            using (var pointCloud = new NativeList<fp3>(Allocator.TempJob))
                 m_Shape.GetBakedConvexProperties(pointCloud, out actual);
 
             Assert.That(actual.BevelRadius, Is.EqualTo(expectedBevelRadius));

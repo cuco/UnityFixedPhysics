@@ -5,7 +5,7 @@ using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
 using Unity.Jobs;
-using Fixed.Mathematics;
+using Unity.Mathematics.FixedPoint;
 using Fixed.Physics.Systems;
 
 namespace Fixed.Physics.Authoring
@@ -75,8 +75,8 @@ namespace Fixed.Physics.Authoring
 
             public void Execute(ref ModifiableContactHeader header, ref ModifiableContactPoint point)
             {
-                float3 x0 = point.Position;
-                float3 x1 = header.Normal * point.Distance;
+                fp3 x0 = point.Position;
+                fp3 x1 = header.Normal * point.Distance;
                 OutputStreamContext->Arrow(x0, x1, Fixed.DebugDisplay.ColorIndex.Green);
                 if (DisplayContactIndices)
                 {

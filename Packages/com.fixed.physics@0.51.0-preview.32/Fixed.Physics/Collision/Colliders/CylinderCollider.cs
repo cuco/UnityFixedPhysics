@@ -2,7 +2,8 @@ using System;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
-using Fixed.Mathematics;
+using Unity.Mathematics;
+using Unity.Mathematics.FixedPoint;
 
 namespace Fixed.Physics
 {
@@ -12,26 +13,26 @@ namespace Fixed.Physics
         public const int MaxSideCount = 32;
 
         // The center of the cylinder
-        public float3 Center { get => m_Center; set => m_Center = value; }
-        float3 m_Center;
+        public fp3 Center { get => m_Center; set => m_Center = value; }
+        fp3 m_Center;
 
         // The orientation of the cylinder
-        public quaternion Orientation { get => m_Orientation; set => m_Orientation = value; }
-        private quaternion m_Orientation;
+        public fpquaternion Orientation { get => m_Orientation; set => m_Orientation = value; }
+        private fpquaternion m_Orientation;
 
         // The height of the cylinder, centered along the local Y axis
-        public sfloat Height { get => m_Height; set => m_Height = value; }
-        private sfloat m_Height;
+        public fp Height { get => m_Height; set => m_Height = value; }
+        private fp m_Height;
 
         // The radius of the cylinder
-        public sfloat Radius { get => m_Radius; set => m_Radius = value; }
-        private sfloat m_Radius;
+        public fp Radius { get => m_Radius; set => m_Radius = value; }
+        private fp m_Radius;
 
         // The radius by which to round off the edges of the cylinder.
         // This helps to optimize collision detection performance, by reducing the likelihood
         // of the inner hull being penetrated and incurring expensive collision algorithms.
-        public sfloat BevelRadius { get => m_BevelRadius; set => m_BevelRadius = value; }
-        private sfloat m_BevelRadius;
+        public fp BevelRadius { get => m_BevelRadius; set => m_BevelRadius = value; }
+        private fp m_BevelRadius;
 
         // The number of faces used to represent the rounded part of the cylinder
         public int SideCount { get => m_SideCount; set => m_SideCount = value; }
@@ -50,9 +51,9 @@ namespace Fixed.Physics
         public override int GetHashCode()
         {
             return unchecked((int)math.hash(new uint4(
-                math.hash(m_Center),
-                math.hash(m_Orientation),
-                math.hash(new float3(m_Height, m_Radius, m_BevelRadius)),
+                fpmath.hash(m_Center),
+                fpmath.hash(m_Orientation),
+                fpmath.hash(new fp3(m_Height, m_Radius, m_BevelRadius)),
                 unchecked((uint)m_SideCount)
             )));
         }
@@ -67,23 +68,23 @@ namespace Fixed.Physics
 
         // Convex hull data, sized for the maximum allowed number of cylinder faces
         // Todo: would be nice to use the actual types here but C# only likes fixed arrays of builtin types..
-        private unsafe fixed byte m_Vertices[sizeof(uint) * 3 * 2 * CylinderGeometry.MaxSideCount];
-        private unsafe fixed byte m_FacePlanes[sizeof(uint) * 4 * (2 + CylinderGeometry.MaxSideCount)];
+        private unsafe fixed byte m_Vertices[sizeof(long) * 3 * 2 * CylinderGeometry.MaxSideCount];
+        private unsafe fixed byte m_FacePlanes[sizeof(long) * 4 * (2 + CylinderGeometry.MaxSideCount)];
         private unsafe fixed byte m_Faces[4 * (2 + CylinderGeometry.MaxSideCount)];
         private unsafe fixed byte m_FaceVertexIndices[sizeof(byte) * 6 * CylinderGeometry.MaxSideCount];
 
         // Cylinder parameters
-        private float3 m_Center;
-        private quaternion m_Orientation;
-        private sfloat m_Height;
-        private sfloat m_Radius;
+        private fp3 m_Center;
+        private fpquaternion m_Orientation;
+        private fp m_Height;
+        private fp m_Radius;
         private int m_SideCount;
 
-        public float3 Center => m_Center;
-        public quaternion Orientation => m_Orientation;
-        public sfloat Height => m_Height;
-        public sfloat Radius => m_Radius;
-        public sfloat BevelRadius => ConvexHull.ConvexRadius;
+        public fp3 Center => m_Center;
+        public fpquaternion Orientation => m_Orientation;
+        public fp Height => m_Height;
+        public fp Radius => m_Radius;
+        public fp BevelRadius => ConvexHull.ConvexRadius;
         public int SideCount => m_SideCount;
 
         public CylinderGeometry Geometry
@@ -175,40 +176,40 @@ namespace Fixed.Physics
             ConvexHull.FacesBlob.Length = m_SideCount + 2;
             ConvexHull.FaceVertexIndicesBlob.Length = m_SideCount * 6;
 
-            var transform = new RigidTransform(m_Orientation, m_Center);
-            var radius = math.max(m_Radius - ConvexHull.ConvexRadius, sfloat.Zero);
-            var halfHeight = math.max(m_Height * (sfloat)0.5f - ConvexHull.ConvexRadius, sfloat.Zero);
+            var transform = new FpRigidTransform(m_Orientation, m_Center);
+            var radius = fpmath.max(m_Radius - ConvexHull.ConvexRadius, fp.zero);
+            var halfHeight = fpmath.max(m_Height * fp.half - ConvexHull.ConvexRadius, fp.zero);
 
-            sfloat sideCount = (sfloat)m_SideCount;
+            fp sideCount = (fp)m_SideCount;
             fixed(CylinderCollider* collider = &this)
             {
                 // vertices
-                float3* vertices = (float3*)(&collider->m_Vertices[0]);
-                var arcStep = math.TWO_PI / sideCount;
+                fp3* vertices = (fp3*)(&collider->m_Vertices[0]);
+                var arcStep = fp.TwoPi / sideCount;
                 for (var i = 0; i < m_SideCount; i++)
                 {
-                    sfloat _i = (sfloat)i;
-                    var x = math.cos(arcStep * _i) * radius;
-                    var y = math.sin(arcStep * _i) * radius;
-                    vertices[i] = math.transform(transform, new float3(x, y, -halfHeight));
-                    vertices[i + m_SideCount] = math.transform(transform, new float3(x, y, halfHeight));
+                    fp _i = (fp)i;
+                    var x = fpmath.cos(arcStep * _i) * radius;
+                    var y = fpmath.sin(arcStep * _i) * radius;
+                    vertices[i] = fpmath.transform(transform, new fp3(x, y, -halfHeight));
+                    vertices[i + m_SideCount] = fpmath.transform(transform, new fp3(x, y, halfHeight));
                 }
 
                 // planes
                 Plane* planes = (Plane*)(&collider->m_FacePlanes[0]);
-                planes[0] = Math.TransformPlane(transform, new Plane(new float3(sfloat.Zero, sfloat.Zero, -sfloat.One), -halfHeight));
-                planes[1] = Math.TransformPlane(transform, new Plane(new float3(sfloat.Zero, sfloat.Zero, sfloat.One), -halfHeight));
-                sfloat d = radius * math.cos((sfloat)math.PI / sideCount);
+                planes[0] = Math.TransformPlane(transform, new Plane(new fp3(fp.zero, fp.zero, fp.minusOne), -halfHeight));
+                planes[1] = Math.TransformPlane(transform, new Plane(new fp3(fp.zero, fp.zero, fp.one), -halfHeight));
+                fp d = radius * fpmath.cos((fp)fpmath.PI / sideCount);
                 for (int i = 0; i < m_SideCount; ++i)
                 {
-                    sfloat angle = math.TWO_PI * ((sfloat)i + (sfloat)0.5f) / sideCount;
-                    planes[2 + i] = Math.TransformPlane(transform, new Plane(new float3(math.cos(angle), math.sin(angle), sfloat.Zero), -d));
+                    fp angle = fp.TwoPi * (i + fp.half) / sideCount;
+                    planes[2 + i] = Math.TransformPlane(transform, new Plane(new fp3(fpmath.cos(angle), fpmath.sin(angle), fp.zero), -d));
                 }
 
                 // faces
                 ConvexHull.Face* faces = (ConvexHull.Face*)(&collider->m_Faces[0]);
                 byte* indices = (byte*)(&collider->m_FaceVertexIndices[0]);
-                sfloat halfAngle = (sfloat)math.PI_OVER_4;
+                fp halfAngle = fp.Pi * fp.quarter;
                 {
                     faces[0].FirstIndex = 0;
                     faces[0].NumVertices = (byte)m_SideCount;
@@ -226,7 +227,7 @@ namespace Fixed.Physics
                         indices[i] = (byte)(i);
                     }
                 }
-                halfAngle = (sfloat)math.PI / sideCount;
+                halfAngle = (fp)fpmath.PI / sideCount;
                 for (int i = 0; i < m_SideCount; ++i)
                 {
                     int firstIndex = (2 * m_SideCount) + (4 * i);
@@ -242,19 +243,19 @@ namespace Fixed.Physics
                 }
             }
 
-            sfloat radiusSq = m_Radius * m_Radius;
+            fp radiusSq = m_Radius * m_Radius;
             MassProperties = new MassProperties
             {
                 MassDistribution = new MassDistribution
                 {
                     Transform = transform,
-                    InertiaTensor = new float3(
-                        (radiusSq + m_Height * m_Height) * sfloat.FromRaw(0x3daaaaab),
-                        (radiusSq + m_Height * m_Height) * sfloat.FromRaw(0x3daaaaab),
-                        (radiusSq) * (sfloat)0.5f)
+                    InertiaTensor = new fp3(
+                        (radiusSq + m_Height * m_Height) * fp.FromRaw(0x3daaaaab),
+                        (radiusSq + m_Height * m_Height) * fp.FromRaw(0x3daaaaab),
+                        (radiusSq) * fp.half)
                 },
-                Volume = (sfloat)math.PI * radiusSq * m_Height,
-                AngularExpansionFactor = math.sqrt(radius * radius + halfHeight * halfHeight)
+                Volume = (fp)fpmath.PI * radiusSq * m_Height,
+                AngularExpansionFactor = fpmath.sqrt(radius * radius + halfHeight * halfHeight)
             };
         }
 
@@ -273,29 +274,29 @@ namespace Fixed.Physics
 
         public Aabb CalculateAabb()
         {
-            return CalculateAabb(RigidTransform.identity);
+            return CalculateAabb(FpRigidTransform.identity);
         }
 
-        public unsafe Aabb CalculateAabb(RigidTransform transform)
+        public unsafe Aabb CalculateAabb(FpRigidTransform transform)
         {
-            transform = math.mul(transform, new RigidTransform(m_Orientation, m_Center));
-            var halfAxis = math.rotate(transform, new float3(sfloat.Zero, sfloat.Zero, m_Height * (sfloat)0.5f));
-            float3 v0 = transform.pos + halfAxis;
-            float3 v1 = transform.pos - halfAxis;
+            transform = fpmath.mul(transform, new FpRigidTransform(m_Orientation, m_Center));
+            var halfAxis = fpmath.rotate(transform, new fp3(fp.zero, fp.zero, m_Height * fp.half));
+            fp3 v0 = transform.pos + halfAxis;
+            fp3 v1 = transform.pos - halfAxis;
             var axis = v1 - v0;
-            sfloat axisLen2 = m_Height * m_Height;
-            sfloat invAxisLen2 = math.rcp(axisLen2);
-            float3 axisYZX = new float3(axis.y, axis.z, axis.x);
-            float3 axisZXY = new float3(axis.z, axis.x, axis.y);
-            float3 root = axisYZX * axisYZX;
+            fp axisLen2 = m_Height * m_Height;
+            fp invAxisLen2 = fpmath.rcp(axisLen2);
+            fp3 axisYZX = new fp3(axis.y, axis.z, axis.x);
+            fp3 axisZXY = new fp3(axis.z, axis.x, axis.y);
+            fp3 root = axisYZX * axisYZX;
             root += axisZXY * axisZXY;
             root *= invAxisLen2;
-            float3 expansion = math.sqrt(root);
+            fp3 expansion = fpmath.sqrt(root);
             expansion *= m_Radius;
             return new Aabb
             {
-                Min = math.min(v0, v1) - expansion,
-                Max = math.max(v0, v1) + expansion
+                Min = fpmath.min(v0, v1) - expansion,
+                Max = fpmath.max(v0, v1) + expansion
             };
         }
 
@@ -351,52 +352,52 @@ namespace Fixed.Physics
 
         // Interfaces that represent queries that exist in the GameObjects world.
 
-        public bool CheckSphere(float3 position, sfloat radius, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
+        public bool CheckSphere(fp3 position, fp radius, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
             => QueryWrappers.CheckSphere(ref this, position, radius, filter, queryInteraction);
-        public bool OverlapSphere(float3 position, sfloat radius, ref NativeList<DistanceHit> outHits, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
+        public bool OverlapSphere(fp3 position, fp radius, ref NativeList<DistanceHit> outHits, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
             => QueryWrappers.OverlapSphere(ref this, position, radius, ref outHits, filter, queryInteraction);
-        public bool OverlapSphereCustom<T>(float3 position, sfloat radius, ref T collector, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default) where T : struct, ICollector<DistanceHit>
+        public bool OverlapSphereCustom<T>(fp3 position, fp radius, ref T collector, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default) where T : struct, ICollector<DistanceHit>
             => QueryWrappers.OverlapSphereCustom(ref this, position, radius, ref collector, filter, queryInteraction);
 
-        public bool CheckCapsule(float3 point1, float3 point2, sfloat radius, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
+        public bool CheckCapsule(fp3 point1, fp3 point2, fp radius, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
             => QueryWrappers.CheckCapsule(ref this, point1, point2, radius, filter, queryInteraction);
-        public bool OverlapCapsule(float3 point1, float3 point2, sfloat radius, ref NativeList<DistanceHit> outHits, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
+        public bool OverlapCapsule(fp3 point1, fp3 point2, fp radius, ref NativeList<DistanceHit> outHits, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
             => QueryWrappers.OverlapCapsule(ref this, point1, point2, radius, ref outHits, filter, queryInteraction);
-        public bool OverlapCapsuleCustom<T>(float3 point1, float3 point2, sfloat radius, ref T collector, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default) where T : struct, ICollector<DistanceHit>
+        public bool OverlapCapsuleCustom<T>(fp3 point1, fp3 point2, fp radius, ref T collector, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default) where T : struct, ICollector<DistanceHit>
             => QueryWrappers.OverlapCapsuleCustom(ref this, point1, point2, radius, ref collector, filter, queryInteraction);
 
-        public bool CheckBox(float3 center, quaternion orientation, float3 halfExtents, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
+        public bool CheckBox(fp3 center, fpquaternion orientation, fp3 halfExtents, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
             => QueryWrappers.CheckBox(ref this, center, orientation, halfExtents, filter, queryInteraction);
-        public bool OverlapBox(float3 center, quaternion orientation, float3 halfExtents, ref NativeList<DistanceHit> outHits, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
+        public bool OverlapBox(fp3 center, fpquaternion orientation, fp3 halfExtents, ref NativeList<DistanceHit> outHits, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
             => QueryWrappers.OverlapBox(ref this, center, orientation, halfExtents, ref outHits, filter, queryInteraction);
-        public bool OverlapBoxCustom<T>(float3 center, quaternion orientation, float3 halfExtents, ref T collector, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default) where T : struct, ICollector<DistanceHit>
+        public bool OverlapBoxCustom<T>(fp3 center, fpquaternion orientation, fp3 halfExtents, ref T collector, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default) where T : struct, ICollector<DistanceHit>
             => QueryWrappers.OverlapBoxCustom(ref this, center, orientation, halfExtents, ref collector, filter, queryInteraction);
 
-        public bool SphereCast(float3 origin, sfloat radius, float3 direction, sfloat maxDistance, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
+        public bool SphereCast(fp3 origin, fp radius, fp3 direction, fp maxDistance, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
             => QueryWrappers.SphereCast(ref this, origin, radius, direction, maxDistance, filter, queryInteraction);
-        public bool SphereCast(float3 origin, sfloat radius, float3 direction, sfloat maxDistance, out ColliderCastHit hitInfo, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
+        public bool SphereCast(fp3 origin, fp radius, fp3 direction, fp maxDistance, out ColliderCastHit hitInfo, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
             => QueryWrappers.SphereCast(ref this, origin, radius, direction, maxDistance, out hitInfo, filter, queryInteraction);
-        public bool SphereCastAll(float3 origin, sfloat radius, float3 direction, sfloat maxDistance, ref NativeList<ColliderCastHit> outHits, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
+        public bool SphereCastAll(fp3 origin, fp radius, fp3 direction, fp maxDistance, ref NativeList<ColliderCastHit> outHits, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
             => QueryWrappers.SphereCastAll(ref this, origin, radius, direction, maxDistance, ref outHits, filter, queryInteraction);
-        public bool SphereCastCustom<T>(float3 origin, sfloat radius, float3 direction, sfloat maxDistance, ref T collector, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default) where T : struct, ICollector<ColliderCastHit>
+        public bool SphereCastCustom<T>(fp3 origin, fp radius, fp3 direction, fp maxDistance, ref T collector, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default) where T : struct, ICollector<ColliderCastHit>
             => QueryWrappers.SphereCastCustom(ref this, origin, radius, direction, maxDistance, ref collector, filter, queryInteraction);
 
-        public bool BoxCast(float3 center, quaternion orientation, float3 halfExtents, float3 direction, sfloat maxDistance, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
+        public bool BoxCast(fp3 center, fpquaternion orientation, fp3 halfExtents, fp3 direction, fp maxDistance, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
             => QueryWrappers.BoxCast(ref this, center, orientation, halfExtents, direction, maxDistance, filter, queryInteraction);
-        public bool BoxCast(float3 center, quaternion orientation, float3 halfExtents, float3 direction, sfloat maxDistance, out ColliderCastHit hitInfo, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
+        public bool BoxCast(fp3 center, fpquaternion orientation, fp3 halfExtents, fp3 direction, fp maxDistance, out ColliderCastHit hitInfo, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
             => QueryWrappers.BoxCast(ref this, center, orientation, halfExtents, direction, maxDistance, out hitInfo, filter, queryInteraction);
-        public bool BoxCastAll(float3 center, quaternion orientation, float3 halfExtents, float3 direction, sfloat maxDistance, ref NativeList<ColliderCastHit> outHits, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
+        public bool BoxCastAll(fp3 center, fpquaternion orientation, fp3 halfExtents, fp3 direction, fp maxDistance, ref NativeList<ColliderCastHit> outHits, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
             => QueryWrappers.BoxCastAll(ref this, center, orientation, halfExtents, direction, maxDistance, ref outHits, filter, queryInteraction);
-        public bool BoxCastCustom<T>(float3 center, quaternion orientation, float3 halfExtents, float3 direction, sfloat maxDistance, ref T collector, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default) where T : struct, ICollector<ColliderCastHit>
+        public bool BoxCastCustom<T>(fp3 center, fpquaternion orientation, fp3 halfExtents, fp3 direction, fp maxDistance, ref T collector, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default) where T : struct, ICollector<ColliderCastHit>
             => QueryWrappers.BoxCastCustom(ref this, center, orientation, halfExtents, direction, maxDistance, ref collector, filter, queryInteraction);
 
-        public bool CapsuleCast(float3 point1, float3 point2, sfloat radius, float3 direction, sfloat maxDistance, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
+        public bool CapsuleCast(fp3 point1, fp3 point2, fp radius, fp3 direction, fp maxDistance, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
             => QueryWrappers.CapsuleCast(ref this, point1, point2, radius, direction, maxDistance, filter, queryInteraction);
-        public bool CapsuleCast(float3 point1, float3 point2, sfloat radius, float3 direction, sfloat maxDistance, out ColliderCastHit hitInfo, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
+        public bool CapsuleCast(fp3 point1, fp3 point2, fp radius, fp3 direction, fp maxDistance, out ColliderCastHit hitInfo, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
             => QueryWrappers.CapsuleCast(ref this, point1, point2, radius, direction, maxDistance, out hitInfo, filter, queryInteraction);
-        public bool CapsuleCastAll(float3 point1, float3 point2, sfloat radius, float3 direction, sfloat maxDistance, ref NativeList<ColliderCastHit> outHits, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
+        public bool CapsuleCastAll(fp3 point1, fp3 point2, fp radius, fp3 direction, fp maxDistance, ref NativeList<ColliderCastHit> outHits, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
             => QueryWrappers.CapsuleCastAll(ref this, point1, point2, radius, direction, maxDistance, ref outHits, filter, queryInteraction);
-        public bool CapsuleCastCustom<T>(float3 point1, float3 point2, sfloat radius, float3 direction, sfloat maxDistance, ref T collector, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default) where T : struct, ICollector<ColliderCastHit>
+        public bool CapsuleCastCustom<T>(fp3 point1, fp3 point2, fp radius, fp3 direction, fp maxDistance, ref T collector, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default) where T : struct, ICollector<ColliderCastHit>
             => QueryWrappers.CapsuleCastCustom(ref this, point1, point2, radius, direction, maxDistance, ref collector, filter, queryInteraction);
 
         #endregion

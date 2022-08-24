@@ -5,7 +5,8 @@ using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Jobs;
 using Unity.Jobs.LowLevel.Unsafe;
-using Fixed.Mathematics;
+using Unity.Mathematics;
+using Unity.Mathematics.FixedPoint;
 using UnityEngine.Assertions;
 using static Fixed.Physics.BoundingVolumeHierarchy;
 
@@ -68,9 +69,9 @@ namespace Fixed.Physics
         /// Build the broadphase based on the given world.
         /// </summary>
         public void Build(NativeArray<RigidBody> staticBodies, NativeArray<RigidBody> dynamicBodies,
-            NativeArray<MotionVelocity> motionVelocities, sfloat collisionTolerance, sfloat timeStep, float3 gravity, bool buildStaticTree = true)
+            NativeArray<MotionVelocity> motionVelocities, fp collisionTolerance, fp timeStep, fp3 gravity, bool buildStaticTree = true)
         {
-            sfloat aabbMargin = collisionTolerance * (sfloat)0.5f; // each body contributes half
+            fp aabbMargin = collisionTolerance * fp.half; // each body contributes half
 
             if (buildStaticTree)
             {
@@ -85,7 +86,7 @@ namespace Fixed.Physics
         /// <summary>
         /// Build the static tree of the broadphase based on the given array of rigid bodies.
         /// </summary>
-        public void BuildStaticTree(NativeArray<RigidBody> staticBodies, sfloat aabbMargin)
+        public void BuildStaticTree(NativeArray<RigidBody> staticBodies, fp aabbMargin)
         {
             Assert.AreEqual(staticBodies.Length, m_StaticTree.NumBodies);
 
@@ -113,7 +114,7 @@ namespace Fixed.Physics
         /// Build the dynamic tree of the broadphase based on the given array of rigid bodies and motions.
         /// </summary>
         public void BuildDynamicTree(NativeArray<RigidBody> dynamicBodies,
-            NativeArray<MotionVelocity> motionVelocities, float3 gravity, sfloat timeStep, sfloat aabbMargin)
+            NativeArray<MotionVelocity> motionVelocities, fp3 gravity, fp timeStep, fp aabbMargin)
         {
             Assert.AreEqual(dynamicBodies.Length, m_DynamicTree.NumBodies);
 
@@ -141,7 +142,7 @@ namespace Fixed.Physics
         /// <summary>
         /// Schedule a set of jobs to build the broadphase based on the given world.
         /// </summary>
-        public JobHandle ScheduleBuildJobs(ref PhysicsWorld world, sfloat timeStep, float3 gravity, NativeArray<int> buildStaticTree, JobHandle inputDeps, bool multiThreaded = true)
+        public JobHandle ScheduleBuildJobs(ref PhysicsWorld world, fp timeStep, fp3 gravity, NativeArray<int> buildStaticTree, JobHandle inputDeps, bool multiThreaded = true)
         {
             if (!multiThreaded)
             {
@@ -197,7 +198,7 @@ namespace Fixed.Physics
                 Points = points,
                 FiltersOut = m_StaticTree.BodyFilters,
                 RespondsToCollisionOut = m_StaticTree.RespondsToCollision,
-                AabbMargin = world.CollisionWorld.CollisionTolerance * (sfloat)0.5f, // each body contributes half
+                AabbMargin = world.CollisionWorld.CollisionTolerance * fp.half, // each body contributes half
             }.ScheduleUnsafeIndex0(numStaticBodiesArray, 32, handle);
 
             var buildHandle = m_StaticTree.BoundingVolumeHierarchy.ScheduleBuildJobs(
@@ -211,7 +212,7 @@ namespace Fixed.Physics
         /// Schedule a set of jobs to build the dynamic tree of the broadphase based on the given world.
         /// </summary>
         public JobHandle ScheduleDynamicTreeBuildJobs(
-            ref PhysicsWorld world, sfloat timeStep, float3 gravity, int numThreadsHint, JobHandle inputDeps)
+            ref PhysicsWorld world, fp timeStep, fp3 gravity, int numThreadsHint, JobHandle inputDeps)
         {
             Assert.AreEqual(world.NumDynamicBodies, m_DynamicTree.NumBodies);
             if (world.NumDynamicBodies == 0)
@@ -230,7 +231,7 @@ namespace Fixed.Physics
                 Points = points,
                 FiltersOut = m_DynamicTree.BodyFilters,
                 RespondsToCollisionOut = m_DynamicTree.RespondsToCollision,
-                AabbMargin = world.CollisionWorld.CollisionTolerance * (sfloat)0.5f, // each body contributes half
+                AabbMargin = world.CollisionWorld.CollisionTolerance * fp.half, // each body contributes half
                 TimeStep = timeStep,
                 Gravity = gravity
             }.Schedule(world.NumDynamicBodies, 32, inputDeps);
@@ -681,9 +682,9 @@ namespace Fixed.Physics
             [ReadOnly] public NativeArray<RigidBody> StaticBodies;
             [ReadOnly] public NativeArray<RigidBody> DynamicBodies;
             [ReadOnly] public NativeArray<MotionVelocity> MotionVelocities;
-            [ReadOnly] public sfloat CollisionTolerance;
-            [ReadOnly] public sfloat TimeStep;
-            [ReadOnly] public float3 Gravity;
+            [ReadOnly] public fp CollisionTolerance;
+            [ReadOnly] public fp TimeStep;
+            [ReadOnly] public fp3 Gravity;
             [ReadOnly] public NativeArray<int> BuildStaticTree;
 
             public Broadphase Broadphase;
@@ -734,9 +735,9 @@ namespace Fixed.Physics
         {
             [ReadOnly] public NativeArray<RigidBody> RigidBodies;
             [ReadOnly] public NativeArray<MotionVelocity> MotionVelocities;
-            [ReadOnly] public sfloat TimeStep;
-            [ReadOnly] public float3 Gravity;
-            [ReadOnly] public sfloat AabbMargin;
+            [ReadOnly] public fp TimeStep;
+            [ReadOnly] public fp3 Gravity;
+            [ReadOnly] public fp AabbMargin;
 
             public NativeArray<PointAndIndex> Points;
             public NativeArray<Aabb> Aabbs;
@@ -748,7 +749,7 @@ namespace Fixed.Physics
                 ExecuteImpl(index, AabbMargin, Gravity, TimeStep, RigidBodies, MotionVelocities, Aabbs, Points, FiltersOut, RespondsToCollisionOut);
             }
 
-            internal static unsafe void ExecuteImpl(int index, sfloat aabbMargin, float3 gravity, sfloat timeStep,
+            internal static unsafe void ExecuteImpl(int index, fp aabbMargin, fp3 gravity, fp timeStep,
                 NativeArray<RigidBody> rigidBodies, NativeArray<MotionVelocity> motionVelocities,
                 NativeArray<Aabb> aabbs, NativeArray<PointAndIndex> points,
                 NativeArray<CollisionFilter> filtersOut, NativeArray<bool> respondsToCollisionOut)
@@ -815,7 +816,7 @@ namespace Fixed.Physics
         struct PrepareStaticBodyDataJob : IJobParallelForDefer
         {
             [ReadOnly] public NativeArray<RigidBody> RigidBodies;
-            [ReadOnly] public sfloat AabbMargin;
+            [ReadOnly] public fp AabbMargin;
 
             public NativeArray<Aabb> Aabbs;
             public NativeArray<PointAndIndex> Points;
@@ -827,7 +828,7 @@ namespace Fixed.Physics
                 ExecuteImpl(index, AabbMargin, RigidBodies, Aabbs, Points, FiltersOut, RespondsToCollisionOut);
             }
 
-            internal static unsafe void ExecuteImpl(int index, sfloat aabbMargin,
+            internal static unsafe void ExecuteImpl(int index, fp aabbMargin,
                 NativeArray<RigidBody> rigidBodies, NativeArray<Aabb> aabbs, NativeArray<PointAndIndex> points,
                 NativeArray<CollisionFilter> filtersOut, NativeArray<bool> respondsToCollisionOut)
             {

@@ -1,28 +1,29 @@
 using System;
 using NUnit.Framework;
-using static Fixed.Mathematics.math;
+using Unity.Mathematics.FixedPoint;
+using static Unity.Mathematics.FixedPoint.fpmath;
 using Assert = UnityEngine.Assertions.Assert;
-using float3 = Fixed.Mathematics.float3;
-using quaternion = Fixed.Mathematics.quaternion;
-using Random = Fixed.Mathematics.Random;
-using RigidTransform = Fixed.Mathematics.RigidTransform;
+using fp3 = Unity.Mathematics.FixedPoint.fp3;
+using fpquaternion = Unity.Mathematics.FixedPoint.fpquaternion;
+using Random = Unity.Mathematics.FixedPoint.Random;
+using FpRigidTransform = Unity.Mathematics.FixedPoint.FpRigidTransform;
 using TestUtils = Fixed.Physics.Tests.Utils.TestUtils;
 
 namespace Fixed.Physics.Tests.Base.Math
 {
     class AabbTests
     {
-        static readonly sfloat k_pi2 = (sfloat)1.57079632679489f;
+        static readonly fp k_pi2 = (fp)1.57079632679489f;
 
         [Test]
         public void TestAabb()
         {
-            float3 v0 = float3((sfloat)100, (sfloat)200, (sfloat)300);
-            float3 v1 = float3((sfloat)200, (sfloat)300, (sfloat)400);
-            float3 v2 = float3((sfloat)50, (sfloat)100, (sfloat)350);
+            fp3 v0 = fp3((fp)100, (fp)200, (fp)300);
+            fp3 v1 = fp3((fp)200, (fp)300, (fp)400);
+            fp3 v2 = fp3((fp)50, (fp)100, (fp)350);
 
-            Aabb a0; a0.Min = float3.zero; a0.Max = v0;
-            Aabb a1; a1.Min = float3.zero; a1.Max = v1;
+            Aabb a0; a0.Min = fp3.zero; a0.Max = v0;
+            Aabb a1; a1.Min = fp3.zero; a1.Max = v1;
             Aabb a2; a2.Min = v2; a2.Max = v1;
             Aabb a3; a3.Min = v2; a3.Max = v0;
 
@@ -42,18 +43,18 @@ namespace Fixed.Physics.Tests.Base.Math
             {
                 Aabb unionAabb = a0;
                 unionAabb.Include(a1);
-                Assert.IsTrue(unionAabb.Min.x == sfloat.Zero);
-                Assert.IsTrue(unionAabb.Min.y == sfloat.Zero);
-                Assert.IsTrue(unionAabb.Min.z == sfloat.Zero);
+                Assert.IsTrue(unionAabb.Min.x == fp.zero);
+                Assert.IsTrue(unionAabb.Min.y == fp.zero);
+                Assert.IsTrue(unionAabb.Min.z == fp.zero);
                 Assert.IsTrue(unionAabb.Max.x == a1.Max.x);
                 Assert.IsTrue(unionAabb.Max.y == a1.Max.y);
                 Assert.IsTrue(unionAabb.Max.z == a1.Max.z);
 
                 Aabb intersectAabb = a2;
                 intersectAabb.Intersect(a3);
-                Assert.IsTrue(intersectAabb.Min.x == (sfloat)50);
-                Assert.IsTrue(intersectAabb.Min.y == (sfloat)100);
-                Assert.IsTrue(intersectAabb.Min.z == (sfloat)350);
+                Assert.IsTrue(intersectAabb.Min.x == (fp)50);
+                Assert.IsTrue(intersectAabb.Min.y == (fp)100);
+                Assert.IsTrue(intersectAabb.Min.z == (fp)350);
                 Assert.IsTrue(intersectAabb.Max.x == a3.Max.x);
                 Assert.IsTrue(intersectAabb.Max.y == a3.Max.y);
                 Assert.IsTrue(intersectAabb.Max.z == a3.Max.z);
@@ -62,10 +63,10 @@ namespace Fixed.Physics.Tests.Base.Math
             // Test Expand / Contains
             {
                 Aabb a5; a5.Min = v2; a5.Max = v1;
-                float3 testPoint = float3(v2.x - (sfloat)1.0f, v1.y + (sfloat)1.0f, (sfloat)0.5f * (v2.z + v1.z));
+                fp3 testPoint = fp3(v2.x - (fp)1.0f, v1.y + (fp)1.0f, fp.half * (v2.z + v1.z));
                 Assert.IsFalse(a5.Contains(testPoint));
 
-                a5.Expand((sfloat)1.5f);
+                a5.Expand((fp)1.5f);
                 Assert.IsTrue(a5.Contains(testPoint));
             }
 
@@ -74,25 +75,25 @@ namespace Fixed.Physics.Tests.Base.Math
                 Aabb ut; ut.Min = v0; ut.Max = v1;
 
                 // Identity transform should not modify aabb
-                Aabb outAabb = Fixed.Physics.Math.TransformAabb(RigidTransform.identity, ut);
+                Aabb outAabb = Fixed.Physics.Math.TransformAabb(FpRigidTransform.identity, ut);
 
-                TestUtils.AreEqual(ut.Min, outAabb.Min, (sfloat)1e-3f);
+                TestUtils.AreEqual(ut.Min, outAabb.Min, (fp)1e-3f);
 
                 // Test translation
-                outAabb = Fixed.Physics.Math.TransformAabb(new RigidTransform(quaternion.identity, float3((sfloat)100.0f, (sfloat)0.0f, (sfloat)0.0f)), ut);
+                outAabb = Fixed.Physics.Math.TransformAabb(new FpRigidTransform(fpquaternion.identity, fp3((fp)100.0f, (fp)0.0f, (fp)0.0f)), ut);
 
-                Assert.AreEqual(outAabb.Min.x, (sfloat)200);
-                Assert.AreEqual(outAabb.Min.y, (sfloat)200);
-                Assert.AreEqual(outAabb.Max.x, (sfloat)300);
-                Assert.AreEqual(outAabb.Max.z, (sfloat)400);
+                Assert.AreEqual(outAabb.Min.x, (fp)200);
+                Assert.AreEqual(outAabb.Min.y, (fp)200);
+                Assert.AreEqual(outAabb.Max.x, (fp)300);
+                Assert.AreEqual(outAabb.Max.z, (fp)400);
 
                 // Test rotation
-                quaternion rot = quaternion.EulerXYZ((sfloat)0.0f, (sfloat)0.0f, k_pi2);
-                outAabb = Fixed.Physics.Math.TransformAabb(new RigidTransform(rot, float3.zero), ut);
+                fpquaternion rot = fpquaternion.EulerXYZ((fp)0.0f, (fp)0.0f, k_pi2);
+                outAabb = Fixed.Physics.Math.TransformAabb(new FpRigidTransform(rot, fp3.zero), ut);
 
-                TestUtils.AreEqual(outAabb.Min, float3(-(sfloat)300.0f, (sfloat)100.0f, (sfloat)300.0f), (sfloat)1e-3f);
-                TestUtils.AreEqual(outAabb.Max, float3(-(sfloat)200.0f, (sfloat)200.0f, (sfloat)400.0f), (sfloat)1e-3f);
-                TestUtils.AreEqual(outAabb.SurfaceArea, ut.SurfaceArea, (sfloat)1e-2f);
+                TestUtils.AreEqual(outAabb.Min, fp3(-(fp)300.0f, (fp)100.0f, (fp)300.0f), (fp)1e-3f);
+                TestUtils.AreEqual(outAabb.Max, fp3(-(fp)200.0f, (fp)200.0f, (fp)400.0f), (fp)1e-3f);
+                TestUtils.AreEqual(outAabb.SurfaceArea, ut.SurfaceArea, (fp)1e-2f);
             }
         }
 
@@ -102,20 +103,20 @@ namespace Fixed.Physics.Tests.Base.Math
             Random rnd = new Random(0x12345678);
             for (int i = 0; i < 100; i++)
             {
-                quaternion r = rnd.NextQuaternionRotation();
-                float3 t = rnd.NextFloat3();
+                fpquaternion r = rnd.NextQuaternionRotation();
+                fp3 t = rnd.Nextfp3();
 
                 Aabb orig = new Aabb();
-                orig.Include(rnd.NextFloat3());
-                orig.Include(rnd.NextFloat3());
+                orig.Include(rnd.Nextfp3());
+                orig.Include(rnd.Nextfp3());
 
-                Aabb outAabb1 = Fixed.Physics.Math.TransformAabb(new RigidTransform(r, t), orig);
+                Aabb outAabb1 = Fixed.Physics.Math.TransformAabb(new FpRigidTransform(r, t), orig);
 
                 Physics.Math.MTransform bFromA = new Physics.Math.MTransform(r, t);
                 Aabb outAabb2 = Fixed.Physics.Math.TransformAabb(bFromA, orig);
 
-                TestUtils.AreEqual(outAabb1.Min, outAabb2.Min, (sfloat)1e-3f);
-                TestUtils.AreEqual(outAabb1.Max, outAabb2.Max, (sfloat)1e-3f);
+                TestUtils.AreEqual(outAabb1.Min, outAabb2.Min, (fp)1e-3f);
+                TestUtils.AreEqual(outAabb1.Max, outAabb2.Max, (fp)1e-3f);
             }
         }
     }

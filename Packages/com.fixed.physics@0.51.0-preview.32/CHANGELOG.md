@@ -7,7 +7,7 @@
 * Package Dependencies
     * `com.unity.entities` to version `0.51.0`
     * `com.unity.jobs` to version `0.51.0`
-    * `com.Fixed.Mathematics` to version `1.2.6`
+    * `com.Unity.Mathematics.FixedPoint` to version `1.2.6`
     * `com.unity.collections` to version `1.3.0`
 
 ### Fixed
@@ -133,10 +133,10 @@
 * Run-Time API
 
     * Added a `CompoundCollider.Child.Entity` & associated `ChildCollider.Entity` field. This field is useful in creating a link back to the original Entity from which the Child was built.
-    * Added `Integrator.Integrate()` which takes a `RigidTransform`, `MotionVelocity` and time step and integrates the transform in time. This can be used to integrate forward in time, but also to undo integration if necessary (by providing the negative time).
+    * Added `Integrator.Integrate()` which takes a `FpRigidTransform`, `MotionVelocity` and time step and integrates the transform in time. This can be used to integrate forward in time, but also to undo integration if necessary (by providing the negative time).
     * Removed `ModifiableJacobianHeader.HasColliderKeys`, `ModifiableJacobianHeader.ColliderKeyA` and `ModifiableJacobianHeader.ColliderKeyB` as they are not meant to be read by users, but to fill the data for collision events.
     * Removed `SimulationCallbacks.Phase.PostSolveJacobians` as it doesn't have real use cases and it's causing inconsistencies between the two engines. Instead, users should schedule their jobs after `StepPhysicsWorld` and before `ExportPhysicsWorld` to achieve a similar effect.
-    * Added `ClampToMaxLength()` to `Fixed.Physics.Math`, which reduces the length of specified `float3` vector to specified maxLength if it was bigger.
+    * Added `ClampToMaxLength()` to `Fixed.Physics.Math`, which reduces the length of specified `fp3` vector to specified maxLength if it was bigger.
 	* `ColliderCastHit` and `DistanceHit` now have `QueryColliderKey` field. If the input of `ColliderCast` or `ColliderDistance` queries contains a non-convex collider, this field will contain the collider key of the input collider. Otherwise, its value will be `ColliderKey.Empty`.
     * Removed `AddInputDependency()` and `GetOutputDependency()` from all physics systems as dependencies are now handled in a different way (see below).
     * Added `RegisterPhysicsRuntimeSystemReadOnly()` and `RegisterPhysicsRuntimeSystemReadWrite()` that are both extension methods for `SystemBase` and are used to declare interaction with the runtime physics data (stored in PhysicsWorld). One should call one of these in their system's `OnStartRunning()` (using `this.RegisterPhysicsRuntimeSystemReadOnly()` or `this.RegisterPhysicsRuntimeSystemReadWrite()`) to declare interaction with the physics data, which will translate to automatic data dependencies being included in the `SystemBase.Dependency` property of any system.
@@ -179,27 +179,27 @@
     * Added `Material` to `IQueryResult` interface and its implementations (`RaycastHit`,  `ColliderCastHit`, `DistanceHit`). All hits now have material information of the  primitive that was hit.
     * Added the following interfaces to `ICollidable` and all its implementations:
         * These API's represent the equivalent of the familiar GameObjects' query interface, with the addition of Custom version, which takes a collector and enables one to use custom filtering logic when accepting query hits.
-        * `bool CheckSphere(float3 position, float radius, CollisionFilter filter, QueryInteraction interaction)`
-        * `bool OverlapSphere(float3 position, float radius, ref NativeList<DistanceHit> outHits, CollisionFilter filter, QueryInteraction interaction)`
-        * `bool OverlapSphereCustom<T>(float3 position, float radius, ref T collector, CollisionFilter filter, QueryInteraction interaction) where T : struct, ICollector<DistanceHit>`
-        * `bool CheckCapsule(float3 point1, float3 point2, float radius, CollisionFilter filter, QueryInteraction queryInteraction)`
-        * `bool OverlapCapsule(float3 point1, float3 point2, float radius, ref NativeList<DistanceHit> outHits, CollisionFilter filter, QueryInteraction queryInteraction)`
-        * `bool OverlapCapsuleCustom<T>(float3 point1, float3 point2, float radius, ref T collector, CollisionFilter filter, QueryInteraction queryInteraction) where T : struct, ICollector<DistanceHit>`
-        * `bool CheckBox(float3 center, quaternion orientation, float3 halfExtents, CollisionFilter filter, QueryInteraction queryInteraction)`
-        * `bool OverlapBox(float3 center, quaternion orientation, float3 halfExtents, ref NativeList<DistanceHit> outHits, CollisionFilter filter, QueryInteraction queryInteraction)`
-        * `bool OverlapBoxCustom<T>(float3 center, quaternion orientation, float3 halfExtents, ref T collector, CollisionFilter filter, QueryInteraction queryInteraction  where T : struct, ICollector<DistanceHit>`
-        * `bool SphereCast(float3 origin, float radius, float3 direction, float maxDistance, CollisionFilter filter, QueryInteraction queryInteraction)`
-        * `bool SphereCast(float3 origin, float radius, float3 direction, float maxDistance, out ColliderCastHit hitInfo, CollisionFilter filter, QueryInteraction queryInteraction)`
-        * `bool SphereCastAll(float3 origin, float radius, float3 direction, float maxDistance, ref NativeList<ColliderCastHit> outHits, CollisionFilter filter, QueryInteraction queryInteraction)`
-        * `bool SphereCastCustom<T>(float3 origin, float radius, float3 direction, float maxDistance, ref T collector, CollisionFilter filter, QueryInteraction queryInteraction) where T : struct, ICollector<ColliderCastHit>`
-        * `bool BoxCast(float3 center, quaternion orientation, float3 halfExtents, float3 direction, float maxDistance, CollisionFilter filter, QueryInteraction queryInteraction)`
-        * `bool BoxCast(float3 center, quaternion orientation, float3 halfExtents, float3 direction, float maxDistance, out ColliderCastHit hitInfo, CollisionFilter filter, QueryInteraction queryInteraction)`
-        * `bool BoxCastAll(float3 center, quaternion orientation, float3 halfExtents, float3 direction, float maxDistance, ref NativeList<ColliderCastHit> outHits, CollisionFilter filter, QueryInteraction queryInteraction)`
-        * `bool BoxCastCustom<T>(float3 center, quaternion orientation, float3 halfExtents, float3 direction, float maxDistance, ref T collector, CollisionFilter filter, QueryInteraction queryInteraction) where T : struct, ICollector<ColliderCastHit>`
-        * `bool CapsuleCast(float3 point1, float3 point2, float radius, float3 direction, float maxDistance, CollisionFilter filter, QueryInteraction queryInteraction)`
-        * `bool CapsuleCast(float3 point1, float3 point2, float radius, float3 direction, float maxDistance, out ColliderCastHit hitInfo, CollisionFilter filter, QueryInteraction queryInteraction)`
-        * `bool CapsuleCastAll(float3 point1, float3 point2, float radius, float3 direction, float maxDistance, ref NativeList<ColliderCastHit> outHits, CollisionFilter filter, QueryInteraction queryInteraction)`
-        * `bool CapsuleCastCustom<T>(float3 point1, float3 point2, float radius, float3 direction, float maxDistance, ref T collector, CollisionFilter filter, QueryInteraction queryInteraction) where T : struct, ICollector<ColliderCastHit>`
+        * `bool CheckSphere(fp3 position, float radius, CollisionFilter filter, QueryInteraction interaction)`
+        * `bool OverlapSphere(fp3 position, float radius, ref NativeList<DistanceHit> outHits, CollisionFilter filter, QueryInteraction interaction)`
+        * `bool OverlapSphereCustom<T>(fp3 position, float radius, ref T collector, CollisionFilter filter, QueryInteraction interaction) where T : struct, ICollector<DistanceHit>`
+        * `bool CheckCapsule(fp3 point1, fp3 point2, float radius, CollisionFilter filter, QueryInteraction queryInteraction)`
+        * `bool OverlapCapsule(fp3 point1, fp3 point2, float radius, ref NativeList<DistanceHit> outHits, CollisionFilter filter, QueryInteraction queryInteraction)`
+        * `bool OverlapCapsuleCustom<T>(fp3 point1, fp3 point2, float radius, ref T collector, CollisionFilter filter, QueryInteraction queryInteraction) where T : struct, ICollector<DistanceHit>`
+        * `bool CheckBox(fp3 center, fpquaternion orientation, fp3 halfExtents, CollisionFilter filter, QueryInteraction queryInteraction)`
+        * `bool OverlapBox(fp3 center, fpquaternion orientation, fp3 halfExtents, ref NativeList<DistanceHit> outHits, CollisionFilter filter, QueryInteraction queryInteraction)`
+        * `bool OverlapBoxCustom<T>(fp3 center, fpquaternion orientation, fp3 halfExtents, ref T collector, CollisionFilter filter, QueryInteraction queryInteraction  where T : struct, ICollector<DistanceHit>`
+        * `bool SphereCast(fp3 origin, float radius, fp3 direction, float maxDistance, CollisionFilter filter, QueryInteraction queryInteraction)`
+        * `bool SphereCast(fp3 origin, float radius, fp3 direction, float maxDistance, out ColliderCastHit hitInfo, CollisionFilter filter, QueryInteraction queryInteraction)`
+        * `bool SphereCastAll(fp3 origin, float radius, fp3 direction, float maxDistance, ref NativeList<ColliderCastHit> outHits, CollisionFilter filter, QueryInteraction queryInteraction)`
+        * `bool SphereCastCustom<T>(fp3 origin, float radius, fp3 direction, float maxDistance, ref T collector, CollisionFilter filter, QueryInteraction queryInteraction) where T : struct, ICollector<ColliderCastHit>`
+        * `bool BoxCast(fp3 center, fpquaternion orientation, fp3 halfExtents, fp3 direction, float maxDistance, CollisionFilter filter, QueryInteraction queryInteraction)`
+        * `bool BoxCast(fp3 center, fpquaternion orientation, fp3 halfExtents, fp3 direction, float maxDistance, out ColliderCastHit hitInfo, CollisionFilter filter, QueryInteraction queryInteraction)`
+        * `bool BoxCastAll(fp3 center, fpquaternion orientation, fp3 halfExtents, fp3 direction, float maxDistance, ref NativeList<ColliderCastHit> outHits, CollisionFilter filter, QueryInteraction queryInteraction)`
+        * `bool BoxCastCustom<T>(fp3 center, fpquaternion orientation, fp3 halfExtents, fp3 direction, float maxDistance, ref T collector, CollisionFilter filter, QueryInteraction queryInteraction) where T : struct, ICollector<ColliderCastHit>`
+        * `bool CapsuleCast(fp3 point1, fp3 point2, float radius, fp3 direction, float maxDistance, CollisionFilter filter, QueryInteraction queryInteraction)`
+        * `bool CapsuleCast(fp3 point1, fp3 point2, float radius, fp3 direction, float maxDistance, out ColliderCastHit hitInfo, CollisionFilter filter, QueryInteraction queryInteraction)`
+        * `bool CapsuleCastAll(fp3 point1, fp3 point2, float radius, fp3 direction, float maxDistance, ref NativeList<ColliderCastHit> outHits, CollisionFilter filter, QueryInteraction queryInteraction)`
+        * `bool CapsuleCastCustom<T>(fp3 point1, fp3 point2, float radius, fp3 direction, float maxDistance, ref T collector, CollisionFilter filter, QueryInteraction queryInteraction) where T : struct, ICollector<ColliderCastHit>`
     * Exposed the following collider initialization functions:
         * `SphereCollider.Initialize(SphereGeometry geometry, CollisionFilter filter, Material material)`
         * `CapsuleCollider.Initialize(CapsuleGeometry geometry, CollisionFilter filter, Material material)`
@@ -307,7 +307,7 @@
     * Changed the following members/types:
         * `PhysicsComponentExtensions.GetCenterOfMassWorldSpace()` now passes `PhysicsMass` as `in` rather than `ref`.
         * `PhysicsComponentExtensions.GetLinearVelocity()` now passes `PhysicsVelocity` as `in`.
-        * `PhysicsWorldExtensions.CalculateVelocityToTarget()` is now implemented and passes a `RigidTransform` for the target rather than a separate `float3` and `quaternion`.
+        * `PhysicsWorldExtensions.CalculateVelocityToTarget()` is now implemented and passes a `FpRigidTransform` for the target rather than a separate `fp3` and `fpquaternion`.
     * Removed the following expired members/types:
         * `BodyIndexPair.BodyAIndex`
         * `BodyIndexPair.BodyBIndex`
@@ -482,7 +482,7 @@
             * `Planar()`
             * `Twist()`
         * `ISimulation.ScheduleStepJobs()` signature without callbacks and thread count hint (as well as all implementations)
-        * `JointData` factory signatures passing `float3` and `quaternion` pairs for joint frames, as well as `Constraint[]`:
+        * `JointData` factory signatures passing `fp3` and `fpquaternion` pairs for joint frames, as well as `Constraint[]`:
             * `CreateFixed()`
             * `CreateHinge()`
             * `CreateLimitedHinge()`
@@ -595,7 +595,7 @@
 * Asking for collision/trigger events in scenes with no dynamic bodies no longer throws errors.
 * Updated to new version of Burst, which fixes a regression that caused `ConvexCollider.Create()` to produce hulls with a very small bevel radius.
 * DOTS Run-time failures due to multiple inheritance of jobs have now been fixed.
-* Changed `Math.IsNormalized` to use a larger tolerance when comparing float3 length.
+* Changed `Math.IsNormalized` to use a larger tolerance when comparing fp3 length.
 
 ## [0.3.0-preview.1] - 2020-03-12
 
@@ -680,7 +680,7 @@
             * `Twist()`
         * `JointData.Create()` signature passing `MTransform` and `Constraint[]` (use new signature that takes `JointFrame` and `NativeArray<Constraint>` instead)
         * `JointData.CreateStiffSpring()` (use `JointData.CreateLimitedDistance()` instead)
-        * `JointData` factory signatures passing `float3` and `quaternion` pairs for joint frames (use new signatures taking `JointFrame` instead):
+        * `JointData` factory signatures passing `fp3` and `fpquaternion` pairs for joint frames (use new signatures taking `JointFrame` instead):
             * `CreateFixed()`
             * `CreateHinge()`
             * `CreateLimitedHinge()`
@@ -728,7 +728,7 @@
     * The data protocol for static rigid bodies has changed so that at least one of `Translation`, `Rotation`, or `LocalToWorld` is required.
         * If a static body as a `Parent`, then its transform is always decomposed from its `LocalToWorld` component (which may be the result of last frame's transformations if you have not manually updated it).
         * If there is no `Parent`, then the body is assumed to be in world space and its `Translation` and `Rotation` are read directly as before, if they exist; otherwise corresponding values are decomposed from `LocalToWorld` if it exists.
-        * In any case where a value must be decomposed from `LocalToWorld` but none exists, then a corresponding identity value is used (`float3.zero` for `Translation` and `quaternion.identity` for `Rotation`).
+        * In any case where a value must be decomposed from `LocalToWorld` but none exists, then a corresponding identity value is used (`fp3.zero` for `Translation` and `fpquaternion.identity` for `Rotation`).
     * The following `CollisionWorld` queries no longer assert if the supplied collision filter is empty:
         * `CalculateDistance()`
         * `CastCollider()`
@@ -1048,7 +1048,7 @@
     * Removed the following expired members:
         * `ColliderCastInput.Direction`
         * `ColliderCastInput.Position`
-        * `Ray(float3, float3)`
+        * `Ray(fp3, fp3)`
         * `Ray.Direction`
         * `Ray.ReciprocalDirection`
         * `RaycastInput.Direction`
@@ -1194,7 +1194,7 @@
         * `TriggerEvents`
         * `TriggerJacobian`
     * Removed the following members from public API and made them internal:
-        * Aabb.CreateFromPoints(float3x4)
+        * Aabb.CreateFromPoints(fp3x4)
         * `BoundingVolumeHierarchy.BuildBranch()`
         * `BoundingVolumeHierarchy.BuildCombinedCollisionFilter()`
         * `BoundingVolumeHierarchy.BuildFirstNLevels()`

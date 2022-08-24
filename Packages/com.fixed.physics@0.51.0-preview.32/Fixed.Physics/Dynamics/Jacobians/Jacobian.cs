@@ -2,7 +2,7 @@ using System;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
-using Fixed.Mathematics;
+using Unity.Mathematics.FixedPoint;
 using UnityEngine.Assertions;
 
 namespace Fixed.Physics
@@ -270,27 +270,27 @@ namespace Fixed.Physics
         // This is the inverse function to CalculateConstraintTauAndDamping
         // Given a final Tau and Damping you can get the original Spring Frequency and Damping for a given solver step
         // See Fixed.Physics.Constraint struct for discussion about default Spring Frequency and Damping values.
-        public static void CalculateSpringFrequencyAndDamping(sfloat constraintTau, sfloat constraintDamping, sfloat timestep, int iterations, out sfloat springFrequency, out sfloat springDamping)
+        public static void CalculateSpringFrequencyAndDamping(fp constraintTau, fp constraintDamping, fp timestep, int iterations, out fp springFrequency, out fp springDamping)
         {
             int n = iterations;
-            sfloat sn = (sfloat)iterations;
-            sfloat h = timestep;
-            sfloat hh = h * h;
-            sfloat a = sfloat.One - constraintDamping;
-            sfloat aSum = sfloat.One;
+            fp sn = (fp)iterations;
+            fp h = timestep;
+            fp hh = h * h;
+            fp a = fp.one - constraintDamping;
+            fp aSum = fp.one;
             for (int i = 1; i < n; i++)
             {
-                aSum += math.pow(a, (sfloat)i);
+                aSum += fpmath.pow(a, (fp)i);
             }
 
-            sfloat w = math.sqrt(constraintTau * aSum / math.pow(a, sn)) / h;
-            sfloat ww = w * w;
-            springFrequency = w / ((sfloat)2.0f * math.PI);
-            springDamping = (math.pow(a, -sn) - sfloat.One - hh * ww) / ((sfloat)2.0f * h * w);
+            fp w = fpmath.sqrt(constraintTau * aSum / fpmath.pow(a, sn)) / h;
+            fp ww = w * w;
+            springFrequency = w / ((fp)2.0f * fpmath.PI);
+            springDamping = (fpmath.pow(a, -sn) - fp.one - hh * ww) / ((fp)2.0f * h * w);
         }
 
         // This is the inverse function to CalculateSpringFrequencyAndDamping
-        public static void CalculateConstraintTauAndDamping(sfloat springFrequency, sfloat springDamping, sfloat timestep, int iterations, out sfloat constraintTau, out sfloat constraintDamping)
+        public static void CalculateConstraintTauAndDamping(fp springFrequency, fp springDamping, fp timestep, int iterations, out fp constraintTau, out fp constraintDamping)
         {
             // TODO
             // - it's a significant amount of work to calculate tau and damping.  They depend on step length, so they have to be calculated each step.
@@ -332,96 +332,96 @@ namespace Fixed.Physics
 
             */
 
-            sfloat h = timestep;
-            sfloat w = springFrequency * (sfloat)2.0f * (sfloat)math.PI; // convert oscillations/sec to radians/sec
-            sfloat z = springDamping;
-            sfloat hw = h * w;
-            sfloat hhww = hw * hw;
+            fp h = timestep;
+            fp w = springFrequency * fp.two * (fp)fpmath.PI; // convert oscillations/sec to radians/sec
+            fp z = springDamping;
+            fp hw = h * w;
+            fp hhww = hw * hw;
 
             // a = 1-d, aExp = a^iterations, aSum = aExp / sum(i in [0, iterations), a^i)
-            sfloat aExp = sfloat.One / (sfloat.One + hhww + (sfloat)2.0f * hw * z);
-            sfloat a, aSum;
+            fp aExp = fp.one / (fp.one + hhww + fp.two * hw * z);
+            fp a, aSum;
             if (iterations == 4)
             {
                 // special case expected iterations = 4
-                sfloat invA2 = math.rsqrt(aExp);
-                sfloat a2 = invA2 * aExp;
-                a = math.rsqrt(invA2);
-                aSum = (sfloat.One + a2 + a * (sfloat.One + a2));
+                fp invA2 = fpmath.rsqrt(aExp);
+                fp a2 = invA2 * aExp;
+                a = fpmath.rsqrt(invA2);
+                aSum = (fp.one + a2 + a * (fp.one + a2));
             }
             else
             {
-                a = math.pow(aExp, sfloat.One / (sfloat)iterations);
-                aSum = sfloat.One;
+                a = fpmath.pow(aExp, fp.one / (fp)iterations);
+                aSum = fp.one;
                 for (int i = 1; i < iterations; i++)
                 {
-                    aSum = a * aSum + sfloat.One;
+                    aSum = a * aSum + fp.one;
                 }
             }
 
-            constraintDamping = sfloat.One - a;
+            constraintDamping = fp.one - a;
             constraintTau = hhww * aExp / aSum;
         }
 
         // Returns x - clamp(x, min, max)
-        public static sfloat CalculateError(sfloat x, sfloat min, sfloat max)
+        public static fp CalculateError(fp x, fp min, fp max)
         {
-            sfloat error = math.max(x - max, sfloat.Zero);
-            error = math.min(x - min, error);
+            fp error = fpmath.max(x - max, fp.zero);
+            error = fpmath.min(x - min, error);
             return error;
         }
 
         // Returns the amount of error for the solver to correct, where initialError is the pre-integration error and predictedError is the expected post-integration error
-        public static sfloat CalculateCorrection(sfloat predictedError, sfloat initialError, sfloat tau, sfloat damping)
+        public static fp CalculateCorrection(fp predictedError, fp initialError, fp tau, fp damping)
         {
-            return math.max(predictedError - initialError, sfloat.Zero) * damping + math.min(predictedError, initialError) * tau;
+            return fpmath.max(predictedError - initialError, fp.zero) * damping + fpmath.min(predictedError, initialError) * tau;
         }
 
         // Integrate the relative orientation of a pair of bodies, faster and less memory than storing both bodies' orientations and integrating them separately
-        public static quaternion IntegrateOrientationBFromA(quaternion bFromA, float3 angularVelocityA, float3 angularVelocityB, sfloat timestep)
+        public static fpquaternion IntegrateOrientationBFromA(fpquaternion bFromA, fp3 angularVelocityA, fp3 angularVelocityB, fp timestep)
         {
-            quaternion dqA = Integrator.IntegrateAngularVelocity(angularVelocityA, timestep);
-            quaternion dqB = Integrator.IntegrateAngularVelocity(angularVelocityB, timestep);
-            return math.normalize(math.mul(math.mul(math.inverse(dqB), bFromA), dqA));
+            fpquaternion dqA = Integrator.IntegrateAngularVelocity(angularVelocityA, timestep);
+            fpquaternion dqB = Integrator.IntegrateAngularVelocity(angularVelocityB, timestep);
+            return fpmath.normalize(fpmath.mul(fpmath.mul(fpmath.inverse(dqB), bFromA), dqA));
         }
 
         // Calculate the inverse effective mass of a linear jacobian
-        public static sfloat CalculateInvEffectiveMassDiag(
-            float3 angA, float3 invInertiaA, sfloat invMassA,
-            float3 angB, float3 invInertiaB, sfloat invMassB)
+        public static fp CalculateInvEffectiveMassDiag(
+            fp3 angA, fp3 invInertiaA, fp invMassA,
+            fp3 angB, fp3 invInertiaB, fp invMassB)
         {
-            float3 angularPart = angA * angA * invInertiaA + angB * angB * invInertiaB;
-            sfloat linearPart = invMassA + invMassB;
+            fp3 angularPart = angA * angA * invInertiaA + angB * angB * invInertiaB;
+            fp linearPart = invMassA + invMassB;
             return (angularPart.x + angularPart.y) + (angularPart.z + linearPart);
         }
 
         // Calculate the inverse effective mass for a pair of jacobians with perpendicular linear parts
-        public static sfloat CalculateInvEffectiveMassOffDiag(
-            float3 angA0, float3 angA1, float3 invInertiaA,
-            float3 angB0, float3 angB1, float3 invInertiaB)
+        public static fp CalculateInvEffectiveMassOffDiag(
+            fp3 angA0, fp3 angA1, fp3 invInertiaA,
+            fp3 angB0, fp3 angB1, fp3 invInertiaB)
         {
-            return math.csum(angA0 * angA1 * invInertiaA + angB0 * angB1 * invInertiaB);
+            return fpmath.csum(angA0 * angA1 * invInertiaA + angB0 * angB1 * invInertiaB);
         }
 
         // Inverts a symmetrix 3x3 matrix with diag = (0, 0), (1, 1), (2, 2), offDiag = (0, 1), (0, 2), (1, 2) = (1, 0), (2, 0), (2, 1)
-        public static bool InvertSymmetricMatrix(float3 diag, float3 offDiag, out float3 invDiag, out float3 invOffDiag)
+        public static bool InvertSymmetricMatrix(fp3 diag, fp3 offDiag, out fp3 invDiag, out fp3 invOffDiag)
         {
-            float3 offDiagSq = offDiag.zyx * offDiag.zyx;
-            sfloat determinant = (Math.HorizontalMul(diag) + (sfloat)2.0f * Math.HorizontalMul(offDiag) - math.csum(offDiagSq * diag));
-            bool determinantOk = !determinant.IsZero();
-            sfloat invDeterminant = math.select(sfloat.Zero, sfloat.One / determinant, determinantOk);
+            fp3 offDiagSq = offDiag.zyx * offDiag.zyx;
+            fp determinant = (Math.HorizontalMul(diag) + fp.two * Math.HorizontalMul(offDiag) - fpmath.csum(offDiagSq * diag));
+            bool determinantOk = determinant != fp.zero;
+            fp invDeterminant = fpmath.select(fp.zero, fp.one / determinant, determinantOk);
             invDiag = (diag.yxx * diag.zzy - offDiagSq) * invDeterminant;
             invOffDiag = (offDiag.yxx * offDiag.zzy - diag.zyx * offDiag) * invDeterminant;
             return determinantOk;
         }
 
         // Builds a symmetric 3x3 matrix from diag = (0, 0), (1, 1), (2, 2), offDiag = (0, 1), (0, 2), (1, 2) = (1, 0), (2, 0), (2, 1)
-        public static float3x3 BuildSymmetricMatrix(float3 diag, float3 offDiag)
+        public static fp3x3 BuildSymmetricMatrix(fp3 diag, fp3 offDiag)
         {
-            return new float3x3(
-                new float3(diag.x, offDiag.x, offDiag.y),
-                new float3(offDiag.x, diag.y, offDiag.z),
-                new float3(offDiag.y, offDiag.z, diag.z)
+            return new fp3x3(
+                new fp3(diag.x, offDiag.x, offDiag.y),
+                new fp3(offDiag.x, diag.y, offDiag.z),
+                new fp3(offDiag.y, offDiag.z, diag.z)
             );
         }
     }

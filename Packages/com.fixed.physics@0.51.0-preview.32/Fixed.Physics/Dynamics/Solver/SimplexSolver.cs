@@ -1,5 +1,5 @@
 using Unity.Collections;
-using Fixed.Mathematics;
+using Unity.Mathematics.FixedPoint;
 using UnityEngine.Assertions;
 
 namespace Fixed.Physics
@@ -8,12 +8,12 @@ namespace Fixed.Physics
     {
         // Info of interest for the character
         public Plane Plane;
-        public float3 Velocity;
+        public fp3 Velocity;
 
         // Hit body info
         public int RigidBodyIndex;
         public ColliderKey ColliderKey;
-        public float3 HitPosition;
+        public fp3 HitPosition;
 
         // Internal state
         public int Priority;
@@ -24,27 +24,27 @@ namespace Fixed.Physics
 
     public static class SimplexSolver
     {
-        static readonly sfloat k_Epsilon = sfloat.FromRaw(0x38d1b717);
+        static readonly fp k_Epsilon = fp.FromRaw(0x38d1b717);
 
         public static unsafe void Solve(
-            sfloat deltaTime, sfloat minDeltaTime, float3 up, sfloat maxVelocity,
-            NativeList<SurfaceConstraintInfo> constraints, ref float3 position, ref float3 velocity, out sfloat integratedTime, bool useConstraintVelocities = true
+            fp deltaTime, fp minDeltaTime, fp3 up, fp maxVelocity,
+            NativeList<SurfaceConstraintInfo> constraints, ref fp3 position, ref fp3 velocity, out fp integratedTime, bool useConstraintVelocities = true
         )
         {
             // List of planes to solve against (up to 4)
             SurfaceConstraintInfo* supportPlanes = stackalloc SurfaceConstraintInfo[4];
             int numSupportPlanes = 0;
 
-            sfloat remainingTime = deltaTime;
-            sfloat currentTime = sfloat.Zero;
+            fp remainingTime = deltaTime;
+            fp currentTime = fp.zero;
 
             // Clamp the input velocity to max movement speed
             Math.ClampToMaxLength(maxVelocity, ref velocity);
 
-            while (remainingTime > sfloat.Zero)
+            while (remainingTime > fp.zero)
             {
                 int hitIndex = -1;
-                sfloat minCollisionTime = remainingTime;
+                fp minCollisionTime = remainingTime;
 
                 // Iterate over constraints and solve them
                 for (int i = 0; i < constraints.Length; i++)
@@ -53,15 +53,15 @@ namespace Fixed.Physics
 
                     SurfaceConstraintInfo constraint = constraints[i];
 
-                    float3 relVel = velocity - (useConstraintVelocities ? constraint.Velocity : float3.zero);
-                    sfloat relProjVel = -math.dot(relVel, constraint.Plane.Normal);
+                    fp3 relVel = velocity - (useConstraintVelocities ? constraint.Velocity : fp3.zero);
+                    fp relProjVel = -fpmath.dot(relVel, constraint.Plane.Normal);
                     if (relProjVel < k_Epsilon)
                     {
                         continue;
                     }
 
                     // Clamp distance to 0, since penetration is handled by constraint.Velocity already
-                    sfloat distance = math.max(constraint.Plane.Distance, sfloat.Zero);
+                    fp distance = fpmath.max(constraint.Plane.Distance, fp.zero);
                     if (distance < minCollisionTime * relProjVel)
                     {
                         minCollisionTime = distance / relProjVel;
@@ -92,7 +92,7 @@ namespace Fixed.Physics
                 supportPlanes[numSupportPlanes] = constraints[hitIndex];
                 if (!useConstraintVelocities)
                 {
-                    supportPlanes[numSupportPlanes].Velocity = float3.zero;
+                    supportPlanes[numSupportPlanes].Velocity = fp3.zero;
                 }
                 numSupportPlanes++;
 
@@ -112,7 +112,7 @@ namespace Fixed.Physics
             integratedTime = currentTime;
         }
 
-        public static unsafe void ExamineActivePlanes(float3 up, SurfaceConstraintInfo* supportPlanes, ref int numSupportPlanes, ref float3 velocity)
+        public static unsafe void ExamineActivePlanes(fp3 up, SurfaceConstraintInfo* supportPlanes, ref int numSupportPlanes, ref fp3 velocity)
         {
             switch (numSupportPlanes)
             {
@@ -124,7 +124,7 @@ namespace Fixed.Physics
                 case 2:
                 {
                     // Test whether we need plane 0 at all
-                    float3 tempVelocity = velocity;
+                    fp3 tempVelocity = velocity;
                     Solve1d(supportPlanes[1], ref tempVelocity);
 
                     bool plane0Used = Test1d(supportPlanes[0], tempVelocity);
@@ -147,7 +147,7 @@ namespace Fixed.Physics
                 case 3:
                 {
                     // Try to drop both planes
-                    float3 tempVelocity = velocity;
+                    fp3 tempVelocity = velocity;
                     Solve1d(supportPlanes[2], ref tempVelocity);
 
                     bool plane0Used = Test1d(supportPlanes[0], tempVelocity);
@@ -188,7 +188,7 @@ namespace Fixed.Physics
                 {
                     for (int i = 0; i < 3; i++)
                     {
-                        float3 tempVelocity = velocity;
+                        fp3 tempVelocity = velocity;
                         Solve3d(up, supportPlanes[(i + 1) % 3], supportPlanes[(i + 2) % 3], supportPlanes[3], ref tempVelocity);
                         bool planeUsed = Test1d(supportPlanes[i], tempVelocity);
                         if (!planeUsed)
@@ -202,7 +202,7 @@ namespace Fixed.Physics
 
                     // Nothing can be dropped so we've failed to solve,
                     // now we do all 3d combinations
-                    float3 tempVel = velocity;
+                    fp3 tempVel = velocity;
                     SurfaceConstraintInfo sp0 = supportPlanes[0];
                     SurfaceConstraintInfo sp1 = supportPlanes[1];
                     SurfaceConstraintInfo sp2 = supportPlanes[2];
@@ -225,31 +225,31 @@ namespace Fixed.Physics
             }
         }
 
-        public static void Solve1d(SurfaceConstraintInfo constraint, ref float3 velocity)
+        public static void Solve1d(SurfaceConstraintInfo constraint, ref fp3 velocity)
         {
-            float3 groundVelocity = constraint.Velocity;
-            float3 relVel = velocity - groundVelocity;
-            sfloat planeVel = math.dot(relVel, constraint.Plane.Normal);
+            fp3 groundVelocity = constraint.Velocity;
+            fp3 relVel = velocity - groundVelocity;
+            fp planeVel = fpmath.dot(relVel, constraint.Plane.Normal);
             relVel -= planeVel * constraint.Plane.Normal;
 
             velocity = relVel + groundVelocity;
         }
 
-        public static bool Test1d(SurfaceConstraintInfo constraint, float3 velocity)
+        public static bool Test1d(SurfaceConstraintInfo constraint, fp3 velocity)
         {
-            float3 relVel = velocity - constraint.Velocity;
-            sfloat planeVel = math.dot(relVel, constraint.Plane.Normal);
+            fp3 relVel = velocity - constraint.Velocity;
+            fp planeVel = fpmath.dot(relVel, constraint.Plane.Normal);
             return planeVel < -k_Epsilon;
         }
 
-        public static void Solve2d(float3 up, SurfaceConstraintInfo constraint0, SurfaceConstraintInfo constraint1, ref float3 velocity)
+        public static void Solve2d(fp3 up, SurfaceConstraintInfo constraint0, SurfaceConstraintInfo constraint1, ref fp3 velocity)
         {
-            float3 plane0 = constraint0.Plane.Normal;
-            float3 plane1 = constraint1.Plane.Normal;
+            fp3 plane0 = constraint0.Plane.Normal;
+            fp3 plane1 = constraint1.Plane.Normal;
 
             // Calculate the free axis
-            float3 axis = math.cross(plane0, plane1);
-            sfloat axisLen2 = math.lengthsq(axis);
+            fp3 axis = fpmath.cross(plane0, plane1);
+            fp axisLen2 = fpmath.lengthsq(axis);
 
             // Check for parallel planes
             if (axisLen2 < k_Epsilon)
@@ -262,58 +262,58 @@ namespace Fixed.Physics
                 return;
             }
 
-            sfloat invAxisLen = math.rsqrt(axisLen2);
+            fp invAxisLen = fpmath.rsqrt(axisLen2);
             axis *= invAxisLen;
 
             // Calculate the velocity of the free axis
-            float3 axisVel;
+            fp3 axisVel;
             {
-                float4x4 m = new float4x4();
-                float3 r0 = math.cross(plane0, plane1);
-                float3 r1 = math.cross(plane1, axis);
-                float3 r2 = math.cross(axis, plane0);
-                m.c0 = new float4(r0, sfloat.Zero);
-                m.c1 = new float4(r1, sfloat.Zero);
-                m.c2 = new float4(r2, sfloat.Zero);
-                m.c3 = new float4(sfloat.Zero, sfloat.Zero, sfloat.Zero, sfloat.One);
+                fp4x4 m = new fp4x4();
+                fp3 r0 = fpmath.cross(plane0, plane1);
+                fp3 r1 = fpmath.cross(plane1, axis);
+                fp3 r2 = fpmath.cross(axis, plane0);
+                m.c0 = new fp4(r0, fp.zero);
+                m.c1 = new fp4(r1, fp.zero);
+                m.c2 = new fp4(r2, fp.zero);
+                m.c3 = new fp4(fp.zero, fp.zero, fp.zero, fp.one);
 
-                float3 sVel = constraint0.Velocity + constraint1.Velocity;
-                float3 t = new float3(
-                    math.dot(axis, sVel) * (sfloat)0.5f,
-                    math.dot(plane0, constraint0.Velocity),
-                    math.dot(plane1, constraint1.Velocity));
+                fp3 sVel = constraint0.Velocity + constraint1.Velocity;
+                fp3 t = new fp3(
+                    fpmath.dot(axis, sVel) * fp.half,
+                    fpmath.dot(plane0, constraint0.Velocity),
+                    fpmath.dot(plane1, constraint1.Velocity));
 
-                axisVel = math.rotate(m, t);
+                axisVel = fpmath.rotate(m, t);
                 axisVel *= invAxisLen;
             }
 
-            float3 groundVelocity = axisVel;
-            float3 relVel = velocity - groundVelocity;
+            fp3 groundVelocity = axisVel;
+            fp3 relVel = velocity - groundVelocity;
 
-            sfloat vel2 = math.lengthsq(relVel);
-            sfloat axisVert = math.dot(up, axis);
-            sfloat axisProjVel = math.dot(relVel, axis);
+            fp vel2 = fpmath.lengthsq(relVel);
+            fp axisVert = fpmath.dot(up, axis);
+            fp axisProjVel = fpmath.dot(relVel, axis);
 
             velocity = groundVelocity + axis * axisProjVel;
         }
 
-        public static void Solve3d(float3 up, SurfaceConstraintInfo constraint0, SurfaceConstraintInfo constraint1, SurfaceConstraintInfo constraint2, ref float3 velocity)
+        public static void Solve3d(fp3 up, SurfaceConstraintInfo constraint0, SurfaceConstraintInfo constraint1, SurfaceConstraintInfo constraint2, ref fp3 velocity)
         {
-            float3 plane0 = constraint0.Plane.Normal;
-            float3 plane1 = constraint1.Plane.Normal;
-            float3 plane2 = constraint2.Plane.Normal;
+            fp3 plane0 = constraint0.Plane.Normal;
+            fp3 plane1 = constraint1.Plane.Normal;
+            fp3 plane2 = constraint2.Plane.Normal;
 
-            float4x4 m = new float4x4();
-            float3 r0 = math.cross(plane1, plane2);
-            float3 r1 = math.cross(plane2, plane0);
-            float3 r2 = math.cross(plane0, plane1);
-            m.c0 = new float4(r0, sfloat.Zero);
-            m.c1 = new float4(r1, sfloat.Zero);
-            m.c2 = new float4(r2, sfloat.Zero);
-            m.c3 = new float4(sfloat.Zero, sfloat.Zero, sfloat.Zero, sfloat.One);
+            fp4x4 m = new fp4x4();
+            fp3 r0 = fpmath.cross(plane1, plane2);
+            fp3 r1 = fpmath.cross(plane2, plane0);
+            fp3 r2 = fpmath.cross(plane0, plane1);
+            m.c0 = new fp4(r0, fp.zero);
+            m.c1 = new fp4(r1, fp.zero);
+            m.c2 = new fp4(r2, fp.zero);
+            m.c3 = new fp4(fp.zero, fp.zero, fp.zero, fp.one);
 
-            sfloat det = math.dot(r0, plane0);
-            sfloat tst = math.abs(det);
+            fp det = fpmath.dot(r0, plane0);
+            fp tst = fpmath.abs(det);
             if (tst < k_Epsilon)
             {
                 Sort3d(ref constraint0, ref constraint1, ref constraint2);
@@ -324,12 +324,12 @@ namespace Fixed.Physics
                 return;
             }
 
-            float3 t = new float3(
-                math.dot(plane0, constraint0.Velocity),
-                math.dot(plane1, constraint1.Velocity),
-                math.dot(plane2, constraint2.Velocity));
+            fp3 t = new fp3(
+                fpmath.dot(plane0, constraint0.Velocity),
+                fpmath.dot(plane1, constraint1.Velocity),
+                fpmath.dot(plane2, constraint2.Velocity));
 
-            float3 pointVel = math.rotate(m, t);
+            fp3 pointVel = fpmath.rotate(m, t);
             pointVel /= det;
 
             velocity = pointVel;

@@ -2,14 +2,14 @@ using System.Runtime.CompilerServices;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
-using Fixed.Mathematics;
+using Unity.Mathematics.FixedPoint;
 
 namespace Fixed.Physics
 {
     public static class Integrator
     {
         // Integrate the world's motions forward by the given time step.
-        public static void Integrate(NativeArray<MotionData> motionDatas, NativeArray<MotionVelocity> motionVelocities, sfloat timeStep)
+        public static void Integrate(NativeArray<MotionData> motionDatas, NativeArray<MotionVelocity> motionVelocities, fp timeStep)
         {
             for (int i = 0; i < motionDatas.Length; i++)
             {
@@ -18,7 +18,7 @@ namespace Fixed.Physics
         }
 
         // Integrate a single transform for the provided velocity and time
-        public static void Integrate(ref RigidTransform transform, in MotionVelocity motionVelocity, in sfloat timeStep)
+        public static void Integrate(ref FpRigidTransform transform, in MotionVelocity motionVelocity, in fp timeStep)
         {
             // center of mass
             IntegratePosition(ref transform.pos, motionVelocity.LinearVelocity, timeStep);
@@ -28,7 +28,7 @@ namespace Fixed.Physics
         }
 
         // Schedule a job to integrate the world's motions forward by the given time step.
-        internal static JobHandle ScheduleIntegrateJobs(ref DynamicsWorld world, sfloat timeStep, JobHandle inputDeps, bool multiThreaded = true)
+        internal static JobHandle ScheduleIntegrateJobs(ref DynamicsWorld world, fp timeStep, JobHandle inputDeps, bool multiThreaded = true)
         {
             if (!multiThreaded)
             {
@@ -57,14 +57,14 @@ namespace Fixed.Physics
         {
             public NativeArray<MotionData> MotionDatas;
             public NativeArray<MotionVelocity> MotionVelocities;
-            public sfloat TimeStep;
+            public fp TimeStep;
 
             public void Execute(int i)
             {
                 ExecuteImpl(i, MotionDatas, MotionVelocities, TimeStep);
             }
 
-            internal static void ExecuteImpl(int i, NativeArray<MotionData> motionDatas, NativeArray<MotionVelocity> motionVelocities, sfloat timeStep)
+            internal static void ExecuteImpl(int i, NativeArray<MotionData> motionDatas, NativeArray<MotionVelocity> motionVelocities, fp timeStep)
             {
                 MotionData motionData = motionDatas[i];
                 MotionVelocity motionVelocity = motionVelocities[i];
@@ -75,8 +75,8 @@ namespace Fixed.Physics
                 // Update velocities
                 {
                     // damping
-                    motionVelocity.LinearVelocity *= math.clamp(sfloat.One - motionData.LinearDamping * timeStep, sfloat.Zero, sfloat.One);
-                    motionVelocity.AngularVelocity *= math.clamp(sfloat.One - motionData.AngularDamping * timeStep, sfloat.Zero, sfloat.One);
+                    motionVelocity.LinearVelocity *= fpmath.clamp(fp.one - motionData.LinearDamping * timeStep, fp.zero, fp.one);
+                    motionVelocity.AngularVelocity *= fpmath.clamp(fp.one - motionData.AngularDamping * timeStep, fp.zero, fp.one);
                 }
 
                 // Write back
@@ -90,7 +90,7 @@ namespace Fixed.Physics
         {
             public NativeArray<MotionData> MotionDatas;
             public NativeArray<MotionVelocity> MotionVelocities;
-            public sfloat TimeStep;
+            public fp TimeStep;
 
             public void Execute()
             {
@@ -99,25 +99,25 @@ namespace Fixed.Physics
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static void IntegratePosition(ref float3 position, float3 linearVelocity, sfloat timestep)
+        internal static void IntegratePosition(ref fp3 position, fp3 linearVelocity, fp timestep)
         {
             position += linearVelocity * timestep;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static void IntegrateOrientation(ref quaternion orientation, float3 angularVelocity, sfloat timestep)
+        internal static void IntegrateOrientation(ref fpquaternion orientation, fp3 angularVelocity, fp timestep)
         {
-            quaternion dq = IntegrateAngularVelocity(angularVelocity, timestep);
-            quaternion r = math.mul(orientation, dq);
-            orientation = math.normalize(r);
+            fpquaternion dq = IntegrateAngularVelocity(angularVelocity, timestep);
+            fpquaternion r = fpmath.mul(orientation, dq);
+            orientation = fpmath.normalize(r);
         }
 
-        // Returns a non-normalized quaternion that approximates the change in angle angularVelocity * timestep.
-        internal static quaternion IntegrateAngularVelocity(float3 angularVelocity, sfloat timestep)
+        // Returns a non-normalized fpquaternion that approximates the change in angle angularVelocity * timestep.
+        internal static fpquaternion IntegrateAngularVelocity(fp3 angularVelocity, fp timestep)
         {
-            float3 halfDeltaTime = new float3(timestep * (sfloat)0.5f);
-            float3 halfDeltaAngle = angularVelocity * halfDeltaTime;
-            return new quaternion(new float4(halfDeltaAngle, sfloat.One));
+            fp3 halfDeltaTime = new fp3(timestep * fp.half);
+            fp3 halfDeltaAngle = angularVelocity * halfDeltaTime;
+            return new fpquaternion(new fp4(halfDeltaAngle, fp.one));
         }
     }
 }

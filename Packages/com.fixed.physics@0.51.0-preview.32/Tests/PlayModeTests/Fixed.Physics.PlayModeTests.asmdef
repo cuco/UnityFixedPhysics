@@ -7,7 +7,7 @@
         "Unity.Entities",
         "Unity.Entities.Hybrid",
         "Unity.Entities.Tests",
-        "Fixed.Mathematics",
+        "Unity.Mathematics.FixedPoint",
         "Unity.PerformanceTesting",
         "Fixed.Physics",
         "Fixed.Physics.Hybrid",
@@ -16,8 +16,7 @@
         "Unity.Jobs",
         "Unity.DataFlowGraph",
         "UnityEngine.TestRunner",
-        "UnityEditor.TestRunner",
-        "Fixed.Sfloat"
+        "UnityEditor.TestRunner"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

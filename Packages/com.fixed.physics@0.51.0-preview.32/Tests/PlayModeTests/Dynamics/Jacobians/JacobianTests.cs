@@ -1,7 +1,7 @@
 using System;
 using NUnit.Framework;
 using Unity.Collections;
-using Fixed.Mathematics;
+using Unity.Mathematics.FixedPoint;
 using Assert = UnityEngine.Assertions.Assert;
 
 namespace Fixed.Physics.Tests.Dynamics.Jacobians
@@ -11,12 +11,12 @@ namespace Fixed.Physics.Tests.Dynamics.Jacobians
         [Test]
         public void JacobianUtilitiesCalculateTauAndDampingTest()
         {
-            sfloat springFrequency = (sfloat)1.0f;
-            sfloat springDampingRatio = (sfloat)1.0f;
-            sfloat timestep = (sfloat)1.0f;
+            fp springFrequency = (fp)1.0f;
+            fp springDampingRatio = (fp)1.0f;
+            fp timestep = (fp)1.0f;
             int iterations = 4;
 
-            JacobianUtilities.CalculateConstraintTauAndDamping(springFrequency, springDampingRatio, timestep, iterations, out sfloat tau, out sfloat damping);
+            JacobianUtilities.CalculateConstraintTauAndDamping(springFrequency, springDampingRatio, timestep, iterations, out fp tau, out fp damping);
 
             Assert.AreApproximatelyEqual(0.4774722f, (float)tau);
             Assert.AreApproximatelyEqual(0.6294564f, (float)damping);
@@ -25,12 +25,12 @@ namespace Fixed.Physics.Tests.Dynamics.Jacobians
         [Test]
         public void JacobianUtilitiesCalculateTauAndDampingFromConstraintTest()
         {
-            var constraint = new Constraint { SpringFrequency = (sfloat)1.0f, SpringDamping = (sfloat)1.0f };
-            sfloat timestep = (sfloat)1.0f;
+            var constraint = new Constraint { SpringFrequency = (fp)1.0f, SpringDamping = (fp)1.0f };
+            fp timestep = (fp)1.0f;
             int iterations = 4;
 
-            sfloat tau;
-            sfloat damping;
+            fp tau;
+            fp damping;
             JacobianUtilities.CalculateConstraintTauAndDamping(constraint.SpringFrequency, constraint.SpringDamping, timestep, iterations, out tau, out damping);
 
             Assert.AreApproximatelyEqual(0.4774722f, (float)tau);
@@ -40,9 +40,9 @@ namespace Fixed.Physics.Tests.Dynamics.Jacobians
         [Test]
         public void JacobianUtilitiesCalculateErrorTest()
         {
-            sfloat x = (sfloat)5.0f;
-            sfloat min = (sfloat)0.0f;
-            sfloat max = (sfloat)10.0f;
+            fp x = (fp)5.0f;
+            fp min = (fp)0.0f;
+            fp max = (fp)10.0f;
 
             Assert.AreApproximatelyEqual(0.0f, (float)JacobianUtilities.CalculateError(x, min, max));
         }
@@ -50,10 +50,10 @@ namespace Fixed.Physics.Tests.Dynamics.Jacobians
         [Test]
         public void JacobianUtilitiesCalculateCorrectionTest()
         {
-            sfloat predictedError = (sfloat)0.2f;
-            sfloat initialError = (sfloat)0.1f;
-            sfloat tau = (sfloat)0.6f;
-            sfloat damping = (sfloat)1.0f;
+            fp predictedError = (fp)0.2f;
+            fp initialError = (fp)0.1f;
+            fp tau = (fp)0.6f;
+            fp damping = (fp)1.0f;
 
             Assert.AreApproximatelyEqual(0.16f, (float)JacobianUtilities.CalculateCorrection(predictedError, initialError, tau, damping));
         }
@@ -61,12 +61,12 @@ namespace Fixed.Physics.Tests.Dynamics.Jacobians
         [Test]
         public void JacobianUtilitiesIntegrateOrientationBFromATest()
         {
-            var bFromA = quaternion.identity;
-            var angularVelocityA = float3.zero;
-            var angularVelocityB = float3.zero;
-            var timestep = (sfloat)1.0f;
+            var bFromA = fpquaternion.identity;
+            var angularVelocityA = fp3.zero;
+            var angularVelocityB = fp3.zero;
+            var timestep = (fp)1.0f;
 
-            Assert.AreEqual(quaternion.identity, JacobianUtilities.IntegrateOrientationBFromA(bFromA, angularVelocityA, angularVelocityB, timestep));
+            Assert.AreEqual(fpquaternion.identity, JacobianUtilities.IntegrateOrientationBFromA(bFromA, angularVelocityA, angularVelocityB, timestep));
         }
 
         [Test]

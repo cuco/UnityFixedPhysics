@@ -1,7 +1,7 @@
 using Unity.Collections;
 using NUnit.Framework;
-using Fixed.Mathematics;
-using Random = Fixed.Mathematics.Random;
+using Unity.Mathematics.FixedPoint;
+using Random = Unity.Mathematics.FixedPoint.Random;
 using static Fixed.Physics.Math;
 
 namespace Fixed.Physics.Tests.Joints
@@ -17,15 +17,15 @@ namespace Fixed.Physics.Tests.Joints
         // Tiny simulation for a single body pair and joint, used by all of the tests
         //
 
-        void applyGravity(ref MotionVelocity velocity, ref MotionData motion, float3 gravity, sfloat timestep)
+        void applyGravity(ref MotionVelocity velocity, ref MotionData motion, fp3 gravity, fp timestep)
         {
-            if (velocity.InverseMass > (sfloat)0.0f)
+            if (velocity.InverseMass > (fp)0.0f)
             {
                 velocity.LinearVelocity += gravity * timestep;
             }
         }
 
-        static void integrate(ref MotionVelocity velocity, ref MotionData motion, sfloat timestep)
+        static void integrate(ref MotionVelocity velocity, ref MotionData motion, fp timestep)
         {
             Integrator.Integrate(ref motion.WorldFromMotion, velocity, timestep);
         }
@@ -34,17 +34,17 @@ namespace Fixed.Physics.Tests.Joints
         // Random test data generation
         //
 
-        static float3 generateRandomCardinalAxis(ref Random rnd)
+        static fp3 generateRandomCardinalAxis(ref Random rnd)
         {
-            float3 axis = float3.zero;
-            axis[rnd.NextInt(3)] = rnd.NextBool() ? (sfloat)1 : -(sfloat)1;
+            fp3 axis = fp3.zero;
+            axis[rnd.NextInt(3)] = rnd.NextBool() ? (fp)1 : -(fp)1;
             return axis;
         }
 
-        static RigidTransform generateRandomTransform(ref Random rnd)
+        static FpRigidTransform generateRandomTransform(ref Random rnd)
         {
             // Random rotation: 1 in 4 are identity, 3 in 16 are 90 or 180 degrees about i j or k, the rest are uniform random
-            quaternion rot = quaternion.identity;
+            fpquaternion rot = fpquaternion.identity;
             if (rnd.NextInt(4) > 0)
             {
                 if (rnd.NextInt(4) > 0)
@@ -53,14 +53,14 @@ namespace Fixed.Physics.Tests.Joints
                 }
                 else
                 {
-                    sfloat angle = rnd.NextBool() ? (sfloat)90 : (sfloat)180;
-                    rot = quaternion.AxisAngle(generateRandomCardinalAxis(ref rnd), angle);
+                    fp angle = rnd.NextBool() ? (fp)90 : (fp)180;
+                    rot = fpquaternion.AxisAngle(generateRandomCardinalAxis(ref rnd), angle);
                 }
             }
 
-            return new RigidTransform()
+            return new FpRigidTransform()
             {
-                pos = rnd.NextInt(4) == 0 ? float3.zero : rnd.NextFloat3(-(sfloat)1.0f, (sfloat)1.0f),
+                pos = rnd.NextInt(4) == 0 ? fp3.zero : rnd.Nextfp3(-(fp)1.0f, (fp)1.0f),
                 rot = rot
             };
         }
@@ -73,7 +73,7 @@ namespace Fixed.Physics.Tests.Joints
                 BodyFromMotion = generateRandomTransform(ref rnd)
             };
 
-            float3 inertia = rnd.NextFloat3((sfloat)1e-3f, (sfloat)100.0f);
+            fp3 inertia = rnd.Nextfp3((fp)1e-3f, (fp)100.0f);
             switch (rnd.NextInt(3))
             {
                 case 0: // all values random
@@ -87,35 +87,35 @@ namespace Fixed.Physics.Tests.Joints
                     break;
             }
 
-            float3 nextLinVel;
+            fp3 nextLinVel;
             if (rnd.NextBool())
             {
-                nextLinVel = float3.zero;
+                nextLinVel = fp3.zero;
             }
             else
             {
-                nextLinVel = rnd.NextFloat3(-(sfloat)50.0f, (sfloat)50.0f);
+                nextLinVel = rnd.Nextfp3(-(fp)50.0f, (fp)50.0f);
             }
-            float3 nextAngVel;
+            fp3 nextAngVel;
             if (rnd.NextBool())
             {
-                nextAngVel = float3.zero;
+                nextAngVel = fp3.zero;
             }
             else
             {
-                nextAngVel = rnd.NextFloat3(-(sfloat)50.0f, (sfloat)50.0f);
+                nextAngVel = rnd.Nextfp3(-(fp)50.0f, (fp)50.0f);
             }
-            float3 nextInertia;
-            sfloat nextMass;
+            fp3 nextInertia;
+            fp nextMass;
             if (allowInfiniteMass && rnd.NextBool())
             {
-                nextInertia = float3.zero;
-                nextMass = (sfloat)0.0f;
+                nextInertia = fp3.zero;
+                nextMass = (fp)0.0f;
             }
             else
             {
-                nextMass = rnd.NextFloat((sfloat)1e-3f, (sfloat)100.0f);
-                nextInertia = (sfloat)1.0f / inertia;
+                nextMass = rnd.NextFloat((fp)1e-3f, (fp)100.0f);
+                nextInertia = (fp)1.0f / inertia;
             }
             velocity = new MotionVelocity
             {
@@ -130,17 +130,17 @@ namespace Fixed.Physics.Tests.Joints
         // Helpers
         //
 
-        static RigidTransform getWorldFromBody(MotionData motion)
+        static FpRigidTransform getWorldFromBody(MotionData motion)
         {
-            return math.mul(motion.WorldFromMotion, math.inverse(motion.BodyFromMotion));
+            return fpmath.mul(motion.WorldFromMotion, fpmath.inverse(motion.BodyFromMotion));
         }
 
-        static float3 getBodyPointVelocity(MotionVelocity velocity, MotionData motion, float3 positionInBodySpace, out sfloat angularLength)
+        static fp3 getBodyPointVelocity(MotionVelocity velocity, MotionData motion, fp3 positionInBodySpace, out fp angularLength)
         {
-            float3 positionInMotion = math.transform(math.inverse(motion.BodyFromMotion), positionInBodySpace);
-            float3 angularInMotion = math.cross(velocity.AngularVelocity, positionInMotion);
-            angularLength = math.length(angularInMotion);
-            float3 angularInWorld = math.rotate(motion.WorldFromMotion, angularInMotion);
+            fp3 positionInMotion = fpmath.transform(fpmath.inverse(motion.BodyFromMotion), positionInBodySpace);
+            fp3 angularInMotion = fpmath.cross(velocity.AngularVelocity, positionInMotion);
+            angularLength = fpmath.length(angularInMotion);
+            fp3 angularInWorld = fpmath.rotate(motion.WorldFromMotion, angularInMotion);
             return angularInWorld + velocity.LinearVelocity;
         }
 
@@ -150,15 +150,15 @@ namespace Fixed.Physics.Tests.Joints
 
         delegate Joint GenerateJoint(ref Random rnd);
 
-        unsafe static void SolveSingleJoint(Joint jointData, int numIterations, sfloat timestep,
+        unsafe static void SolveSingleJoint(Joint jointData, int numIterations, fp timestep,
             ref MotionVelocity velocityA, ref MotionVelocity velocityB, ref MotionData motionA, ref MotionData motionB, out NativeStream jacobiansOut)
         {
             var stepInput = new Solver.StepInput
             {
                 IsLastIteration = false,
-                InvNumSolverIterations = (sfloat)1.0f / (sfloat)numIterations,
+                InvNumSolverIterations = (fp)1.0f / (fp)numIterations,
                 Timestep = timestep,
-                InvTimestep = timestep > (sfloat)0.0f ? (sfloat)1.0f / timestep : (sfloat)0.0f
+                InvTimestep = timestep > (fp)0.0f ? (fp)1.0f / timestep : (fp)0.0f
             };
 
             // Build jacobians
@@ -221,10 +221,10 @@ namespace Fixed.Physics.Tests.Joints
                 // Simulate the joint
                 {
                     // Build input
-                    sfloat timestep = (sfloat)1.0f / (sfloat)50.0f;
+                    fp timestep = (fp)1.0f / (fp)50.0f;
                     const int numIterations = 4;
                     const int numSteps = 15;
-                    float3 gravity = new float3((sfloat)0.0f, -(sfloat)9.81f, (sfloat)0.0f);
+                    fp3 gravity = new fp3((fp)0.0f, -(fp)9.81f, (fp)0.0f);
 
                     // Simulate
                     for (int iStep = 0; iStep < numSteps; iStep++)
@@ -277,22 +277,22 @@ namespace Fixed.Physics.Tests.Joints
         // Tests
         //
 
-        static void generateRandomPivots(ref Random rnd, out float3 pivotA, out float3 pivotB)
+        static void generateRandomPivots(ref Random rnd, out fp3 pivotA, out fp3 pivotB)
         {
-            pivotA = rnd.NextBool() ? float3.zero : rnd.NextFloat3(-(sfloat)1.0f, (sfloat)1.0f);
-            pivotB = rnd.NextBool() ? float3.zero : rnd.NextFloat3(-(sfloat)1.0f, (sfloat)1.0f);
+            pivotA = rnd.NextBool() ? fp3.zero : rnd.Nextfp3(-(fp)1.0f, (fp)1.0f);
+            pivotB = rnd.NextBool() ? fp3.zero : rnd.Nextfp3(-(fp)1.0f, (fp)1.0f);
         }
 
-        static void generateRandomAxes(ref Random rnd, out float3 axisA, out float3 axisB)
+        static void generateRandomAxes(ref Random rnd, out fp3 axisA, out fp3 axisB)
         {
-            axisA = rnd.NextInt(4) == 0 ? generateRandomCardinalAxis(ref rnd) : rnd.NextFloat3Direction();
-            axisB = rnd.NextInt(4) == 0 ? generateRandomCardinalAxis(ref rnd) : rnd.NextFloat3Direction();
+            axisA = rnd.NextInt(4) == 0 ? generateRandomCardinalAxis(ref rnd) : rnd.Nextfp3Direction();
+            axisB = rnd.NextInt(4) == 0 ? generateRandomCardinalAxis(ref rnd) : rnd.Nextfp3Direction();
         }
 
-        static void generateRandomLimits(ref Random rnd, sfloat minClosed, sfloat maxClosed, out sfloat min, out sfloat max)
+        static void generateRandomLimits(ref Random rnd, fp minClosed, fp maxClosed, out fp min, out fp max)
         {
-            min = rnd.NextBool() ? sfloat.MinValue : rnd.NextFloat(minClosed, maxClosed);
-            max = rnd.NextBool() ? rnd.NextBool() ? sfloat.MaxValue : min : rnd.NextFloat(min, maxClosed);
+            min = rnd.NextBool() ? fp.min_value : rnd.NextFloat(minClosed, maxClosed);
+            max = rnd.NextBool() ? rnd.NextBool() ? fp.max_value : min : rnd.NextFloat(min, maxClosed);
         }
 
         Joint CreateTestJoint(PhysicsJoint joint) => new Joint
@@ -307,7 +307,7 @@ namespace Fixed.Physics.Tests.Joints
         {
             RunJointTest("BallAndSocketTest", (ref Random rnd) =>
             {
-                generateRandomPivots(ref rnd, out float3 pivotA, out float3 pivotB);
+                generateRandomPivots(ref rnd, out fp3 pivotA, out fp3 pivotB);
                 return CreateTestJoint(PhysicsJoint.CreateBallAndSocket(pivotA, pivotB));
             });
         }
@@ -317,8 +317,8 @@ namespace Fixed.Physics.Tests.Joints
         {
             RunJointTest("StiffSpringTest", (ref Random rnd) =>
             {
-                generateRandomPivots(ref rnd, out float3 pivotA, out float3 pivotB);
-                generateRandomLimits(ref rnd, (sfloat)0.0f, (sfloat)0.5f, out sfloat minDistance, out sfloat maxDistance);
+                generateRandomPivots(ref rnd, out fp3 pivotA, out fp3 pivotB);
+                generateRandomLimits(ref rnd, (fp)0.0f, fp.half, out fp minDistance, out fp maxDistance);
                 return CreateTestJoint(PhysicsJoint.CreateLimitedDistance(pivotA, pivotB, new FloatRange(minDistance, maxDistance)));
             });
         }
@@ -334,8 +334,8 @@ namespace Fixed.Physics.Tests.Joints
                 generateRandomAxes(ref rnd, out jointFrameA.Axis, out jointFrameB.Axis);
                 Math.CalculatePerpendicularNormalized(jointFrameA.Axis, out jointFrameA.PerpendicularAxis, out _);
                 Math.CalculatePerpendicularNormalized(jointFrameB.Axis, out jointFrameB.PerpendicularAxis, out _);
-                var distance = new FloatRange { Min = rnd.NextFloat(-(sfloat)0.5f, (sfloat)0.5f) };
-                distance.Max = rnd.NextBool() ? distance.Min : rnd.NextFloat(distance.Min, (sfloat)0.5f); // note, can't use open limits because the accuracy can get too low as the pivots separate
+                var distance = new FloatRange { Min = rnd.NextFloat(-fp.half, fp.half) };
+                distance.Max = rnd.NextBool() ? distance.Min : rnd.NextFloat(distance.Min, fp.half); // note, can't use open limits because the accuracy can get too low as the pivots separate
                 return CreateTestJoint(PhysicsJoint.CreatePrismatic(jointFrameA, jointFrameB, distance));
             });
         }
@@ -367,7 +367,7 @@ namespace Fixed.Physics.Tests.Joints
                 Math.CalculatePerpendicularNormalized(jointFrameA.Axis, out jointFrameA.PerpendicularAxis, out _);
                 Math.CalculatePerpendicularNormalized(jointFrameB.Axis, out jointFrameB.PerpendicularAxis, out _);
                 FloatRange limits;
-                generateRandomLimits(ref rnd, -(sfloat)math.PI, (sfloat)math.PI, out limits.Min, out limits.Max);
+                generateRandomLimits(ref rnd, -(fp)fpmath.PI, (fp)fpmath.PI, out limits.Min, out limits.Max);
                 return CreateTestJoint(PhysicsJoint.CreateLimitedHinge(jointFrameA, jointFrameB, limits));
             });
         }
@@ -379,8 +379,8 @@ namespace Fixed.Physics.Tests.Joints
         {
             RunJointTest("FixedTest", (ref Random rnd) =>
             {
-                var jointFrameA = new RigidTransform();
-                var jointFrameB = new RigidTransform();
+                var jointFrameA = new FpRigidTransform();
+                var jointFrameB = new FpRigidTransform();
                 generateRandomPivots(ref rnd, out jointFrameA.pos, out jointFrameB.pos);
                 jointFrameA.rot = generateRandomTransform(ref rnd).rot;
                 jointFrameB.rot = generateRandomTransform(ref rnd).rot;
@@ -411,36 +411,36 @@ namespace Fixed.Physics.Tests.Joints
             {
                 for (int j = 0; j < 2; j++) // Negative / positive limit
                 {
-                    float3 axis = float3.zero;
-                    axis[i] = (sfloat)1.0f;
+                    fp3 axis = fp3.zero;
+                    axis[i] = (fp)1.0f;
 
                     MotionVelocity velocityA = new MotionVelocity
                     {
-                        LinearVelocity = float3.zero,
+                        LinearVelocity = fp3.zero,
                         AngularVelocity = (j + j - 1) * axis,
-                        InverseInertia = new float3(1),
-                        InverseMass = (sfloat)1
+                        InverseInertia = new fp3(1),
+                        InverseMass = (fp)1
                     };
 
                     MotionVelocity velocityB = new MotionVelocity
                     {
-                        LinearVelocity = float3.zero,
-                        AngularVelocity = float3.zero,
-                        InverseInertia = float3.zero,
-                        InverseMass = (sfloat)0.0f
+                        LinearVelocity = fp3.zero,
+                        AngularVelocity = fp3.zero,
+                        InverseInertia = fp3.zero,
+                        InverseMass = (fp)0.0f
                     };
 
                     MotionData motionA = new MotionData
                     {
-                        WorldFromMotion = RigidTransform.identity,
-                        BodyFromMotion = RigidTransform.identity
+                        WorldFromMotion = FpRigidTransform.identity,
+                        BodyFromMotion = FpRigidTransform.identity
                     };
 
                     MotionData motionB = motionA;
 
-                    sfloat angle = (sfloat)0.5f;
-                    sfloat minLimit = (sfloat)(j - 1) * angle;
-                    sfloat maxLimit = (sfloat)j * angle;
+                    fp angle = fp.half;
+                    fp minLimit = (fp)(j - 1) * angle;
+                    fp maxLimit = (fp)j * angle;
 
                     var jointData = new Joint
                     {
@@ -448,10 +448,10 @@ namespace Fixed.Physics.Tests.Joints
                         BFromJoint = MTransform.Identity
                     };
                     jointData.Constraints.Add(Constraint.Twist(i, new FloatRange(minLimit, maxLimit), Constraint.DefaultSpringFrequency, Constraint.DefaultSpringDamping));
-                    SolveSingleJoint(jointData, 4, (sfloat)1.0f, ref velocityA, ref velocityB, ref motionA, ref motionB, out NativeStream jacobians);
+                    SolveSingleJoint(jointData, 4, (fp)1.0f, ref velocityA, ref velocityB, ref motionA, ref motionB, out NativeStream jacobians);
 
-                    quaternion expectedOrientation = quaternion.AxisAngle(axis, minLimit + maxLimit);
-                    Utils.TestUtils.AreEqual(expectedOrientation, motionA.WorldFromMotion.rot, (sfloat)1e-3f);
+                    fpquaternion expectedOrientation = fpquaternion.AxisAngle(axis, minLimit + maxLimit);
+                    Utils.TestUtils.AreEqual(expectedOrientation, motionA.WorldFromMotion.rot, (fp)1e-3f);
                     jacobians.Dispose();
                 }
             }

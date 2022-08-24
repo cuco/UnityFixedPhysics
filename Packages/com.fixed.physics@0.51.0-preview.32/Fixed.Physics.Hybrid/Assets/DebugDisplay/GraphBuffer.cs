@@ -1,5 +1,5 @@
 using System;
-using Fixed.Mathematics;
+using Unity.Mathematics.FixedPoint;
 
 namespace Fixed.DebugDisplay
 {
@@ -32,10 +32,10 @@ namespace Fixed.DebugDisplay
         {
             internal Data data; // offset of first datum, count of data
             internal ColorIndex ColorIndex; // color of data
-            internal sfloat xMin; // first data to display
-            internal sfloat xMax; // last data to display
-            internal sfloat yMin; // first Y value to display
-            internal sfloat yMax; // last Y value to display
+            internal fp xMin; // first data to display
+            internal fp xMax; // last data to display
+            internal fp yMin; // first Y value to display
+            internal fp yMax; // last Y value to display
         }
 
         internal struct InstanceSample
@@ -43,16 +43,16 @@ namespace Fixed.DebugDisplay
             internal int color; // color of the sample
             internal int firstIndex; // first sample index in range to display
             internal int indexMask; // AND sample index with this to make it wrap around
-            internal sfloat indexMul; // multiply the pixel.x by this,
-            internal sfloat indexAdd; // and then by this to get the sample index.
-            internal sfloat sampleMul; // multiply the sample by this,
-            internal sfloat sampleAdd; // and then add this to get the pixel.y
+            internal fp indexMul; // multiply the pixel.x by this,
+            internal fp indexAdd; // and then by this to get the sample index.
+            internal fp sampleMul; // multiply the sample by this,
+            internal fp sampleAdd; // and then add this to get the pixel.y
         }
 
         internal struct Instance
         {
-            internal float2 screenPosition;
-            internal float2 cellSize;
+            internal fp2 screenPosition;
+            internal fp2 cellSize;
             internal int frameColor;
             internal int samples;
             internal InstanceSample sample0;
@@ -63,17 +63,17 @@ namespace Fixed.DebugDisplay
         internal const int kMaxValues = 4096;
         internal const int kMaxColors = 16;
         internal UnsafeArray<Instance> m_Instance;
-        internal UnsafeArray<sfloat> m_Data;
+        internal UnsafeArray<fp> m_Data;
 
         internal void Initialize()
         {
             m_Instance = new UnsafeArray<Instance>(kMaxInstances);
-            m_Data = new UnsafeArray<sfloat>(kMaxValues);
+            m_Data = new UnsafeArray<fp>(kMaxValues);
         }
 
-        sfloat recip(sfloat f)
+        fp recip(fp f)
         {
-            return (f == sfloat.Zero) ? sfloat.One : sfloat.One / f;
+            return (f == fp.zero) ? fp.one : fp.one / f;
         }
 
         internal void ClearGraph(int index)
@@ -87,15 +87,15 @@ namespace Fixed.DebugDisplay
                 return;
             a.data.Validate();
 
-            a.xMax += sfloat.One;
+            a.xMax += fp.one;
 
-            sfloat axScale = (a.xMax - a.xMin) / ((sfloat)(w * 8) - sfloat.One);
-            sfloat ayScale = (sfloat)(h * 16 - 2) * recip(a.yMin - a.yMax);
+            fp axScale = (a.xMax - a.xMin) / ((fp)(w * 8) - fp.one);
+            fp ayScale = (fp)(h * 16 - 2) * recip(a.yMin - a.yMax);
 
             m_Instance[index] = new Instance
             {
-                screenPosition = new float2((sfloat)(x * Cell.kPixelsWide), (sfloat)(y * Cell.kPixelsTall)),
-                cellSize = new float2((sfloat)w, (sfloat)h),
+                screenPosition = new fp2((fp)(x * Cell.kPixelsWide), (fp)(y * Cell.kPixelsTall)),
+                cellSize = new fp2((fp)w, (fp)h),
                 frameColor = ColorIndex.White.value,
                 samples = 1,
                 sample0 = new InstanceSample
@@ -106,7 +106,7 @@ namespace Fixed.DebugDisplay
                     indexMul = axScale,
                     indexAdd = a.xMin,
                     sampleMul = ayScale,
-                    sampleAdd = ayScale * -a.yMax + sfloat.One,
+                    sampleAdd = ayScale * -a.yMax + fp.one,
                 }
             };
         }
@@ -118,18 +118,18 @@ namespace Fixed.DebugDisplay
             a.data.Validate();
             b.data.Validate();
 
-            a.xMax += sfloat.One;
-            b.xMax += sfloat.One;
+            a.xMax += fp.one;
+            b.xMax += fp.one;
 
-            sfloat axScale = (a.xMax - a.xMin) / (sfloat)(w * 8 - 1);
-            sfloat ayScale = (sfloat)(h * 16 - 2) * recip(a.yMin - a.yMax);
-            sfloat bxScale = (b.xMax - b.xMin) / (sfloat)(w * 8 - 1);
-            sfloat byScale = (sfloat)(h * 16 - 2) * recip(b.yMin - b.yMax);
+            fp axScale = (a.xMax - a.xMin) / (fp)(w * 8 - 1);
+            fp ayScale = (fp)(h * 16 - 2) * recip(a.yMin - a.yMax);
+            fp bxScale = (b.xMax - b.xMin) / (fp)(w * 8 - 1);
+            fp byScale = (fp)(h * 16 - 2) * recip(b.yMin - b.yMax);
 
             m_Instance[index] = new Instance
             {
-                screenPosition = new float2((sfloat)(x * Cell.kPixelsWide), (sfloat)(y * Cell.kPixelsTall)),
-                cellSize = new float2((sfloat)w, (sfloat)h),
+                screenPosition = new fp2((fp)(x * Cell.kPixelsWide), (fp)(y * Cell.kPixelsTall)),
+                cellSize = new fp2((fp)w, (fp)h),
                 frameColor = ColorIndex.White.value,
                 samples = 2,
                 sample0 = new InstanceSample
@@ -140,7 +140,7 @@ namespace Fixed.DebugDisplay
                     indexMul = axScale,
                     indexAdd = a.xMin,
                     sampleMul = ayScale,
-                    sampleAdd = ayScale * -a.yMax + sfloat.One,
+                    sampleAdd = ayScale * -a.yMax + fp.one,
                 },
                 sample1 = new InstanceSample
                 {
@@ -150,7 +150,7 @@ namespace Fixed.DebugDisplay
                     indexMul = bxScale,
                     indexAdd = b.xMin,
                     sampleMul = byScale,
-                    sampleAdd = byScale * -b.yMax + sfloat.One,
+                    sampleAdd = byScale * -b.yMax + fp.one,
                 }
             };
         }

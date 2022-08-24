@@ -1,13 +1,13 @@
 using NUnit.Framework;
-using Fixed.Mathematics;
+using Unity.Mathematics.FixedPoint;
 
 namespace Fixed.Physics.Tests.Joints
 {
     class BodyFrame_UnitTests
     {
-        static readonly float3 k_XAxis = new float3((sfloat)1f, (sfloat)0f, (sfloat)0f);
-        static readonly float3 k_YAxis = new float3((sfloat)0f, (sfloat)1f, (sfloat)0f);
-        static readonly (float3, float3)k_DefaultAxes = (k_XAxis, k_YAxis);
+        static readonly fp3 k_XAxis = new fp3((fp)1f, (fp)0f, (fp)0f);
+        static readonly fp3 k_YAxis = new fp3((fp)0f, (fp)1f, (fp)0f);
+        static readonly (fp3, fp3)k_DefaultAxes = (k_XAxis, k_YAxis);
 
         static readonly TestCaseData[] k_ValidateAxesTestCases =
         {
@@ -29,31 +29,31 @@ namespace Fixed.Physics.Tests.Joints
         };
 
         [TestCaseSource(nameof(k_ValidateAxesTestCases))]
-        public (float3, float3) ValidateAxes_ReturnsExpectedValue(BodyFrame bodyFrame)
+        public (fp3, fp3) ValidateAxes_ReturnsExpectedValue(BodyFrame bodyFrame)
         {
             var validatedAxes = bodyFrame.ValidateAxes();
             return (validatedAxes.c0, validatedAxes.c1);
         }
 
-        static float3[] k_ValidateAxesPerpendicularTestCases =
+        static fp3[] k_ValidateAxesPerpendicularTestCases =
         {
-            float3.zero,
+            fp3.zero,
             k_XAxis,
             k_YAxis,
-            new float3((sfloat)1f, -(sfloat)1f, -(sfloat)1f)
+            new fp3((fp)1f, -(fp)1f, -(fp)1f)
         };
 
         [Test]
         public void ValidateAxes_ResultingAxesAreOrthoNormal(
-            [ValueSource(nameof(k_ValidateAxesPerpendicularTestCases))] float3 axis,
-            [ValueSource(nameof(k_ValidateAxesPerpendicularTestCases))] float3 perpendicularAxis
+            [ValueSource(nameof(k_ValidateAxesPerpendicularTestCases))] fp3 axis,
+            [ValueSource(nameof(k_ValidateAxesPerpendicularTestCases))] fp3 perpendicularAxis
         )
         {
             var bodyFrame = new BodyFrame { Axis = axis, PerpendicularAxis = perpendicularAxis };
 
             var validatedAxes = bodyFrame.ValidateAxes();
-            Assume.That(math.length(validatedAxes.c2), Is.EqualTo(1f).Within(0.0001f));
-            var dot = math.dot(validatedAxes.c0, validatedAxes.c1);
+            Assume.That(fpmath.length(validatedAxes.c2), Is.EqualTo(1f).Within(0.0001f));
+            var dot = fpmath.dot(validatedAxes.c0, validatedAxes.c1);
             Assert.That(dot, Is.EqualTo(0f).Within(0.0001f));
         }
     }

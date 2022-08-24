@@ -3,7 +3,7 @@ using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
 using Unity.Jobs;
-using Fixed.Mathematics;
+using Unity.Mathematics.FixedPoint;
 using Fixed.Transforms;
 using UnityEngine.Assertions;
 
@@ -19,7 +19,7 @@ namespace Fixed.Physics.Systems
         /// Needs a system to get read handles to Entity and all physics-related components.
         /// </summary>
         public static JobHandle SchedulePhysicsWorldBuild(SystemBase system, ref PhysicsWorldData physicsData,
-            in JobHandle inputDep, sfloat timeStep, bool isBroadphaseBuildMultiThreaded, float3 gravity, uint lastSystemVersion)
+            in JobHandle inputDep, fp timeStep, bool isBroadphaseBuildMultiThreaded, fp3 gravity, uint lastSystemVersion)
             =>
             SchedulePhysicsWorldBuild(system, ref physicsData.PhysicsWorld, ref physicsData.HaveStaticBodiesChanged,
                 inputDep, timeStep, isBroadphaseBuildMultiThreaded, gravity, lastSystemVersion,
@@ -32,7 +32,7 @@ namespace Fixed.Physics.Systems
         public static JobHandle SchedulePhysicsWorldBuild(
             SystemBase system,
             ref PhysicsWorld world, ref NativeArray<int> haveStaticBodiesChanged,
-            in JobHandle inputDep, sfloat timeStep, bool isBroadphaseBuildMultiThreaded, float3 gravity, uint lastSystemVersion,
+            in JobHandle inputDep, fp timeStep, bool isBroadphaseBuildMultiThreaded, fp3 gravity, uint lastSystemVersion,
             EntityQuery dynamicEntityGroup, EntityQuery staticEntityGroup, EntityQuery jointEntityGroup)
         {
             JobHandle finalHandle = inputDep;
@@ -200,7 +200,7 @@ namespace Fixed.Physics.Systems
         /// Schedule jobs to build broadphase BoundingVolumeHierarchy of the specified PhysicsWorld
         /// </summary>
         public static JobHandle ScheduleBroadphaseBVHBuild(ref PhysicsWorld world, ref NativeArray<int> haveStaticBodiesChanged,
-            in JobHandle inputDep, sfloat timeStep, bool isBroadphaseBuildMultiThreaded, float3 gravity)
+            in JobHandle inputDep, fp timeStep, bool isBroadphaseBuildMultiThreaded, fp3 gravity)
         {
             return world.CollisionWorld.ScheduleBuildBroadphaseJobs(
                 ref world, timeStep, gravity,
@@ -212,7 +212,7 @@ namespace Fixed.Physics.Systems
         /// Needs a system to get read handles to Entity and all physics-related components.
         /// </summary>
         public static void BuildPhysicsWorldImmediate(SystemBase system, ref PhysicsWorldData physicsData,
-            sfloat timeStep, float3 gravity, uint lastSystemVersion)
+            fp timeStep, fp3 gravity, uint lastSystemVersion)
             =>
             BuildPhysicsWorldImmediate(system, ref physicsData.PhysicsWorld, ref physicsData.HaveStaticBodiesChanged,
                 timeStep, gravity, lastSystemVersion, physicsData.DynamicEntityGroup, physicsData.StaticEntityGroup, physicsData.JointEntityGroup);
@@ -224,7 +224,7 @@ namespace Fixed.Physics.Systems
         public static void BuildPhysicsWorldImmediate(
             SystemBase system,
             ref PhysicsWorld world, ref NativeArray<int> haveStaticBodiesChanged,
-            sfloat timeStep, float3 gravity, uint lastSystemVersion,
+            fp timeStep, fp3 gravity, uint lastSystemVersion,
             EntityQuery dynamicEntityGroup, EntityQuery staticEntityGroup, EntityQuery jointEntityGroup)
         {
             EntityTypeHandle entityType = system.GetEntityTypeHandle();
@@ -370,7 +370,7 @@ namespace Fixed.Physics.Systems
         /// <summary>
         /// Build broadphase BoundingVolumeHierarchy of the specified PhysicsWorld (run immediately on the current thread)
         /// </summary>
-        public static void BuildBroadphaseBVHImmediate(ref PhysicsWorld world, bool haveStaticBodiesChanged, sfloat timeStep, float3 gravity)
+        public static void BuildBroadphaseBVHImmediate(ref PhysicsWorld world, bool haveStaticBodiesChanged, fp timeStep, fp3 gravity)
         {
             world.CollisionWorld.BuildBroadphase(ref world, timeStep, gravity, haveStaticBodiesChanged);
         }
@@ -426,7 +426,7 @@ namespace Fixed.Physics.Systems
                 {
                     NativeBodies[BodyIndex] = new RigidBody
                     {
-                        WorldFromBody = new RigidTransform(quaternion.identity, float3.zero),
+                        WorldFromBody = new FpRigidTransform(fpquaternion.identity, fp3.zero),
                         Collider = default,
                         Entity = Entity.Null,
                         CustomTags = 0
@@ -470,7 +470,7 @@ namespace Fixed.Physics.Systems
                     bool hasChunkPositionType = batchInChunk.Has(PositionType);
                     bool hasChunkRotationType = batchInChunk.Has(RotationType);
 
-                    RigidTransform worldFromBody = RigidTransform.identity;
+                    FpRigidTransform worldFromBody = FpRigidTransform.identity;
                     for (int i = 0; i < instanceCount; i++, rbIndex++)
                     {
                         // if entities are in a transform hierarchy then Translation/Rotation are in the space of their parents
@@ -507,7 +507,7 @@ namespace Fixed.Physics.Systems
 
                         RigidBodies[rbIndex] = new RigidBody
                         {
-                            WorldFromBody = new RigidTransform(worldFromBody.rot, worldFromBody.pos),
+                            WorldFromBody = new FpRigidTransform(worldFromBody.rot, worldFromBody.pos),
                             Collider = hasChunkPhysicsColliderType ? chunkColliders[i].Value : default,
                             Entity = chunkEntities[i],
                             CustomTags = hasChunkPhysicsCustomTagsType ? chunkCustomTags[i].Value : (byte)0
@@ -555,19 +555,19 @@ namespace Fixed.Physics.Systems
                     // you should add a PhysicsMass component to get the true values
                     var defaultPhysicsMass = new PhysicsMass
                     {
-                        Transform = RigidTransform.identity,
-                        InverseMass = sfloat.Zero,
-                        InverseInertia = float3.zero,
-                        AngularExpansionFactor = sfloat.One,
+                        Transform = FpRigidTransform.identity,
+                        InverseMass = fp.zero,
+                        InverseInertia = fp3.zero,
+                        AngularExpansionFactor = fp.one,
                     };
                     var zeroPhysicsVelocity = new PhysicsVelocity
                     {
-                        Linear = float3.zero,
-                        Angular = float3.zero
+                        Linear = fp3.zero,
+                        Angular = fp3.zero
                     };
 
                     // Note: if a dynamic body has infinite mass then assume no gravity should be applied
-                    sfloat defaultGravityFactor = hasChunkPhysicsMassType ? sfloat.One : sfloat.Zero;
+                    fp defaultGravityFactor = hasChunkPhysicsMassType ? fp.one : fp.zero;
 
                     for (int i = 0, motionIndex = motionStart; i < instanceCount; i++, motionIndex++)
                     {
@@ -579,7 +579,7 @@ namespace Fixed.Physics.Systems
                         PhysicsVelocity velocity = setVelocityToZero ? zeroPhysicsVelocity : chunkVelocities[i];
                         // If the Body is Kinematic or has an infinite mass gravity should also have no affect on the body's motion.
                         var hasInfiniteMass = isKinematic || mass.HasInfiniteMass;
-                        sfloat gravityFactor = hasInfiniteMass ? sfloat.Zero : hasChunkPhysicsGravityFactorType ? chunkGravityFactors[i].Value : defaultGravityFactor;
+                        fp gravityFactor = hasInfiniteMass ? fp.zero : hasChunkPhysicsGravityFactorType ? chunkGravityFactors[i].Value : defaultGravityFactor;
 
                         MotionVelocities[motionIndex] = new MotionVelocity
                         {
@@ -595,8 +595,8 @@ namespace Fixed.Physics.Systems
                     // Note: these defaults assume a dynamic body with infinite mass, hence no damping
                     var defaultPhysicsDamping = new PhysicsDamping
                     {
-                        Linear = sfloat.Zero,
-                        Angular = sfloat.Zero,
+                        Linear = fp.zero,
+                        Angular = fp.zero,
                     };
 
                     // Create motion datas
@@ -612,13 +612,13 @@ namespace Fixed.Physics.Systems
 
                         MotionDatas[motionIndex] = new MotionData
                         {
-                            WorldFromMotion = new RigidTransform(
-                                math.mul(chunkRotations[i].Value, mass.InertiaOrientation),
-                                math.rotate(chunkRotations[i].Value, mass.CenterOfMass) + chunkPositions[i].Value
+                            WorldFromMotion = new FpRigidTransform(
+                                fpmath.mul(chunkRotations[i].Value, mass.InertiaOrientation),
+                                fpmath.rotate(chunkRotations[i].Value, mass.CenterOfMass) + chunkPositions[i].Value
                                 ),
-                            BodyFromMotion = new RigidTransform(mass.InertiaOrientation, mass.CenterOfMass),
-                            LinearDamping = isKinematic || mass.HasInfiniteMass ? sfloat.Zero : damping.Linear,
-                            AngularDamping = isKinematic || mass.HasInfiniteInertia ? sfloat.Zero : damping.Angular
+                            BodyFromMotion = new FpRigidTransform(mass.InertiaOrientation, mass.CenterOfMass),
+                            LinearDamping = isKinematic || mass.HasInfiniteMass ? fp.zero : damping.Linear,
+                            AngularDamping = isKinematic || mass.HasInfiniteInertia ? fp.zero : damping.Angular
                         };
                     }
                 }

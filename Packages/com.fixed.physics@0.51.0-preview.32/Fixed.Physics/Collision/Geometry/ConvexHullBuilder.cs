@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Unity.Collections;
-using Fixed.Mathematics;
+using Unity.Mathematics;
+using Unity.Mathematics.FixedPoint;
 using UnityEngine.Assertions;
 using Unity.Collections.LowLevel.Unsafe;
 using static Fixed.Physics.Math;
@@ -79,7 +80,7 @@ namespace Fixed.Physics
         private Aabb m_IntegerSpaceAabb;
         private uint m_NextUid;
 
-        private const float k_PlaneEps = 1e-4f;  // Maximum distance any vertex in a face can be from the plane
+        private static readonly fp k_PlaneEps = fp.fp_1e_4f; //1e-4f  // Maximum distance any vertex in a face can be from the plane
 
         /// <summary>
         /// Convex hull vertex.
@@ -87,7 +88,7 @@ namespace Fixed.Physics
         [DebuggerDisplay("{Cardinality}:{Position}")]
         public struct Vertex : IPoolElement
         {
-            public float3 Position;
+            public fp3 Position;
             public int3 IntPosition;
             public int Cardinality;
             public uint UserData;
@@ -95,7 +96,7 @@ namespace Fixed.Physics
 
             public bool IsAllocated => Cardinality != -1;
 
-            public Vertex(float3 position, uint userData)
+            public Vertex(fp3 position, uint userData)
             {
                 Position = position;
                 UserData = userData;
@@ -192,10 +193,10 @@ namespace Fixed.Physics
         /// </summary>
         public struct MassProperties
         {
-            public float3 CenterOfMass;
-            public float3x3 InertiaTensor;
-            public sfloat SurfaceArea;
-            public sfloat Volume;
+            public fp3 CenterOfMass;
+            public fp3x3 InertiaTensor;
+            public fp SurfaceArea;
+            public fp Volume;
         }
 
         /// <summary>
@@ -203,24 +204,24 @@ namespace Fixed.Physics
         /// </summary>
         private struct IntegerSpace
         {
-            // int * Scale + Offset = float
-            public readonly float3 Offset;
-            public readonly sfloat Scale;
-            public readonly sfloat InvScale;
+            // int * Scale + Offset = fp
+            public readonly fp3 Offset;
+            public readonly fp Scale;
+            public readonly fp InvScale;
 
             public IntegerSpace(Aabb aabb, int resolution)
             {
-                sfloat extent = math.cmax(aabb.Extents);
-                Scale = extent / (sfloat)resolution;
-                InvScale = math.select((sfloat)resolution / extent, sfloat.Zero, extent <= sfloat.Zero);
-                Offset = aabb.Center - (extent * (sfloat)0.5f);
+                fp extent = fpmath.cmax(aabb.Extents);
+                Scale = extent / resolution;
+                InvScale = fpmath.select(resolution / extent, 0, extent <= 0);
+                Offset = aabb.Center - (extent / 2);
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public int3 ToIntegerSpace(float3 x) => new int3((x - Offset) * InvScale + (sfloat)0.5f);
+            public int3 ToIntegerSpace(fp3 x) => (int3)((x - Offset) * InvScale + fp.half);
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public float3 ToFloatSpace(int3 x) => x * new float3(Scale) + Offset;
+            public fp3 ToFloatSpace(int3 x) => (fp3)x * Scale + Offset;
         }
 
         // Create a hull builder with external storage
@@ -228,7 +229,7 @@ namespace Fixed.Physics
         // domain is the AABB of all points that will be added to the hull
         // simplificationTolerance is the sum of tolerances that will be passed to SimplifyVertices() and SimplifyFacesAndShrink()
         public unsafe ConvexHullBuilder(int verticesCapacity, Vertex* vertices, Triangle* triangles, Plane* planes,
-                                        Aabb domain, sfloat simplificationTolerance, IntResolution intResolution)
+                                        Aabb domain, fp simplificationTolerance, IntResolution intResolution)
         {
             m_Vertices = new ElementPoolBase(vertices, verticesCapacity);
             m_Triangles = new ElementPoolBase(triangles, 2 * verticesCapacity);
@@ -236,7 +237,7 @@ namespace Fixed.Physics
             Dimension = -1;
             NumFaces = 0;
             NumFaceVertices = 0;
-            ProjectionPlane = new Plane(new float3(0), sfloat.Zero);
+            ProjectionPlane = new Plane(new fp3(0), 0);
             HullMassProperties = new MassProperties();
             m_IntNormalDirectionX = 0;
             m_IntNormalDirectionY = 0;
@@ -247,10 +248,10 @@ namespace Fixed.Physics
             // Add some margin for error to the domain.  This loses some quantization resolution and therefore some accuracy, but it's possible that
             // SimplifyVertices and SimplifyFacesAndMerge will not stay perfectly within the requested error limits, and expanding the limits avoids
             // clipping against the domain AABB in AddPoint
-            const float constantMargin = 0.01f;
-            const float linearMargin = 0.1f;
-            domain.Expand(math.max(simplificationTolerance * (sfloat)2, (sfloat)constantMargin));
-            domain.Expand(math.cmax(domain.Extents) * (sfloat)linearMargin);
+            fp constantMargin = fp.fp_1e_2f;//0.01f;
+            fp linearMargin = fp.fp_1e_1f;//0.1f;
+            domain.Expand(fpmath.max(simplificationTolerance * 2, constantMargin));
+            domain.Expand(fpmath.cmax(domain.Extents) * linearMargin);
             m_IntegerSpaceAabb = domain;
 
             int quantizationBits = (intResolution == IntResolution.Low ? 16 : 30);
@@ -299,7 +300,7 @@ namespace Fixed.Physics
             Dimension = -1;
             NumFaces = 0;
             NumFaceVertices = 0;
-            ProjectionPlane = new Plane(new float3(0), sfloat.Zero);
+            ProjectionPlane = new Plane(new fp3(0), 0);
         }
 
         //
@@ -330,7 +331,7 @@ namespace Fixed.Physics
         /// <param name="userData">User data attached to the new vertex if insertion succeeds.</param>
         /// <param name="force2D">If true, the hull will not grow beyond two dimensions.</param>
         /// <returns>true if the insertion succeeded, false otherwise.</returns>
-        public unsafe bool AddPoint(float3 point, uint userData = 0, bool force2D = false)
+        public unsafe bool AddPoint(fp3 point, uint userData = 0, bool force2D = false)
         {
             // Reset faces.
             NumFaces = 0;
@@ -345,7 +346,7 @@ namespace Fixed.Physics
             // Point should be inside the quantization AABB, if not then clip it
             if (!m_IntegerSpaceAabb.Contains(point))
             {
-                point = math.max(math.min(point, m_IntegerSpaceAabb.Max), m_IntegerSpaceAabb.Min);
+                point = fpmath.max(fpmath.min(point, m_IntegerSpaceAabb.Max), m_IntegerSpaceAabb.Min);
             }
             int3 intPoint = m_IntegerSpace.ToIntegerSpace(point);
 
@@ -363,8 +364,8 @@ namespace Fixed.Physics
                 // 0 dimensional hull, make a line.
                 case 0:
                 {
-                    const float minDistanceFromPoint = 1e-5f;
-                    if ((float)math.lengthsq(Vertices[0].Position - point) <= minDistanceFromPoint * minDistanceFromPoint) return false;
+                    fp minDistanceFromPoint = fp.fp_1e_5f;//1e-5f;
+                    if (fpmath.lengthsq(Vertices[0].Position - point) <= minDistanceFromPoint * minDistanceFromPoint) return false;
                     AllocateVertex(point, userData);
                     Dimension = 1;
                 }
@@ -377,9 +378,9 @@ namespace Fixed.Physics
                     if (normalDirectionX == 0 && normalDirectionY == 0 && normalDirectionZ == 0)
                     {
                         // Still 1D, keep whichever two vertices are farthest apart
-                        float3x3 edgesTransposed = math.transpose(new float3x3(Vertices[1].Position - Vertices[0].Position, point - Vertices[1].Position, Vertices[0].Position - point));
-                        float3 edgesLengthSq = edgesTransposed.c0 * edgesTransposed.c0 + edgesTransposed.c1 * edgesTransposed.c1 + edgesTransposed.c2 * edgesTransposed.c2;
-                        bool3 isLongestEdge = edgesLengthSq == math.cmax(edgesLengthSq);
+                        fp3x3 edgesTransposed = fpmath.transpose(new fp3x3(Vertices[1].Position - Vertices[0].Position, point - Vertices[1].Position, Vertices[0].Position - point));
+                        fp3 edgesLengthSq = edgesTransposed.c0 * edgesTransposed.c0 + edgesTransposed.c1 * edgesTransposed.c1 + edgesTransposed.c2 * edgesTransposed.c2;
+                        bool3 isLongestEdge = edgesLengthSq == fpmath.cmax(edgesLengthSq);
                         if (isLongestEdge.y)
                         {
                             Vertex newVertex = Vertices[0];
@@ -423,7 +424,7 @@ namespace Fixed.Physics
                             if (det != 0)
                             {
                                 // Extend dimension.
-                                ProjectionPlane = new Plane(new float3(0), sfloat.Zero);
+                                ProjectionPlane = new Plane(new fp3(0), 0);
 
                                 // Orient tetrahedron.
                                 if (det > 0)
@@ -525,8 +526,8 @@ namespace Fixed.Physics
                     // Classify all triangles as either front(faceIndex = 1) or back(faceIndex = -1).
                     int firstFrontTriangleIndex = -1, numFrontTriangles = 0, numBackTriangles = 0;
                     int lastFrontTriangleIndex = -1;
-                    float3 floatPoint = m_IntegerSpace.ToFloatSpace(intPoint);
-                    sfloat maxDistance = sfloat.Zero;
+                    fp3 fpPoint = m_IntegerSpace.ToFloatSpace(intPoint);
+                    fp maxDistance = fp.zero;
                     foreach (int triangleIndex in Triangles.Indices)
                     {
                         Triangle triangle = Triangles[triangleIndex];
@@ -551,8 +552,8 @@ namespace Fixed.Physics
                             numFrontTriangles++;
 
                             Plane plane = ComputePlane(triangleIndex, true);
-                            sfloat distance = math.dot(plane.Normal, floatPoint) + plane.Distance;
-                            maxDistance = math.max(distance, maxDistance);
+                            fp distance = fpmath.dot(plane.Normal, fpPoint) + plane.Distance;
+                            maxDistance = fpmath.max(distance, maxDistance);
                         }
                         else
                         {
@@ -645,7 +646,7 @@ namespace Fixed.Physics
 
             // Copy the vertices and compute the OLS plane
             Plane plane;
-            float3* tempVertices = stackalloc float3[Vertices.PeakCount];
+            fp3* tempVertices = stackalloc fp3[Vertices.PeakCount];
             Aabb aabb = Aabb.Empty;
             int numVertices = 0;
             {
@@ -653,12 +654,13 @@ namespace Fixed.Physics
                 data.Init();
                 foreach (int v in Vertices.Indices)
                 {
-                    float3 position = Vertices[v].Position;
+                    fp3 position = Vertices[v].Position;
                     tempVertices[numVertices++] = position;
-                    data.Include(position, sfloat.One);
+                    data.Include(position, fp.one);
                     aabb.Include(position);
                 }
-                float3 direction = (sfloat)1.0f / math.max((sfloat)1e-10f, aabb.Extents); // Use the min aabb extent as regressand
+                //1e-10f
+                fp3 direction = fp.one / fpmath.max(fp.fp_1e_10f, aabb.Extents); // Use the min aabb extent as regressand
                 data.Solve(direction, direction);
                 plane = data.Plane;
             }
@@ -677,8 +679,8 @@ namespace Fixed.Physics
         // Helper to sort triangles in BuildFaceIndices
         unsafe struct CompareAreaDescending : IComparer<int>
         {
-            public NativeArray<sfloat> Areas;
-            public CompareAreaDescending(NativeArray<sfloat> areas) { Areas = areas; }
+            public NativeArray<fp> Areas;
+            public CompareAreaDescending(NativeArray<fp> areas) { Areas = areas; }
             public int Compare(int x, int y)
             {
                 return Areas[y].CompareTo(Areas[x]);
@@ -688,7 +690,7 @@ namespace Fixed.Physics
         // Set the face index for each triangle. Triangles lying in the same plane will have the same face index.
         public void BuildFaceIndices(NativeArray<Plane> planes = default)
         {
-            const float convexEps = 1e-5f; // Maximum error allowed in face convexity
+            fp convexEps = fp.fp_1e_5f; // Maximum error allowed in face convexity
 
             NumFaces = 0;
             NumFaceVertices = 0;
@@ -710,15 +712,15 @@ namespace Fixed.Physics
                 {
                     // Make a compact list of triangles and their areas
                     NativeArray<int> triangleIndices = new NativeArray<int>(Triangles.PeakCount, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
-                    NativeArray<sfloat> triangleAreas = new NativeArray<sfloat>(Triangles.PeakCount, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
+                    NativeArray<fp> triangleAreas = new NativeArray<fp>(Triangles.PeakCount, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
                     int numTriangles = 0;
                     foreach (int triangleIndex in Triangles.Indices)
                     {
                         Triangle t = Triangles[triangleIndex];
-                        float3 o = Vertices[t.Vertex0].Position;
-                        float3 a = Vertices[t.Vertex1].Position - o;
-                        float3 b = Vertices[t.Vertex2].Position - o;
-                        triangleAreas[triangleIndex] = math.lengthsq(math.cross(a, b));
+                        fp3 o = Vertices[t.Vertex0].Position;
+                        fp3 a = Vertices[t.Vertex1].Position - o;
+                        fp3 b = Vertices[t.Vertex2].Position - o;
+                        triangleAreas[triangleIndex] = fpmath.lengthsq(fpmath.cross(a, b));
                         triangleIndices[numTriangles++] = triangleIndex;
                     }
 
@@ -753,16 +755,16 @@ namespace Fixed.Physics
                         int bestPlane = -1;
                         if (planes != null)
                         {
-                            float bestError = k_PlaneEps;
-                            float3 a = Vertices[t.Vertex0].Position;
-                            float3 b = Vertices[t.Vertex1].Position;
-                            float3 c = Vertices[t.Vertex2].Position;
+                            fp bestError = k_PlaneEps;
+                            fp3 a = Vertices[t.Vertex0].Position;
+                            fp3 b = Vertices[t.Vertex1].Position;
+                            fp3 c = Vertices[t.Vertex2].Position;
                             for (int i = 0; i < planes.Length; i++)
                             {
                                 if (planesUsed[i]) continue;
                                 Plane currentPlane = planes[i];
-                                float3 errors = new float3(currentPlane.SignedDistanceToPoint(a), currentPlane.SignedDistanceToPoint(b), currentPlane.SignedDistanceToPoint(c));
-                                float error = (float)math.cmax(math.abs(errors));
+                                fp3 errors = new fp3(currentPlane.SignedDistanceToPoint(a), currentPlane.SignedDistanceToPoint(b), currentPlane.SignedDistanceToPoint(c));
+                                fp error = fpmath.cmax(fpmath.abs(errors));
                                 if (error < bestError)
                                 {
                                     bestError = error;
@@ -792,7 +794,7 @@ namespace Fixed.Physics
                         while (true)
                         {
                             int openBoundaryEdgeIndex = -1;
-                            sfloat maxArea = sfloat.MinusOne;
+                            fp maxArea = -1;
 
                             for (int i = 0; i < numBoundaryEdges; ++i)
                             {
@@ -805,14 +807,14 @@ namespace Fixed.Physics
                                 if (triangleAreas[linkedTriangleIndex] <= maxArea) continue;
 
                                 int apex = ApexVertex(linkedEdge);
-                                float3 newVertex = Vertices[apex].Position;
-                                if (math.abs(plane.SignedDistanceToPoint(newVertex)) > (sfloat)k_PlaneEps)
+                                fp3 newVertex = Vertices[apex].Position;
+                                if (fpmath.abs(plane.SignedDistanceToPoint(newVertex)) > k_PlaneEps)
                                 {
                                     continue;
                                 }
 
-                                float3 linkedNormal = ComputePlane(linkedTriangleIndex).Normal;
-                                if (math.dot(plane.Normal, linkedNormal) < sfloat.Zero)
+                                fp3 linkedNormal = ComputePlane(linkedTriangleIndex).Normal;
+                                if (fpmath.dot(plane.Normal, linkedNormal) < fp.zero)
                                 {
                                     continue;
                                 }
@@ -823,9 +825,9 @@ namespace Fixed.Physics
                                 var accept = true;
                                 for (int j = 1; accept && j < (numBoundaryEdges - 1); ++j)
                                 {
-                                    float3 x = Vertices[EndVertex(boundaryEdges[(i + j) % numBoundaryEdges])].Position;
-                                    sfloat d = math.max(Dotxyz1(p0, x), Dotxyz1(p1, x));
-                                    accept &= d < (sfloat)convexEps;
+                                    fp3 x = Vertices[EndVertex(boundaryEdges[(i + j) % numBoundaryEdges])].Position;
+                                    fp d = fpmath.max(Dotxyz1(p0, x), Dotxyz1(p1, x));
+                                    accept &= d < convexEps;
                                 }
 
                                 if (accept)
@@ -867,7 +869,6 @@ namespace Fixed.Physics
                         NumFaceVertices += numBoundaryEdges;
                     }
 
-
                     // Triangle merging may turn 3D shapes into 2D, check for that case and reduce the dimension
                     if (NumFaces < 4)
                     {
@@ -878,7 +879,7 @@ namespace Fixed.Physics
             }
         }
 
-        private int AllocateVertex(float3 point, uint userData)
+        private int AllocateVertex(fp3 point, uint userData)
         {
             Assert.IsTrue(m_IntegerSpaceAabb.Contains(point));
             var vertex = new Vertex(point, userData) { IntPosition = m_IntegerSpace.ToIntegerSpace(point) };
@@ -935,7 +936,7 @@ namespace Fixed.Physics
         // Removes vertices that are colinear with two neighbors or coplanar with all neighbors.
         public unsafe void RemoveRedundantVertices()
         {
-            const float toleranceSq = 1e-10f;
+            fp toleranceSq = fp.fp_1e_10f;//1e-10f;
 
             NativeArray<Vertex> newVertices = new NativeArray<Vertex>(Vertices.PeakCount, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
             NativeArray<bool> removed = new NativeArray<bool>(Vertices.PeakCount, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
@@ -952,7 +953,7 @@ namespace Fixed.Physics
                 int numNewVertices = 0;
                 foreach (int v in Vertices.Indices)
                 {
-                    float3 x = Vertices[v].Position;
+                    fp3 x = Vertices[v].Position;
                     bool keep = true;
                     bool coplanar = true;
                     bool anyRemoved = false;
@@ -969,7 +970,7 @@ namespace Fixed.Physics
                         {
                             // Double precision is necessary because the calculation involves comparing a difference of squares, which loses a lot of accuracy for long
                             // edges, against a very small fixed tolerance
-                            double3 v0 = Vertices[index0].Position;
+                            double3 v0 = (double3)Vertices[index0].Position;
                             double3 edge0Vec = (double3)x - v0;
                             double edge0LengthSq = math.lengthsq(edge0Vec);
                             Edge edge1 = GetLinkedEdge(edge0.Prev);
@@ -978,9 +979,9 @@ namespace Fixed.Physics
                             // have nearly opposite face normals, so all of the points may be nearly coplanar but the vertex is not safe to remove
                             {
                                 Triangle triangle1 = Triangles[edge1.TriangleIndex];
-                                float3 v00 = Vertices[triangle0.Vertex0].Position, v01 = Vertices[triangle0.Vertex1].Position, v02 = Vertices[triangle0.Vertex2].Position;
-                                float3 v10 = Vertices[triangle1.Vertex0].Position, v11 = Vertices[triangle1.Vertex1].Position, v12 = Vertices[triangle1.Vertex2].Position;
-                                coplanar &= (math.dot(math.cross(v01 - v00, v02 - v00), math.cross(v11 - v10, v12 - v10)) >= sfloat.Zero);
+                                fp3 v00 = Vertices[triangle0.Vertex0].Position, v01 = Vertices[triangle0.Vertex1].Position, v02 = Vertices[triangle0.Vertex2].Position;
+                                fp3 v10 = Vertices[triangle1.Vertex0].Position, v11 = Vertices[triangle1.Vertex1].Position, v12 = Vertices[triangle1.Vertex2].Position;
+                                coplanar &= (fpmath.dot(fpmath.cross(v01 - v00, v02 - v00), fpmath.cross(v11 - v10, v12 - v10)) >= fp.zero);
                             }
 
                             while (edge1.Value != firstEdge.Value && keep)
@@ -990,14 +991,14 @@ namespace Fixed.Physics
                                 // The math below is derived from the fact that the distance is the length of the rejection of (x - v0) from (v1 - v0), and
                                 // lengthSq(rejection) + lengthSq(x - v0) = lengthSq(projection)
                                 int index1 = Triangles[edge1.TriangleIndex].GetVertex((edge1.EdgeIndex + 1) % 3);
-                                double3 v1 = Vertices[index1].Position;
+                                double3 v1 = (double3)Vertices[index1].Position;
                                 if (!removed[index1]) // Ignore already removed vertices
                                 {
                                     double3 lineVec = v1 - v0;
                                     double lineVecLengthSq = math.lengthsq(lineVec);
                                     double dot = math.dot(edge0Vec, lineVec);
                                     double diffSq = edge0LengthSq * lineVecLengthSq - dot * dot;
-                                    double scaledTolSq = toleranceSq * lineVecLengthSq;
+                                    double scaledTolSq = (double)toleranceSq * lineVecLengthSq;
                                     keep &= (dot<0 || dot> lineVecLengthSq || diffSq > scaledTolSq);
 
                                     Edge edge2 = GetLinkedEdge(edge1.Prev);
@@ -1006,10 +1007,10 @@ namespace Fixed.Physics
                                         int index2 = Triangles[edge2.TriangleIndex].GetVertex((edge2.EdgeIndex + 1) % 3);
                                         if (!removed[index2])
                                         {
-                                            double3 v2 = Vertices[index2].Position;
+                                            double3 v2 = (double3)Vertices[index2].Position;
                                             double3 n = math.cross(v2 - v0, v1 - v0);
                                             double det = math.dot(n, edge0Vec);
-                                            coplanar &= (det * det < math.lengthsq(n) * toleranceSq);
+                                            coplanar &= (det * det < math.lengthsq(n) * (double)toleranceSq);
                                         }
                                     }
                                 }
@@ -1058,8 +1059,8 @@ namespace Fixed.Physics
         {
             public int VertexA; // Source vertex, index into Vertices
             public int VertexB; // Source vertex
-            public float3 Target; // Position to replace the original vertices with
-            public float Cost; // Sum of squared distances from Target to the planes incident to the original vertices
+            public fp3 Target; // Position to replace the original vertices with
+            public fp Cost; // Sum of squared distances from Target to the planes incident to the original vertices
         }
 
         // Orders Collapses by Cost
@@ -1078,15 +1079,15 @@ namespace Fixed.Physics
 
         // Returns a plane containing the edge through vertexIndex0 and vertexIndex1, with normal at equal angles
         // to normal0 and normal1 (those of the triangles that share the edge)
-        Plane GetEdgePlane(int vertexIndex0, int vertexIndex1, float3 normal0, float3 normal1)
+        Plane GetEdgePlane(int vertexIndex0, int vertexIndex1, fp3 normal0, fp3 normal1)
         {
-            float3 vertex0 = Vertices[vertexIndex0].Position;
-            float3 vertex1 = Vertices[vertexIndex1].Position;
-            float3 edgeVec = vertex1 - vertex0;
-            float3 edgeNormal0 = math.normalize(math.cross(edgeVec, normal0));
-            float3 edgeNormal1 = math.normalize(math.cross(normal1, edgeVec));
-            float3 edgeNormal = math.normalize(edgeNormal0 + edgeNormal1);
-            return new Plane(edgeNormal, -math.dot(edgeNormal, vertex0));
+            fp3 vertex0 = Vertices[vertexIndex0].Position;
+            fp3 vertex1 = Vertices[vertexIndex1].Position;
+            fp3 edgeVec = vertex1 - vertex0;
+            fp3 edgeNormal0 = fpmath.normalize(fpmath.cross(edgeVec, normal0));
+            fp3 edgeNormal1 = fpmath.normalize(fpmath.cross(normal1, edgeVec));
+            fp3 edgeNormal = fpmath.normalize(edgeNormal0 + edgeNormal1);
+            return new Plane(edgeNormal, -fpmath.dot(edgeNormal, vertex0));
         }
 
         // Returns a matrix M so that (x, y, z, 1) * M * (x, y, z, 1)^T = square of the distance from (x, y, z) to plane
@@ -1104,38 +1105,38 @@ namespace Fixed.Physics
 
             // error = x^T * matrix * x, its only extreme point is a minimum and its gradient is linear
             // the value of x that minimizes error is the root of the gradient
-            float4 x = float4.zero;
-            float cost = float.MaxValue;
+            fp4 x = fp4.zero;
+            fp cost = fp.max_value;
             switch (Dimension)
             {
                 case 2:
                 {
                     // In 2D force vertices to collapse on their original edge (could potentially get lower error by restricting
                     // to the plane, but this is simpler and good enough)
-                    float3 u = Vertices[a].Position;
-                    float3 v = Vertices[b].Position;
-                    float3 edge = v - u;
+                    fp3 u = Vertices[a].Position;
+                    fp3 v = Vertices[b].Position;
+                    fp3 edge = v - u;
                     double3x3 solveMatrix = new double3x3(matrix.c0.xyz, matrix.c1.xyz, matrix.c2.xyz);
-                    double denom = math.dot(math.mul(solveMatrix, edge), (double3)edge);
+                    double denom = math.dot(math.mul(solveMatrix, (double3)edge), (double3)edge);
                     if (denom == 0) // unexpected, just take the midpoint to avoid divide by zero
                     {
-                        x = new float4(u + edge * (sfloat)0.5f, sfloat.One);
-                        cost = (float)math.dot(math.mul(matrix, x), x);
+                        x = new fp4(u + edge * fp.half, 1);
+                        cost = (fp)math.dot(math.mul(matrix, (double4)x), (double4)x);
                     }
                     else
                     {
                         // Find the extreme point on the line through u and v
                         double3 solveOffset = matrix.c3.xyz;
-                        float extremum = (float)(-math.dot(math.mul(solveMatrix, u) + solveOffset, (double3)edge) / denom);
-                        x = new float4(u + edge * math.clamp((sfloat)extremum, sfloat.Zero, sfloat.One), sfloat.One);
+                        fp extremum = (fp)(-math.dot(math.mul(solveMatrix, (double3)u) + solveOffset, (double3)edge) / denom);
+                        x = new fp4(u + edge * fpmath.clamp(extremum, fp.zero, fp.one), 1);
 
                         // Minimum error is at the extremum or one of the two boundaries, test all three and choose the least
-                        float uError = (float)Math.Dotxyz1(math.mul(matrix, new double4(u, 1)), u);
-                        float vError = (float)Math.Dotxyz1(math.mul(matrix, new double4(v, 1)), v);
-                        float xError = (float)math.dot(math.mul(matrix, x), x);
-                        cost = (float)math.min(math.min(uError, vError), xError);
-                        float3 point = math.select(u.xyz, v.xyz, cost == vError);
-                        point = math.select(point, x.xyz, cost == xError);
+                        fp uError = (fp)Math.Dotxyz1(math.mul(matrix, new double4((double3)u, 1)), (double3)u);
+                        fp vError = (fp)Math.Dotxyz1(math.mul(matrix, new double4((double3)v, 1)), (double3)v);
+                        fp xError = (fp)math.dot(math.mul(matrix, (double4)x), (double4)x);
+                        cost = fpmath.min(fpmath.min(uError, vError), xError);
+                        fp3 point = fpmath.select(u.xyz, v.xyz, cost == vError);
+                        point = fpmath.select(point, x.xyz, cost == xError);
                     }
                     break;
                 }
@@ -1154,8 +1155,8 @@ namespace Fixed.Physics
                         goto case 2;
                     }
 
-                    x = (float4)math.mul(math.inverse(solveMatrix), new double4(0, 0, 0, 1));
-                    cost = (float)math.dot(math.mul(matrix, x), x);
+                    x = (fp4)math.mul(math.inverse(solveMatrix), new double4(0, 0, 0, 1));
+                    cost = (fp)math.dot(math.mul(matrix, (double4)x), (double4)x);
 
                     break;
                 }
@@ -1180,7 +1181,7 @@ namespace Fixed.Physics
         // introducing error in excess of maxError.
         // Based on QEM, but with contractions only allowed for vertices connected by a triangle edge, and only to be replaced by vertices on the same edge
         // Note, calling this function destroys vertex user data
-        public unsafe void SimplifyVertices(float maxError, int maxVertices)
+        public unsafe void SimplifyVertices(fp maxError, int maxVertices)
         {
             // Simplification is only possible in 2D / 3D
             if (Dimension < 2)
@@ -1214,8 +1215,8 @@ namespace Fixed.Physics
                 for (int i = 0; i < NumFaces; i++)
                 {
                     // Calculate the error matrix for this face
-                    float4 plane = Planes[i];
-                    double4x4 faceMatrix = GetPlaneDistSqMatrix(plane);
+                    fp4 plane = Planes[i];
+                    double4x4 faceMatrix = GetPlaneDistSqMatrix((double4)plane);
 
                     // Add it to the error matrix of each vertex on the face
                     for (FaceEdge edge = new FaceEdge { Start = firstEdges[i], Current = firstEdges[i] }; edge.IsValid; edge = GetNextFaceEdge(edge)) // For each edge of the current face
@@ -1230,19 +1231,19 @@ namespace Fixed.Physics
                         int vertex1 = oppositeTriangle.GetVertex(opposite.EdgeIndex);
                         if (vertex0 < vertex1) // Count each edge only once
                         {
-                            float3 oppositeNormal = Planes[oppositeTriangle.FaceIndex].Normal;
-                            if ((float)math.dot(plane.xyz, oppositeNormal) < -0.017452f) // 91 degrees -- right angles are common in input data, avoid creating edge planes that distort the original faces
+                            fp3 oppositeNormal = Planes[oppositeTriangle.FaceIndex].Normal;
+                            //-0.017452f
+                            if (fpmath.dot(plane.xyz, oppositeNormal) < new fp(0, 17452, 1000000) * fp.minusOne) // 91 degrees -- right angles are common in input data, avoid creating edge planes that distort the original faces
                             {
                                 // Add an edge plane to the cost metric for each vertex on the edge to preserve sharp features
-                                float4 edgePlane = GetEdgePlane(vertex0, vertex1, plane.xyz, oppositeNormal);
-                                double4x4 edgeMatrix = GetPlaneDistSqMatrix(edgePlane);
+                                fp4 edgePlane = GetEdgePlane(vertex0, vertex1, plane.xyz, oppositeNormal);
+                                double4x4 edgeMatrix = GetPlaneDistSqMatrix((double4)edgePlane);
                                 matrices[vertex0] += edgeMatrix;
                                 matrices[vertex1] += edgeMatrix;
                             }
                         }
                     }
                 }
-
 
                 // Allocate space for QEM
                 collapses = new NativeArray<Collapse>(Triangles.PeakCount * 3 / 2, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
@@ -1252,8 +1253,8 @@ namespace Fixed.Physics
                 // In 2D, the vertices are sorted and each one has two edge planes
                 for (int i = Vertices.PeakCount - 1, j = 0; j < Vertices.PeakCount; i = j, j++)
                 {
-                    float4 edgePlane = PlaneFromTwoEdges(Vertices[i].Position, Vertices[j].Position - Vertices[i].Position, ProjectionPlane.Normal);
-                    double4x4 edgeMatrix = GetPlaneDistSqMatrix(edgePlane);
+                    fp4 edgePlane = PlaneFromTwoEdges(Vertices[i].Position, Vertices[j].Position - Vertices[i].Position, ProjectionPlane.Normal);
+                    double4x4 edgeMatrix = GetPlaneDistSqMatrix((double4)edgePlane);
                     matrices[i] += edgeMatrix;
                     matrices[j] += edgeMatrix;
                 }
@@ -1272,7 +1273,7 @@ namespace Fixed.Physics
             // Repeatedly simplify the hull until the count is less than maxVertices and there are no further changes that satisfy maxError
             NativeArray<Vertex> newVertices = new NativeArray<Vertex>(numVertices, Allocator.Temp, NativeArrayOptions.UninitializedMemory); // Note, only Position and UserData are used
             bool enforceMaxVertices = false;
-            float maxCost = maxError * maxError;
+            fp maxCost = maxError * maxError;
             while (true)
             {
                 // Build a list of potential edge collapses
@@ -1408,7 +1409,7 @@ namespace Fixed.Physics
             public int Face0; // Face index
             public int Face1; // Face index
             public Plane Plane; // Plane to replace the two faces
-            public sfloat Cost; // Sum of squared distances from original vertices to Plane
+            public fp Cost; // Sum of squared distances from original vertices to Plane
             public bool SmallAngle; // True if the angle between the source faces is below the minimum angle threshold
         }
 
@@ -1417,30 +1418,30 @@ namespace Fixed.Physics
         struct OLSData
         {
             // Inputs
-            private sfloat m_Weight; // Cost multiplier
+            private fp m_Weight; // Cost multiplier
             private int m_Count; // Number of points in the set
-            private float3 m_Sums; // Sum of x, y, z
-            private float3 m_SquareSums; // Sum of x^2, y^2, z^2
-            private float3 m_ProductSums; // Sum of xy, yz, zx
+            private fp3 m_Sums; // Sum of x, y, z
+            private fp3 m_SquareSums; // Sum of x^2, y^2, z^2
+            private fp3 m_ProductSums; // Sum of xy, yz, zx
 
             // Outputs, assigned when Solve() is called
             public Plane Plane; // OLS plane of the points in the set
-            public sfloat Cost; // m_Weight * sum of squared distances from points in the set to Plane
+            public fp Cost; // m_Weight * sum of squared distances from points in the set to Plane
 
             // Empty the set
             public void Init()
             {
-                m_Weight = sfloat.Zero;
+                m_Weight = 0;
                 m_Count = 0;
-                m_Sums = float3.zero;
-                m_SquareSums = float3.zero;
-                m_ProductSums = float3.zero;
+                m_Sums = fp3.zero;
+                m_SquareSums = fp3.zero;
+                m_ProductSums = fp3.zero;
             }
 
             // Add a single point to the set
-            public void Include(float3 v, sfloat weight)
+            public void Include(fp3 v, fp weight)
             {
-                m_Weight = math.max(m_Weight, weight);
+                m_Weight = fpmath.max(m_Weight, weight);
                 m_Count++;
                 m_Sums += v;
                 m_SquareSums += v * v;
@@ -1448,9 +1449,9 @@ namespace Fixed.Physics
             }
 
             // Add all points from the
-            public void Include(OLSData source, sfloat weight)
+            public void Include(OLSData source, fp weight)
             {
-                m_Weight = math.max(math.max(m_Weight, source.m_Weight), weight);
+                m_Weight = fpmath.max(fpmath.max(m_Weight, source.m_Weight), weight);
                 m_Count += source.m_Count;
                 m_Sums += source.m_Sums;
                 m_SquareSums += source.m_SquareSums;
@@ -1459,11 +1460,11 @@ namespace Fixed.Physics
 
             // Calculate OLS of all included points and store the results in Plane and Cost.
             // Returned plane has normal dot direction >= 0.
-            public void Solve(float3 normal0, float3 normal1)
+            public void Solve(fp3 normal0, fp3 normal1)
             {
-                float3 averageDirection = normal0 + normal1;
-                float3 absAverageDirection = math.abs(averageDirection);
-                bool3 maxAxis = math.cmax(absAverageDirection) == absAverageDirection;
+                fp3 averageDirection = normal0 + normal1;
+                fp3 absAverageDirection = fpmath.abs(averageDirection);
+                bool3 maxAxis = fpmath.cmax(absAverageDirection) == absAverageDirection;
 
                 // Solve using the axis closest to the average normal for the regressand
                 bool planeOk;
@@ -1485,20 +1486,20 @@ namespace Fixed.Physics
                 // Calculate the error
                 if (!planeOk)
                 {
-                    Cost = sfloat.MaxValue;
+                    Cost = fp.max_value;
                 }
                 else
                 {
-                    float4x4 errorMatrix = new float4x4(
+                    fp4x4 errorMatrix = new fp4x4(
                         m_SquareSums.x, m_ProductSums.x, m_ProductSums.z, m_Sums.x,
                         m_ProductSums.x, m_SquareSums.y, m_ProductSums.y, m_Sums.y,
                         m_ProductSums.z, m_ProductSums.y, m_SquareSums.z, m_Sums.z,
-                        m_Sums.x, m_Sums.y, m_Sums.z, (sfloat)m_Count);
-                    Cost = math.dot(math.mul(errorMatrix, Plane), Plane) * m_Weight;
+                        m_Sums.x, m_Sums.y, m_Sums.z, m_Count);
+                    Cost = fpmath.dot(fpmath.mul(errorMatrix, Plane), Plane) * m_Weight;
                 }
 
                 // Flip the plane if it's pointing the wrong way
-                if (math.dot(Plane.Normal, averageDirection) < sfloat.Zero)
+                if (fpmath.dot(Plane.Normal, averageDirection) < 0)
                 {
                     Plane = Plane.Flipped;
                 }
@@ -1506,33 +1507,33 @@ namespace Fixed.Physics
 
             // Solve implementation, uses regressor xy regressand z
             // Returns false if the problem is singular
-            private static bool Solve(int count, float3 sums, float3 squareSums, float3 productSums, out Plane plane)
+            private static bool Solve(int count, fp3 sums, fp3 squareSums, fp3 productSums, out Plane plane)
             {
                 // Calculate the plane with minimum sum of squares of distances to points in the set
                 double3x3 gram = new double3x3(
-                    count, (float)sums.x, (float)sums.y,
-                    (float)sums.x, (float)squareSums.x, (float)productSums.x,
-                    (float)sums.y, (float)productSums.x, (float)squareSums.y);
+                    count, (double)sums.x, (double)sums.y,
+                    (double)sums.x, (double)squareSums.x, (double)productSums.x,
+                    (double)sums.y, (double)productSums.x, (double)squareSums.y);
                 if (math.determinant(gram) == 0) // check for singular gram matrix (unexpected, points should be from nondegenerate tris and so span at least 2 dimensions)
                 {
-                    plane = new Plane(new float3(1, 0, 0), sfloat.Zero);
+                    plane = new Plane(new fp3(1, 0, 0), 0);
                     return false;
                 }
                 double3x3 gramInv = math.inverse(gram);
-                double3 momentSum = new double3((float)sums.z, productSums.zy);
-                float3 coeff = (float3)math.mul(gramInv, momentSum);
-                float3 normal = new float3(coeff.yz, sfloat.MinusOne);
-                sfloat invLength = math.rsqrt(math.lengthsq(normal));
+                double3 momentSum = new double3((double)sums.z, (double)productSums.z, (double)productSums.y);
+                fp3 coeff = (fp3)math.mul(gramInv, momentSum);
+                fp3 normal = new fp3(coeff.yz, -1);
+                fp invLength = fpmath.rsqrt(fpmath.lengthsq(normal));
                 plane = new Plane(normal * invLength, coeff.x * invLength);
                 return true;
             }
         }
 
         // Helper for calculating edge weights, returns the squared sin of the angle between normal0 and normal1 if the angle is > 90 degrees, otherwise returns 1.
-        sfloat SinAngleSq(float3 normal0, float3 normal1)
+        fp SinAngleSq(fp3 normal0, fp3 normal1)
         {
-            sfloat cosAngle = (sfloat)math.dot(normal0, normal1);
-            return math.select(sfloat.One, sfloat.One - cosAngle * cosAngle, cosAngle < sfloat.Zero);
+            fp cosAngle = fpmath.dot(normal0, normal1);
+            return fpmath.select(fp.one, fp.one - cosAngle * cosAngle, cosAngle < 0);
         }
 
         // 1) Simplifies the hull by combining pairs of neighboring faces until the estimated face count is below maxFaces, there are no faces left
@@ -1542,23 +1543,23 @@ namespace Fixed.Physics
         // Returns - the distance that the faces were moved in by shrinking
         // Merging and shrinking are combined into a single operation because both work on the planes of the hull and require vertices to be rebuilt
         // afterwards.  Rebuilding vertices is the slowest part of hull generation, so best to do it only once.
-        public unsafe float SimplifyFacesAndShrink(float simplificationTolerance, float minAngleBetweenFaces, float shrinkDistance, int maxFaces, int maxVertices)
+        public unsafe fp SimplifyFacesAndShrink(fp simplificationTolerance, fp minAngleBetweenFaces, fp shrinkDistance, int maxFaces, int maxVertices)
         {
             // Return if merging is not allowed and shrinking is off
-            if (simplificationTolerance <= 0.0f && minAngleBetweenFaces <= 0.0f && shrinkDistance <= 0.0f)
+            if (simplificationTolerance <= fp.zero && minAngleBetweenFaces <= fp.zero && shrinkDistance <= fp.zero)
             {
-                return 0.0f;
+                return fp.zero;
             }
 
             // Only 3D shapes can shrink
             if (Dimension < 3)
             {
-                return 0.0f;
+                return fp.zero;
             }
 
-            float cosMinAngleBetweenFaces = (float)math.cos(minAngleBetweenFaces);
-            float simplificationToleranceSq = simplificationTolerance * simplificationTolerance;
-            const float k_cosMaxMergeAngle = 0.707107f; // Don't merge planes at >45 degrees
+            fp cosMinAngleBetweenFaces = fpmath.cos(minAngleBetweenFaces);
+            fp simplificationToleranceSq = simplificationTolerance * simplificationTolerance;
+            fp k_cosMaxMergeAngle = new fp(0, 707107, 1000000);//0.707107f; // Don't merge planes at >45 degrees
 
             // Make a copy of the planes that we can edit
             int numPlanes = NumFaces;
@@ -1605,13 +1606,13 @@ namespace Fixed.Physics
 
             // Build OLS data for each face, and calculate the minimum span of the hull among its plane normal directions
             NativeArray<OLSData> olsData = new NativeArray<OLSData>(maxNumPlanes, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
-            sfloat minSpan = sfloat.MaxValue;
+            fp minSpan = fp.max_value;
             for (int i = 0; i < numPlanes; i++)
             {
                 Plane plane = planes[i];
                 OLSData ols = new OLSData(); ols.Init();
 
-                sfloat lastSinAngleSq;
+                fp lastSinAngleSq;
                 {
                     Edge lastEdge = faceEdges[firstFaceEdgeIndex[i] + numFaceEdges[i] - 1];
                     Plane lastPlane = planes[Triangles[GetLinkedEdge(lastEdge).TriangleIndex].FaceIndex];
@@ -1623,33 +1624,33 @@ namespace Fixed.Physics
                     // Use the minimum angle of the two edges incident to the vertex to weight it
                     Edge nextEdge = faceEdges[firstFaceEdgeIndex[i] + j];
                     Plane nextPlane = planes[Triangles[GetLinkedEdge(nextEdge).TriangleIndex].FaceIndex];
-                    sfloat nextSinAngleSq = SinAngleSq(plane.Normal, nextPlane.Normal);
-                    sfloat weight = sfloat.One / math.max(sfloat.Epsilon, math.min(lastSinAngleSq, nextSinAngleSq));
+                    fp nextSinAngleSq = SinAngleSq(plane.Normal, nextPlane.Normal);
+                    fp weight = fp.one / fpmath.max(fp.epsilon, fpmath.min(lastSinAngleSq, nextSinAngleSq));
                     lastSinAngleSq = nextSinAngleSq;
 
                     // Include the weighted vertex in OLS data
-                    float3 vertex = Vertices[Triangles[nextEdge.TriangleIndex].GetVertex(nextEdge.EdgeIndex)].Position;
+                    fp3 vertex = Vertices[Triangles[nextEdge.TriangleIndex].GetVertex(nextEdge.EdgeIndex)].Position;
                     ols.Include(vertex, weight);
                 }
 
                 olsData[i] = ols;
 
                 // Calculate the span in the plane normal direction
-                sfloat span = sfloat.Zero;
+                fp span = fp.zero;
                 foreach (Vertex vertex in Vertices.Elements)
                 {
-                    span = math.max(span, -plane.SignedDistanceToPoint(vertex.Position));
+                    span = fpmath.max(span, -plane.SignedDistanceToPoint(vertex.Position));
                 }
-                minSpan = math.min(span, minSpan);
+                minSpan = fpmath.min(span, minSpan);
             }
 
             // If the minimum span is below the simplification tolerance then we can build a 2D hull without exceeding the tolerance.
             // This often gives a more accurate result, since nearly-flat hulls will get rebuilt from edge plane collisions.
             // Reserve it for extreme cases where the error from flattening is far less than the edge plane error.
-            if ((float)minSpan < simplificationTolerance * 0.1f)
+            if (minSpan < simplificationTolerance * fp.fp_1e_1f)
             {
                 Rebuild2D();
-                return 0.0f;
+                return fp.zero;
             }
 
             // Build a list of potential merges and calculate their costs
@@ -1678,9 +1679,9 @@ namespace Fixed.Physics
                     }
 
                     // Check for sharp angles
-                    const float k_cosSharpAngle = -0.866025f; // 150deg
-                    float dot = (float)math.dot(planes[i].Normal, planes[neighborFaceIndex].Normal);
-                    if ((float)dot < k_cosMaxMergeAngle)
+                    fp k_cosSharpAngle = -new fp(0, 866025, 1000000); // 150deg
+                    fp dot = fpmath.dot(planes[i].Normal, planes[neighborFaceIndex].Normal);
+                    if (dot < k_cosMaxMergeAngle)
                     {
                         if (dot < k_cosSharpAngle)
                         {
@@ -1688,19 +1689,19 @@ namespace Fixed.Physics
                             edgePlanes[edgeIndex] = edge;
 
                             // Create an edge plane
-                            float3 normal0 = planes[i].Normal;
-                            float3 normal1 = planes[neighborFaceIndex].Normal;
+                            fp3 normal0 = planes[i].Normal;
+                            fp3 normal1 = planes[neighborFaceIndex].Normal;
                             int vertexIndex0 = Triangles[edge.TriangleIndex].GetVertex(edge.EdgeIndex);
                             int vertexIndex1 = neighborTriangle.GetVertex(neighborEdge.EdgeIndex);
                             int edgePlaneIndex = numPlanes + edgeIndex;
                             Plane edgePlane = GetEdgePlane(vertexIndex0, vertexIndex1, normal0, normal1);
-                            edgePlane.Distance -= (sfloat)(simplificationTolerance / 2.0f);  // push the edge plane out slightly so it only becomes active if the face planes change significiantly
+                            edgePlane.Distance -= simplificationTolerance / fp.two; // push the edge plane out slightly so it only becomes active if the face planes change significiantly
                             planes[edgePlaneIndex] = edgePlane;
 
                             // Build its OLS data
                             OLSData ols = new OLSData(); ols.Init();
-                            ols.Include(Vertices[vertexIndex0].Position, sfloat.One);
-                            ols.Include(Vertices[vertexIndex1].Position, sfloat.One);
+                            ols.Include(Vertices[vertexIndex0].Position, fp.one);
+                            ols.Include(Vertices[vertexIndex1].Position, fp.one);
                             olsData[edgePlaneIndex] = ols;
                         }
 
@@ -1710,10 +1711,10 @@ namespace Fixed.Physics
 
                     // Calculate the cost to merge the faces
                     OLSData combined = olsData[i];
-                    combined.Include(olsData[neighborFaceIndex], sfloat.Zero);
+                    combined.Include(olsData[neighborFaceIndex], fp.zero);
                     combined.Solve(planes[i].Normal, planes[neighborFaceIndex].Normal);
                     bool smallAngle = (dot > cosMinAngleBetweenFaces);
-                    if ((float)combined.Cost <= simplificationToleranceSq || smallAngle)
+                    if (combined.Cost <= simplificationToleranceSq || smallAngle)
                     {
                         merges[numMerges++] = new FaceMerge
                         {
@@ -1729,7 +1730,7 @@ namespace Fixed.Physics
 
             // Calculate the plane offset for shrinking
             // shrinkDistance is the maximum distance that we may move a vertex.  Find the largest plane offset that respects that limit.
-            sfloat offset = (sfloat)shrinkDistance;
+            fp offset = shrinkDistance;
             {
                 // Find an edge incident to each vertex (doesn't matter which one)
                 Edge* vertexEdges = stackalloc Edge[Vertices.PeakCount];
@@ -1742,7 +1743,7 @@ namespace Fixed.Physics
                 }
 
                 // Calculates the square of the distance that each vertex moves if all of its incident planes' are moved unit distance along their normals
-                sfloat maxShiftSq = sfloat.One;
+                fp maxShiftSq = fp.one;
                 NativeArray<int> planeIndices = new NativeArray<int>(numPlanes, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
                 foreach (int iVertex in Vertices.Indices)
                 {
@@ -1769,35 +1770,35 @@ namespace Fixed.Physics
                     }
 
                     // Iterate over all triplets of planes
-                    const float k_cosWideAngle = 0.866025f; // Only limit movement of vertices at corners sharper than 30 degrees
+                    fp k_cosWideAngle = new fp(0, 866025, 1000000);//0.866025f; // Only limit movement of vertices at corners sharper than 30 degrees
                     for (int i = 0; i < numPlaneIndices - 2; i++)
                     {
-                        float3 iNormal = planes[planeIndices[i]].Normal;
+                        fp3 iNormal = planes[planeIndices[i]].Normal;
                         for (int j = i + 1; j < numPlaneIndices - 1; j++)
                         {
-                            float3 jNormal = planes[planeIndices[j]].Normal;
-                            float3 ijCross = math.cross(iNormal, jNormal);
+                            fp3 jNormal = planes[planeIndices[j]].Normal;
+                            fp3 ijCross = fpmath.cross(iNormal, jNormal);
 
                             for (int k = j + 1; k < numPlaneIndices; k++)
                             {
-                                float3 kNormal = planes[planeIndices[k]].Normal;
+                                fp3 kNormal = planes[planeIndices[k]].Normal;
 
                                 // Skip corners with wide angles
-                                float3 dots = new float3(
-                                    math.dot(iNormal, jNormal),
-                                    math.dot(jNormal, kNormal),
-                                    math.dot(kNormal, iNormal));
-                                if (math.any(dots < (sfloat)k_cosWideAngle))
+                                fp3 dots = new fp3(
+                                    fpmath.dot(iNormal, jNormal),
+                                    fpmath.dot(jNormal, kNormal),
+                                    fpmath.dot(kNormal, iNormal));
+                                if (math.any(dots < k_cosWideAngle))
                                 {
                                     // Calculate the movement of the planes' intersection with respect to the planes' shift
-                                    sfloat det = math.dot(ijCross, kNormal);
-                                    sfloat invDet = math.rcp(det);
-                                    float3 jkCross = math.cross(jNormal, kNormal);
-                                    float3 kiCross = math.cross(kNormal, iNormal);
-                                    sfloat shiftSq = math.lengthsq(ijCross + jkCross + kiCross) * invDet * invDet;
-                                    shiftSq = math.select(shiftSq, (sfloat)1e10f, invDet == sfloat.Zero); // avoid nan/inf in unexpected case of zero or extremely small det
-                                    Assert.IsTrue(shiftSq >= sfloat.One);
-                                    maxShiftSq = math.max(maxShiftSq, shiftSq);
+                                    fp det = fpmath.dot(ijCross, kNormal);
+                                    fp invDet = fpmath.rcp(det);
+                                    fp3 jkCross = fpmath.cross(jNormal, kNormal);
+                                    fp3 kiCross = fpmath.cross(kNormal, iNormal);
+                                    fp shiftSq = fpmath.lengthsq(ijCross + jkCross + kiCross) * invDet * invDet;
+                                    shiftSq = fpmath.select(shiftSq, (fp)1e10f, invDet == fp.zero); // avoid nan/inf in unexpected case of zero or extremely small det
+                                    Assert.IsTrue(shiftSq >= fp.one);
+                                    maxShiftSq = fpmath.max(maxShiftSq, shiftSq);
                                 }
                             }
                         }
@@ -1805,10 +1806,10 @@ namespace Fixed.Physics
                 }
 
                 // Calculate how far we can move the planes without moving vertices more than the limit
-                offset *= math.rsqrt(maxShiftSq);
+                offset *= fpmath.rsqrt(maxShiftSq);
 
                 // Can't shrink more than the inner sphere radius, minSpan / 4 is a lower bound on that radius so use it to clamp the offset
-                offset = math.min(offset, minSpan / (sfloat)4.0f);
+                offset = fpmath.min(offset, minSpan / 4);
             }
 
             // Merge faces
@@ -1823,7 +1824,7 @@ namespace Fixed.Physics
                     // Find the cheapest merge
                     int mergeIndex = 0;
                     int smallAngleMergeIndex = -1;
-                    sfloat smallAngleMergeCost = sfloat.MaxValue;
+                    fp smallAngleMergeCost = fp.max_value;
                     for (int i = 0; i < numMerges; i++)
                     {
                         if (merges[i].Cost < merges[mergeIndex].Cost)
@@ -1841,7 +1842,7 @@ namespace Fixed.Physics
                     // If the cheapest merge is above the cost threshold, take the cheapest merge between a pair of planes that are below the angle
                     // threshold and therefore must be merged regardless of cost.  If there are none, then quit if the estimated face count is below
                     // the limit, otherwise stick with the cheapest merge
-                    if ((float)merges[mergeIndex].Cost > simplificationToleranceSq)
+                    if (merges[mergeIndex].Cost > simplificationToleranceSq)
                     {
                         if (smallAngleMergeIndex < 0)
                         {
@@ -1871,7 +1872,7 @@ namespace Fixed.Physics
                     // Combine plane 1's OLS data into plane 0's
                     {
                         OLSData combined = olsData[merge.Face0];
-                        combined.Include(olsData[merge.Face1], sfloat.Zero);
+                        combined.Include(olsData[merge.Face1], fp.zero);
                         olsData[merge.Face0] = combined;
                     }
 
@@ -1902,7 +1903,7 @@ namespace Fixed.Physics
                         }
 
                         // Limit the maximum merge angle
-                        float dot = (float)math.dot(planes[updateMerge.Face0].Normal, planes[updateMerge.Face1].Normal);
+                        fp dot = fpmath.dot(planes[updateMerge.Face0].Normal, planes[updateMerge.Face1].Normal);
                         if (dot < k_cosMaxMergeAngle)
                         {
                             merges[i] = merges[--numMerges];
@@ -1910,12 +1911,12 @@ namespace Fixed.Physics
                         }
 
                         // Calculate the new plane and cost
-                        sfloat weight = sfloat.One / math.max(sfloat.Epsilon, SinAngleSq(planes[updateMerge.Face0].Normal, planes[updateMerge.Face1].Normal));
+                        fp weight = fp.one / fpmath.max(fp.epsilon, SinAngleSq(planes[updateMerge.Face0].Normal, planes[updateMerge.Face1].Normal));
                         OLSData combined = olsData[updateMerge.Face0];
                         combined.Include(olsData[updateMerge.Face1], weight);
                         combined.Solve(planes[updateMerge.Face0].Normal, planes[updateMerge.Face1].Normal);
                         bool smallAngle = (dot > cosMinAngleBetweenFaces);
-                        if ((float)updateMerge.Cost <= simplificationToleranceSq || smallAngle)
+                        if (updateMerge.Cost <= simplificationToleranceSq || smallAngle)
                         {
                             // Write back
                             updateMerge.Cost = combined.Cost;
@@ -1945,10 +1946,10 @@ namespace Fixed.Physics
                     for (int j = i + 1; j < numOriginalPlanes; j++)
                     {
                         if (removed[j]) continue;
-                        if ((float)math.dot(planes[i].Normal, planes[j].Normal) > cosMinAngleBetweenFaces)
+                        if (fpmath.dot(planes[i].Normal, planes[j].Normal) > cosMinAngleBetweenFaces)
                         {
                             OLSData combined = olsData[i];
-                            combined.Include(olsData[j], sfloat.Zero);
+                            combined.Include(olsData[j], fp.zero);
                             combined.Solve(planes[i].Normal, planes[j].Normal);
                             merges[numMerges++] = new FaceMerge
                             {
@@ -1981,34 +1982,34 @@ namespace Fixed.Physics
             }
 
             // Calculate cross products of all face pairs
-            NativeArray<float3> crosses = new NativeArray<float3>(numPlanes * (numPlanes - 1) / 2, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
+            NativeArray<fp3> crosses = new NativeArray<fp3>(numPlanes * (numPlanes - 1) / 2, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
             int crossIndex = 0;
             for (int i = 0; i < numPlanes - 1; i++)
             {
                 Plane plane0 = planes[i];
-                float3 point0 = -plane0.Normal * plane0.Distance; // A point on plane0
+                fp3 point0 = -plane0.Normal * plane0.Distance; // A point on plane0
                 for (int j = i + 1; j < numPlanes; j++)
                 {
                     Plane plane1 = planes[j];
-                    float3 cross = math.cross(plane0.Normal, plane1.Normal);
+                    fp3 cross = fpmath.cross(plane0.Normal, plane1.Normal);
 
                     // Get the line through the two planes and check if it intersects the domain.
                     // If not, then it has no intersections that will be kept and we can skip it in the n^4 loop.
-                    float3 tangent0 = math.cross(plane0.Normal, cross);
-                    float3 point01 = point0 - tangent0 * plane1.SignedDistanceToPoint(point0) / math.dot(plane1.Normal, tangent0); // point on both plane0 and plane1
-                    float3 invCross = math.select(math.rcp(cross), math.sqrt(float.MaxValue), cross == float3.zero);
-                    float3 tMin = (m_IntegerSpaceAabb.Min - point01) * invCross;
-                    float3 tMax = (m_IntegerSpaceAabb.Max - point01) * invCross;
-                    float3 tEnter = math.min(tMin, tMax);
-                    float3 tExit = math.max(tMin, tMax);
-                    bool hit = (math.cmax(tEnter) <= math.cmin(tExit));
+                    fp3 tangent0 = fpmath.cross(plane0.Normal, cross);
+                    fp3 point01 = point0 - tangent0 * plane1.SignedDistanceToPoint(point0) / fpmath.dot(plane1.Normal, tangent0); // point on both plane0 and plane1
+                    fp3 invCross = fpmath.select(fpmath.rcp(cross), fpmath.sqrt(fp.max_value), cross == fp3.zero);
+                    fp3 tMin = (m_IntegerSpaceAabb.Min - point01) * invCross;
+                    fp3 tMax = (m_IntegerSpaceAabb.Max - point01) * invCross;
+                    fp3 tEnter = fpmath.min(tMin, tMax);
+                    fp3 tExit = fpmath.max(tMin, tMax);
+                    bool hit = (fpmath.cmax(tEnter) <= fpmath.cmin(tExit));
                     if (hit)
                     {
                         crosses[crossIndex] = cross;
                     }
                     else
                     {
-                        crosses[crossIndex] = float3.zero;
+                        crosses[crossIndex] = fp3.zero;
                     }
                     crossIndex++;
                 }
@@ -2017,7 +2018,7 @@ namespace Fixed.Physics
             // Find all intersections of three planes.  Note, this is a very slow O(numPlanes^4) operation.
             // Intersections are calculated with double precision, otherwise points more than a couple meters from the origin can have error
             // above the tolerance for the inner loop.
-            NativeArray<float3> newVertices = new NativeArray<float3>(Vertices.PeakCount * 100, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
+            NativeArray<fp3> newVertices = new NativeArray<fp3>(Vertices.PeakCount * 100, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
             int numNewVertices = 0;
             int indexMultiplier = 2 * numPlanes - 3;
             for (int i = 0; i < numPlanes - 2; i++)
@@ -2026,7 +2027,7 @@ namespace Fixed.Physics
                 for (int j = i + 1; j < numPlanes - 1; j++)
                 {
                     // Test if discs i and j intersect
-                    double3 ijCross = crosses[iBase + j];
+                    double3 ijCross = (double3)crosses[iBase + j];
                     if (math.all(ijCross == 0.0f)) // broadphase test
                     {
                         continue;
@@ -2036,15 +2037,15 @@ namespace Fixed.Physics
                     for (int k = j + 1; k < numPlanes; k++)
                     {
                         // Test if all discs intersect pairwise
-                        double3 ikCross = crosses[iBase + k];
-                        double3 jkCross = crosses[jBase + k];
+                        double3 ikCross = (double3)crosses[iBase + k];
+                        double3 jkCross = (double3)crosses[jBase + k];
                         if (math.all(ikCross == 0.0f) || math.all(jkCross == 0.0f)) // broadphase test
                         {
                             continue;
                         }
 
                         // Find the planes' point of intersection
-                        float3 x;
+                        fp3 x;
                         {
                             double det = math.dot((double3)planes[i].Normal, jkCross);
                             if (math.abs(det) < 1e-8f)
@@ -2052,7 +2053,8 @@ namespace Fixed.Physics
                                 continue;
                             }
                             double invDet = 1.0f / det;
-                            x = (float3)((planes[i].Distance * (float3)jkCross - planes[j].Distance * (float3)ikCross + planes[k].Distance * (float3)ijCross) * -(sfloat)(float)invDet);
+                            var fpjkCross = (fp3)jkCross;
+                            x = (fp3)((planes[i].Distance * fpjkCross - planes[j].Distance * fpjkCross + planes[k].Distance * fpjkCross) * -(fp)invDet);
                         }
 
                         // Test if the point is inside of all of the other planes
@@ -2060,8 +2062,8 @@ namespace Fixed.Physics
                             bool inside = true;
                             for (int l = 0; l < numPlanes; l++)
                             {
-                                const float tolerance = 1e-5f;
-                                if (math.dot(planes[l].Normal, x) > (sfloat)tolerance - planes[l].Distance)
+                                fp tolerance = fp.fp_1e_5f;//1e-5f;
+                                if (fpmath.dot(planes[l].Normal, x) > tolerance - planes[l].Distance)
                                 {
                                     inside = false;
                                     break;
@@ -2075,11 +2077,11 @@ namespace Fixed.Physics
                         }
 
                         // Check if we already found an intersection that is almost exactly the same as x
-                        float minDistanceSq = 1e-10f;
+                        fp minDistanceSq = fp.fp_1e_10f;//1e-10f;
                         bool keep = true;
                         for (int l = 0; l < numNewVertices; l++)
                         {
-                            if ((float)math.distancesq(newVertices[l], x) < minDistanceSq)
+                            if (fpmath.distancesq(newVertices[l], x) < minDistanceSq)
                             {
                                 keep = false;
                                 break;
@@ -2100,7 +2102,7 @@ namespace Fixed.Physics
             {
                 // This can happen if the hull was nearly flat
                 Rebuild2D();
-                return 0.0f;
+                return fp.zero;
             }
 
             // Rebuild faces using the plane intersection vertices
@@ -2114,7 +2116,7 @@ namespace Fixed.Physics
             }
 
             // When more than three planes meet at one point, the intersections computed from each subset of three planes can be slightly different
-            // due to float rounding.  This creates unnecessary extra points in the hull and sometimes also numerical problems for BuildFaceIndices
+            // due to fp rounding.  This creates unnecessary extra points in the hull and sometimes also numerical problems for BuildFaceIndices
             // from degenerate triangles.  This is fixed by another round of simplification with the error tolerance set low enough that the vertices
             // cannot move far enough to introduce new unintended faces.
             RemoveRedundantVertices();
@@ -2131,7 +2133,7 @@ namespace Fixed.Physics
 
             BuildFaceIndices(planes.GetSubArray(0, numPlanes));
 
-            return (float)offset;
+            return offset;
         }
 
         #endregion
@@ -2246,17 +2248,17 @@ namespace Fixed.Physics
         /// <summary>
         /// Returns the centroid of the convex hull.
         /// </summary>
-        public float3 ComputeCentroid()
+        public fp3 ComputeCentroid()
         {
-            float4 sum = new float4(0);
+            fp4 sum = new fp4(0);
             foreach (Vertex vertex in Vertices.Elements)
             {
-                sum += new float4(vertex.Position, sfloat.One);
+                sum += new fp4(vertex.Position, 1);
             }
 
-            if (sum.w > sfloat.Zero)
+            if (sum.w > 0)
                 return sum.xyz / sum.w;
-            return new float3(0);
+            return new fp3(0);
         }
 
         /// <summary>
@@ -2272,66 +2274,66 @@ namespace Fixed.Physics
                     mp.CenterOfMass = Vertices[0].Position;
                     break;
                 case 1:
-                    mp.CenterOfMass = (Vertices[0].Position + Vertices[1].Position) * (sfloat)0.5f;
+                    mp.CenterOfMass = (Vertices[0].Position + Vertices[1].Position) * fp.half;
                     break;
                 case 2:
                 {
-                    float3 offset = ComputeCentroid();
+                    fp3 offset = ComputeCentroid();
                     for (int n = Vertices.PeakCount, i = n - 1, j = 0; j < n; i = j++)
                     {
-                        sfloat w = (sfloat)(float)math.length(math.cross((double3)(Vertices[i].Position - offset), (double3)(Vertices[j].Position - offset)));
+                        fp w = fpmath.length(fpmath.cross(Vertices[i].Position - offset, Vertices[j].Position - offset));
                         mp.CenterOfMass += (Vertices[i].Position + Vertices[j].Position + offset) * w;
                         mp.SurfaceArea += w;
                     }
-                    mp.CenterOfMass /= mp.SurfaceArea * (sfloat)3;
-                    mp.InertiaTensor = float3x3.identity; // <todo>
-                    mp.SurfaceArea *= (sfloat)0.5f;
+                    mp.CenterOfMass /= mp.SurfaceArea * 3;
+                    mp.InertiaTensor = fp3x3.identity; // <todo>
+                    mp.SurfaceArea *= fp.half;
                 }
                 break;
                 case 3:
                 {
-                    float3 offset = ComputeCentroid();
+                    fp3 offset = ComputeCentroid();
                     int numTriangles = 0;
-                    float* dets = stackalloc float[Triangles.Capacity];
+                    fp* dets = stackalloc fp[Triangles.Capacity];
                     foreach (int i in Triangles.Indices)
                     {
-                        float3 v0 = Vertices[Triangles[i].Vertex0].Position - offset;
-                        float3 v1 = Vertices[Triangles[i].Vertex1].Position - offset;
-                        float3 v2 = Vertices[Triangles[i].Vertex2].Position - offset;
-                        sfloat w = Det(v0, v1, v2);
+                        fp3 v0 = Vertices[Triangles[i].Vertex0].Position - offset;
+                        fp3 v1 = Vertices[Triangles[i].Vertex1].Position - offset;
+                        fp3 v2 = Vertices[Triangles[i].Vertex2].Position - offset;
+                        fp w = Det(v0, v1, v2);
                         mp.CenterOfMass += (v0 + v1 + v2) * w;
                         mp.Volume += w;
-                        mp.SurfaceArea += math.length(math.cross(v1 - v0, v2 - v0));
-                        dets[i] = (float)w;
+                        mp.SurfaceArea += fpmath.length(fpmath.cross(v1 - v0, v2 - v0));
+                        dets[i] = w;
                         numTriangles++;
                     }
 
-                    mp.CenterOfMass = mp.CenterOfMass / (mp.Volume * (sfloat)4) + offset;
+                    mp.CenterOfMass = mp.CenterOfMass / (mp.Volume * 4) + offset;
 
-                    var diag = new float3(0);
-                    var offd = new float3(0);
+                    var diag = new fp3(0);
+                    var offd = new fp3(0);
 
                     foreach (int i in Triangles.Indices)
                     {
-                        float3 v0 = Vertices[Triangles[i].Vertex0].Position - mp.CenterOfMass;
-                        float3 v1 = Vertices[Triangles[i].Vertex1].Position - mp.CenterOfMass;
-                        float3 v2 = Vertices[Triangles[i].Vertex2].Position - mp.CenterOfMass;
-                        diag += (v0 * v1 + v1 * v2 + v2 * v0 + v0 * v0 + v1 * v1 + v2 * v2) * (sfloat)dets[i];
+                        fp3 v0 = Vertices[Triangles[i].Vertex0].Position - mp.CenterOfMass;
+                        fp3 v1 = Vertices[Triangles[i].Vertex1].Position - mp.CenterOfMass;
+                        fp3 v2 = Vertices[Triangles[i].Vertex2].Position - mp.CenterOfMass;
+                        diag += (v0 * v1 + v1 * v2 + v2 * v0 + v0 * v0 + v1 * v1 + v2 * v2) * dets[i];
                         offd += (v0.yzx * v1.zxy + v1.yzx * v2.zxy + v2.yzx * v0.zxy +
                             v0.yzx * v2.zxy + v1.yzx * v0.zxy + v2.yzx * v1.zxy +
-                            (v0.yzx * v0.zxy + v1.yzx * v1.zxy + v2.yzx * v2.zxy) * 2) * (sfloat)dets[i];
+                            (v0.yzx * v0.zxy + v1.yzx * v1.zxy + v2.yzx * v2.zxy) * 2) * dets[i];
                         numTriangles++;
                     }
 
-                    diag /= mp.Volume * (sfloat)10;
-                    offd /= mp.Volume * (sfloat)20;
+                    diag /= mp.Volume * (60 / 6);
+                    offd /= mp.Volume * (120 / 6);
 
-                    mp.InertiaTensor.c0 = new float3(diag.y + diag.z, -offd.z, -offd.y);
-                    mp.InertiaTensor.c1 = new float3(-offd.z, diag.x + diag.z, -offd.x);
-                    mp.InertiaTensor.c2 = new float3(-offd.y, -offd.x, diag.x + diag.y);
+                    mp.InertiaTensor.c0 = new fp3(diag.y + diag.z, -offd.z, -offd.y);
+                    mp.InertiaTensor.c1 = new fp3(-offd.z, diag.x + diag.z, -offd.x);
+                    mp.InertiaTensor.c2 = new fp3(-offd.y, -offd.x, diag.x + diag.y);
 
-                    mp.SurfaceArea /= (sfloat)2;
-                    mp.Volume /= (sfloat)6;
+                    mp.SurfaceArea /= 2;
+                    mp.Volume /= 6;
                 }
                 break;
             }
@@ -2342,27 +2344,27 @@ namespace Fixed.Physics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private Plane ComputePlane(int vertex0, int vertex1, int vertex2, bool fromIntCoordinates)
         {
-            float3 cross; // non-normalized plane direction
-            float3 point; // point on the plane
+            fp3 cross; // non-normalized plane direction
+            fp3 point; // point on the plane
             if (fromIntCoordinates)
             {
                 int3 o = Vertices[vertex0].IntPosition;
                 int3 a = Vertices[vertex1].IntPosition - o;
                 int3 b = Vertices[vertex2].IntPosition - o;
                 IntCross(a, b, out long cx, out long cy, out long cz);
-                sfloat scaleSq = m_IntegerSpace.Scale * m_IntegerSpace.Scale; // scale down to avoid overflow normalizing
-                cross = new float3((sfloat)(int)cx * scaleSq, (sfloat)(int)cy * scaleSq, (sfloat)(int)cz * scaleSq);
+                fp scaleSq = m_IntegerSpace.Scale * m_IntegerSpace.Scale; // scale down to avoid overflow normalizing
+                cross = new fp3(cx * scaleSq, cy * scaleSq, cz * scaleSq);
                 point = m_IntegerSpace.ToFloatSpace(o);
             }
             else
             {
                 point = Vertices[vertex0].Position;
-                float3 a = Vertices[vertex1].Position - point;
-                float3 b = Vertices[vertex2].Position - point;
-                cross = math.cross(a, b);
+                fp3 a = Vertices[vertex1].Position - point;
+                fp3 b = Vertices[vertex2].Position - point;
+                cross = fpmath.cross(a, b);
             }
-            float3 n = math.normalize(cross);
-            return new Plane(n, -math.dot(n, point));
+            fp3 n = fpmath.normalize(cross);
+            return new Plane(n, -fpmath.dot(n, point));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -2417,10 +2419,10 @@ namespace Fixed.Physics
         #endregion
 
         public ConvexHullBuilder(
-            NativeArray<float3> points,
+            NativeArray<fp3> points,
             ConvexHullGenerationParameters generationParameters,
             int maxVertices, int maxFaces, int maxFaceVertices,
-            out sfloat convexRadius
+            out fp convexRadius
         )
         {
             int verticesCapacity = math.max(maxVertices, points.Length);
@@ -2452,7 +2454,7 @@ namespace Fixed.Physics
 
             // Simplify the vertices using half of the tolerance
             builder.BuildFaceIndices();
-            builder.SimplifyVertices((float)simplificationTolerance / 2, maxVertices);
+            builder.SimplifyVertices(simplificationTolerance / 2, maxVertices);
             builder.BuildFaceIndices();
 
             // Build mass properties before shrinking
@@ -2485,11 +2487,11 @@ namespace Fixed.Physics
                 }
 
                 // Merge faces
-                convexRadius = (sfloat)builder.SimplifyFacesAndShrink((float)simplificationTolerance / 2, (float)minAngle, (float)shrinkDistance, maxFaces, (int)maxVertices);
+                convexRadius = builder.SimplifyFacesAndShrink(simplificationTolerance / 2, minAngle, shrinkDistance, maxFaces, maxVertices);
             }
             else
             {
-                convexRadius = sfloat.Zero;
+                convexRadius = fp.zero;
             }
 
             // Simplifier cannot directly enforce k_MaxFaceVertices or k_MaxFaces.  It can also fail to satisfy k_MaxFaces due to numerical error.
@@ -2527,7 +2529,7 @@ namespace Fixed.Physics
                 // Reduce the vertex count 20%, but no need to go below the highest vertex count that always satisfies k_MaxFaces and k_MaxFaceVertices
                 int limit = math.min(maxFaces / 2, maxFaceVertices);
                 maxVertices = math.max((int)(maxVertices * 0.8f), limit);
-                builder.SimplifyVertices((float)simplificationTolerance, maxVertices);
+                builder.SimplifyVertices(simplificationTolerance, maxVertices);
                 builder.BuildFaceIndices();
                 if (maxVertices == limit)
                 {
@@ -2558,7 +2560,7 @@ namespace Fixed.Physics
         private NativeArray<Plane> m_Planes;
         public ConvexHullBuilder Builder;
 
-        public unsafe ConvexHullBuilderStorage(int verticesCapacity, Allocator allocator, Aabb domain, float simplificationTolerance, ConvexHullBuilder.IntResolution resolution)
+        public unsafe ConvexHullBuilderStorage(int verticesCapacity, Allocator allocator, Aabb domain, fp simplificationTolerance, ConvexHullBuilder.IntResolution resolution)
         {
             int trianglesCapacity = 2 * verticesCapacity;
             m_Vertices = new NativeArray<ConvexHullBuilder.Vertex>(verticesCapacity, allocator);
@@ -2566,7 +2568,7 @@ namespace Fixed.Physics
             m_Planes = new NativeArray<Plane>(trianglesCapacity, allocator);
             Builder = new ConvexHullBuilder(verticesCapacity, (ConvexHullBuilder.Vertex*)NativeArrayUnsafeUtility.GetUnsafePtr(m_Vertices),
                 (ConvexHullBuilder.Triangle*)NativeArrayUnsafeUtility.GetUnsafePtr(m_Triangles), (Plane*)NativeArrayUnsafeUtility.GetUnsafePtr(m_Planes),
-                domain, (sfloat)simplificationTolerance, resolution);
+                domain, simplificationTolerance, resolution);
         }
 
         public unsafe ConvexHullBuilderStorage(int verticesCapacity, Allocator allocator, ref ConvexHullBuilder builder)

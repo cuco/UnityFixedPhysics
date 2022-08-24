@@ -20,7 +20,12 @@ namespace Unity.Mathematics.FixedPoint.Tests
         {
             var f = 0.01f;
             fp ff = new fp(0, 1, 100);
+
+            var minusf = -5.3421f;
+            fp mff = new fp(-5, 3421, 10000);
             TestUtils.AreEqual(f, (float)ff);
+            TestUtils.AreEqual(minusf, (float)mff);
+
         }
 
         [Test]

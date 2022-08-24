@@ -1,5 +1,6 @@
 using System;
-using Fixed.Mathematics;
+using Unity.Mathematics;
+using Unity.Mathematics.FixedPoint;
 using UnityEditor;
 using UnityEngine;
 

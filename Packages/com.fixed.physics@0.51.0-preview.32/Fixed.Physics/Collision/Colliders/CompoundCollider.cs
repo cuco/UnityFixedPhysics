@@ -2,7 +2,8 @@ using Unity.Burst;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
-using Fixed.Mathematics;
+using Unity.Mathematics;
+using Unity.Mathematics.FixedPoint;
 using static Fixed.Physics.Math;
 
 namespace Fixed.Physics
@@ -16,7 +17,7 @@ namespace Fixed.Physics
         // Warning: This references the collider via a relative offset, so must always be passed by reference.
         public struct Child
         {
-            public RigidTransform CompoundFromChild;
+            public FpRigidTransform CompoundFromChild;
             internal int m_ColliderOffset;
             public Entity Entity;
 
@@ -32,7 +33,7 @@ namespace Fixed.Physics
             }
         }
 
-        internal sfloat m_BoundingRadius;
+        internal fp m_BoundingRadius;
 
         // The array of child colliders
         private BlobArray m_ChildrenBlob;
@@ -62,7 +63,7 @@ namespace Fixed.Physics
         // Input to Create()
         public struct ColliderBlobInstance  // TODO: better name?
         {
-            public RigidTransform CompoundFromChild;
+            public FpRigidTransform CompoundFromChild;
             public BlobAssetReference<Collider> Collider;
             public Entity Entity;
         }
@@ -188,15 +189,15 @@ namespace Fixed.Physics
 
         private unsafe void UpdateCachedBoundingRadius()
         {
-            m_BoundingRadius = sfloat.Zero;
-            float3 center = BoundingVolumeHierarchy.Domain.Center;
+            m_BoundingRadius = fp.zero;
+            fp3 center = BoundingVolumeHierarchy.Domain.Center;
 
             for (int i = 0; i < NumChildren; i++)
             {
                 ref Child child = ref Children[i];
 
-                float3 childFromCenter = math.transform(math.inverse(child.CompoundFromChild), center);
-                sfloat radius = sfloat.Zero;
+                fp3 childFromCenter = fpmath.transform(fpmath.inverse(child.CompoundFromChild), center);
+                fp radius = fp.zero;
 
                 switch (child.Collider->Type)
                 {
@@ -217,13 +218,13 @@ namespace Fixed.Physics
                         break;
                     case ColliderType.Terrain:
                         Aabb terrainAabb = ((TerrainCollider*)child.Collider)->CalculateAabb();
-                        radius = math.length(math.max(math.abs(terrainAabb.Max - childFromCenter), math.abs(terrainAabb.Min - childFromCenter)));
+                        radius = fpmath.length(fpmath.max(fpmath.abs(terrainAabb.Max - childFromCenter), fpmath.abs(terrainAabb.Min - childFromCenter)));
                         break;
                     default:
                         SafetyChecks.ThrowNotImplementedException();
                         break;
                 }
-                m_BoundingRadius = math.max(m_BoundingRadius, radius);
+                m_BoundingRadius = fpmath.max(m_BoundingRadius, radius);
             }
         }
 
@@ -255,8 +256,8 @@ namespace Fixed.Physics
             }
 
             // Calculate combined center of mass
-            float3 combinedCenterOfMass = float3.zero;
-            sfloat combinedVolume = sfloat.Zero;
+            fp3 combinedCenterOfMass = fp3.zero;
+            fp combinedVolume = fp.zero;
             for (int i = 0; i < NumChildren; ++i)
             {
                 ref Child child = ref children[i];
@@ -269,19 +270,19 @@ namespace Fixed.Physics
                 var mp = child.Collider->MassProperties;
 
                 // weight this contribution by its volume (=mass)
-                combinedCenterOfMass += math.transform(child.CompoundFromChild, mp.MassDistribution.Transform.pos) * mp.Volume;
+                combinedCenterOfMass += fpmath.transform(child.CompoundFromChild, mp.MassDistribution.Transform.pos) * mp.Volume;
                 combinedVolume += mp.Volume;
             }
-            if (combinedVolume > sfloat.Zero)
+            if (combinedVolume > fp.zero)
             {
                 combinedCenterOfMass /= combinedVolume;
             }
 
             // Calculate combined inertia, relative to new center of mass
-            float3x3 combinedOrientation;
-            float3 combinedInertiaTensor;
+            fp3x3 combinedOrientation;
+            fp3 combinedInertiaTensor;
             {
-                float3x3 combinedInertiaMatrix = float3x3.zero;
+                fp3x3 combinedInertiaMatrix = fp3x3.zero;
                 for (int i = 0; i < NumChildren; ++i)
                 {
                     ref Child child = ref children[i];
@@ -294,20 +295,20 @@ namespace Fixed.Physics
                     var mp = child.Collider->MassProperties;
 
                     // rotate inertia into compound space
-                    float3x3 temp = math.mul(mp.MassDistribution.InertiaMatrix, new float3x3(math.inverse(child.CompoundFromChild.rot)));
-                    float3x3 inertiaMatrix = math.mul(new float3x3(child.CompoundFromChild.rot), temp);
+                    fp3x3 temp = fpmath.mul(mp.MassDistribution.InertiaMatrix, new fp3x3(fpmath.inverse(child.CompoundFromChild.rot)));
+                    fp3x3 inertiaMatrix = fpmath.mul(new fp3x3(child.CompoundFromChild.rot), temp);
 
                     // shift it to be relative to the new center of mass
-                    float3 shift = math.transform(child.CompoundFromChild, mp.MassDistribution.Transform.pos) - combinedCenterOfMass;
-                    float3 shiftSq = shift * shift;
-                    var diag = new float3(shiftSq.y + shiftSq.z, shiftSq.x + shiftSq.z, shiftSq.x + shiftSq.y);
-                    var offDiag = new float3(shift.x * shift.y, shift.y * shift.z, shift.z * shift.x) * -sfloat.One;
-                    inertiaMatrix.c0 += new float3(diag.x, offDiag.x, offDiag.z);
-                    inertiaMatrix.c1 += new float3(offDiag.x, diag.y, offDiag.y);
-                    inertiaMatrix.c2 += new float3(offDiag.z, offDiag.y, diag.z);
+                    fp3 shift = fpmath.transform(child.CompoundFromChild, mp.MassDistribution.Transform.pos) - combinedCenterOfMass;
+                    fp3 shiftSq = shift * shift;
+                    var diag = new fp3(shiftSq.y + shiftSq.z, shiftSq.x + shiftSq.z, shiftSq.x + shiftSq.y);
+                    var offDiag = new fp3(shift.x * shift.y, shift.y * shift.z, shift.z * shift.x) * fp.minusOne;
+                    inertiaMatrix.c0 += new fp3(diag.x, offDiag.x, offDiag.z);
+                    inertiaMatrix.c1 += new fp3(offDiag.x, diag.y, offDiag.y);
+                    inertiaMatrix.c2 += new fp3(offDiag.z, offDiag.y, diag.z);
 
                     // weight by its proportional volume (=mass)
-                    inertiaMatrix *= mp.Volume / (combinedVolume + sfloat.Epsilon);
+                    inertiaMatrix *= mp.Volume / (combinedVolume + fp.epsilon);
 
                     combinedInertiaMatrix += inertiaMatrix;
                 }
@@ -318,22 +319,22 @@ namespace Fixed.Physics
             }
 
             // Calculate combined angular expansion factor, relative to new center of mass
-            sfloat combinedAngularExpansionFactor = sfloat.Zero;
+            fp combinedAngularExpansionFactor = fp.zero;
             for (int i = 0; i < NumChildren; ++i)
             {
                 ref Child child = ref children[i];
                 var mp = child.Collider->MassProperties;
 
-                float3 shift = math.transform(child.CompoundFromChild, mp.MassDistribution.Transform.pos) - combinedCenterOfMass;
-                sfloat expansionFactor = mp.AngularExpansionFactor + math.length(shift);
-                combinedAngularExpansionFactor = math.max(combinedAngularExpansionFactor, expansionFactor);
+                fp3 shift = fpmath.transform(child.CompoundFromChild, mp.MassDistribution.Transform.pos) - combinedCenterOfMass;
+                fp expansionFactor = mp.AngularExpansionFactor + fpmath.length(shift);
+                combinedAngularExpansionFactor = fpmath.max(combinedAngularExpansionFactor, expansionFactor);
             }
 
             return new MassProperties
             {
                 MassDistribution = new MassDistribution
                 {
-                    Transform = new RigidTransform(combinedOrientation, combinedCenterOfMass),
+                    Transform = new FpRigidTransform(combinedOrientation, combinedCenterOfMass),
                     InertiaTensor = combinedInertiaTensor
                 },
                 Volume = combinedVolume,
@@ -413,24 +414,24 @@ namespace Fixed.Physics
 
         public MassProperties MassProperties { get; private set; }
 
-        internal sfloat CalculateBoundingRadius(float3 pivot)
+        internal fp CalculateBoundingRadius(fp3 pivot)
         {
-            return math.distance(pivot, BoundingVolumeHierarchy.Domain.Center) + m_BoundingRadius;
+            return fpmath.distance(pivot, BoundingVolumeHierarchy.Domain.Center) + m_BoundingRadius;
         }
 
         public Aabb CalculateAabb()
         {
-            return CalculateAabb(RigidTransform.identity);
+            return CalculateAabb(FpRigidTransform.identity);
         }
 
-        public unsafe Aabb CalculateAabb(RigidTransform transform)
+        public unsafe Aabb CalculateAabb(FpRigidTransform transform)
         {
             Aabb outAabb = Math.TransformAabb(transform, BoundingVolumeHierarchy.Domain);
-            float3 center = outAabb.Center;
+            fp3 center = outAabb.Center;
             Aabb sphereAabb = new Aabb
             {
-                Min = new float3(center - m_BoundingRadius),
-                Max = new float3(center + m_BoundingRadius)
+                Min = new fp3(center - m_BoundingRadius),
+                Max = new fp3(center + m_BoundingRadius)
             };
             outAabb.Intersect(sphereAabb);
 
@@ -489,52 +490,52 @@ namespace Fixed.Physics
 
         // Interfaces that represent queries that exist in the GameObjects world.
 
-        public bool CheckSphere(float3 position, sfloat radius, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
+        public bool CheckSphere(fp3 position, fp radius, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
             => QueryWrappers.CheckSphere(ref this, position, radius, filter, queryInteraction);
-        public bool OverlapSphere(float3 position, sfloat radius, ref NativeList<DistanceHit> outHits, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
+        public bool OverlapSphere(fp3 position, fp radius, ref NativeList<DistanceHit> outHits, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
             => QueryWrappers.OverlapSphere(ref this, position, radius, ref outHits, filter, queryInteraction);
-        public bool OverlapSphereCustom<T>(float3 position, sfloat radius, ref T collector, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default) where T : struct, ICollector<DistanceHit>
+        public bool OverlapSphereCustom<T>(fp3 position, fp radius, ref T collector, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default) where T : struct, ICollector<DistanceHit>
             => QueryWrappers.OverlapSphereCustom(ref this, position, radius, ref collector, filter, queryInteraction);
 
-        public bool CheckCapsule(float3 point1, float3 point2, sfloat radius, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
+        public bool CheckCapsule(fp3 point1, fp3 point2, fp radius, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
             => QueryWrappers.CheckCapsule(ref this, point1, point2, radius, filter, queryInteraction);
-        public bool OverlapCapsule(float3 point1, float3 point2, sfloat radius, ref NativeList<DistanceHit> outHits, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
+        public bool OverlapCapsule(fp3 point1, fp3 point2, fp radius, ref NativeList<DistanceHit> outHits, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
             => QueryWrappers.OverlapCapsule(ref this, point1, point2, radius, ref outHits, filter, queryInteraction);
-        public bool OverlapCapsuleCustom<T>(float3 point1, float3 point2, sfloat radius, ref T collector, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default) where T : struct, ICollector<DistanceHit>
+        public bool OverlapCapsuleCustom<T>(fp3 point1, fp3 point2, fp radius, ref T collector, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default) where T : struct, ICollector<DistanceHit>
             => QueryWrappers.OverlapCapsuleCustom(ref this, point1, point2, radius, ref collector, filter, queryInteraction);
 
-        public bool CheckBox(float3 center, quaternion orientation, float3 halfExtents, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
+        public bool CheckBox(fp3 center, fpquaternion orientation, fp3 halfExtents, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
             => QueryWrappers.CheckBox(ref this, center, orientation, halfExtents, filter, queryInteraction);
-        public bool OverlapBox(float3 center, quaternion orientation, float3 halfExtents, ref NativeList<DistanceHit> outHits, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
+        public bool OverlapBox(fp3 center, fpquaternion orientation, fp3 halfExtents, ref NativeList<DistanceHit> outHits, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
             => QueryWrappers.OverlapBox(ref this, center, orientation, halfExtents, ref outHits, filter, queryInteraction);
-        public bool OverlapBoxCustom<T>(float3 center, quaternion orientation, float3 halfExtents, ref T collector, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default) where T : struct, ICollector<DistanceHit>
+        public bool OverlapBoxCustom<T>(fp3 center, fpquaternion orientation, fp3 halfExtents, ref T collector, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default) where T : struct, ICollector<DistanceHit>
             => QueryWrappers.OverlapBoxCustom(ref this, center, orientation, halfExtents, ref collector, filter, queryInteraction);
 
-        public bool SphereCast(float3 origin, sfloat radius, float3 direction, sfloat maxDistance, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
+        public bool SphereCast(fp3 origin, fp radius, fp3 direction, fp maxDistance, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
             => QueryWrappers.SphereCast(ref this, origin, radius, direction, maxDistance, filter, queryInteraction);
-        public bool SphereCast(float3 origin, sfloat radius, float3 direction, sfloat maxDistance, out ColliderCastHit hitInfo, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
+        public bool SphereCast(fp3 origin, fp radius, fp3 direction, fp maxDistance, out ColliderCastHit hitInfo, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
             => QueryWrappers.SphereCast(ref this, origin, radius, direction, maxDistance, out hitInfo, filter, queryInteraction);
-        public bool SphereCastAll(float3 origin, sfloat radius, float3 direction, sfloat maxDistance, ref NativeList<ColliderCastHit> outHits, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
+        public bool SphereCastAll(fp3 origin, fp radius, fp3 direction, fp maxDistance, ref NativeList<ColliderCastHit> outHits, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
             => QueryWrappers.SphereCastAll(ref this, origin, radius, direction, maxDistance, ref outHits, filter, queryInteraction);
-        public bool SphereCastCustom<T>(float3 origin, sfloat radius, float3 direction, sfloat maxDistance, ref T collector, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default) where T : struct, ICollector<ColliderCastHit>
+        public bool SphereCastCustom<T>(fp3 origin, fp radius, fp3 direction, fp maxDistance, ref T collector, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default) where T : struct, ICollector<ColliderCastHit>
             => QueryWrappers.SphereCastCustom(ref this, origin, radius, direction, maxDistance, ref collector, filter, queryInteraction);
 
-        public bool BoxCast(float3 center, quaternion orientation, float3 halfExtents, float3 direction, sfloat maxDistance, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
+        public bool BoxCast(fp3 center, fpquaternion orientation, fp3 halfExtents, fp3 direction, fp maxDistance, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
             => QueryWrappers.BoxCast(ref this, center, orientation, halfExtents, direction, maxDistance, filter, queryInteraction);
-        public bool BoxCast(float3 center, quaternion orientation, float3 halfExtents, float3 direction, sfloat maxDistance, out ColliderCastHit hitInfo, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
+        public bool BoxCast(fp3 center, fpquaternion orientation, fp3 halfExtents, fp3 direction, fp maxDistance, out ColliderCastHit hitInfo, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
             => QueryWrappers.BoxCast(ref this, center, orientation, halfExtents, direction, maxDistance, out hitInfo, filter, queryInteraction);
-        public bool BoxCastAll(float3 center, quaternion orientation, float3 halfExtents, float3 direction, sfloat maxDistance, ref NativeList<ColliderCastHit> outHits, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
+        public bool BoxCastAll(fp3 center, fpquaternion orientation, fp3 halfExtents, fp3 direction, fp maxDistance, ref NativeList<ColliderCastHit> outHits, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
             => QueryWrappers.BoxCastAll(ref this, center, orientation, halfExtents, direction, maxDistance, ref outHits, filter, queryInteraction);
-        public bool BoxCastCustom<T>(float3 center, quaternion orientation, float3 halfExtents, float3 direction, sfloat maxDistance, ref T collector, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default) where T : struct, ICollector<ColliderCastHit>
+        public bool BoxCastCustom<T>(fp3 center, fpquaternion orientation, fp3 halfExtents, fp3 direction, fp maxDistance, ref T collector, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default) where T : struct, ICollector<ColliderCastHit>
             => QueryWrappers.BoxCastCustom(ref this, center, orientation, halfExtents, direction, maxDistance, ref collector, filter, queryInteraction);
 
-        public bool CapsuleCast(float3 point1, float3 point2, sfloat radius, float3 direction, sfloat maxDistance, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
+        public bool CapsuleCast(fp3 point1, fp3 point2, fp radius, fp3 direction, fp maxDistance, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
             => QueryWrappers.CapsuleCast(ref this, point1, point2, radius, direction, maxDistance, filter, queryInteraction);
-        public bool CapsuleCast(float3 point1, float3 point2, sfloat radius, float3 direction, sfloat maxDistance, out ColliderCastHit hitInfo, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
+        public bool CapsuleCast(fp3 point1, fp3 point2, fp radius, fp3 direction, fp maxDistance, out ColliderCastHit hitInfo, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
             => QueryWrappers.CapsuleCast(ref this, point1, point2, radius, direction, maxDistance, out hitInfo, filter, queryInteraction);
-        public bool CapsuleCastAll(float3 point1, float3 point2, sfloat radius, float3 direction, sfloat maxDistance, ref NativeList<ColliderCastHit> outHits, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
+        public bool CapsuleCastAll(fp3 point1, fp3 point2, fp radius, fp3 direction, fp maxDistance, ref NativeList<ColliderCastHit> outHits, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default)
             => QueryWrappers.CapsuleCastAll(ref this, point1, point2, radius, direction, maxDistance, ref outHits, filter, queryInteraction);
-        public bool CapsuleCastCustom<T>(float3 point1, float3 point2, sfloat radius, float3 direction, sfloat maxDistance, ref T collector, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default) where T : struct, ICollector<ColliderCastHit>
+        public bool CapsuleCastCustom<T>(fp3 point1, fp3 point2, fp radius, fp3 direction, fp maxDistance, ref T collector, CollisionFilter filter, QueryInteraction queryInteraction = QueryInteraction.Default) where T : struct, ICollector<ColliderCastHit>
             => QueryWrappers.CapsuleCastCustom(ref this, point1, point2, radius, direction, maxDistance, ref collector, filter, queryInteraction);
 
         #endregion
@@ -560,7 +561,7 @@ namespace Fixed.Physics
         {
             fixed(CompoundCollider* root = &this)
             {
-                return Collider.GetLeafCollider((Collider*)root, RigidTransform.identity, key, out leaf);
+                return Collider.GetLeafCollider((Collider*)root, FpRigidTransform.identity, key, out leaf);
             }
         }
 

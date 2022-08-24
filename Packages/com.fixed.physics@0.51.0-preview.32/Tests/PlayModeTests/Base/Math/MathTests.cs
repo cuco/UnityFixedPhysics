@@ -3,7 +3,7 @@ using System;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
-using Fixed.Mathematics;
+using Unity.Mathematics.FixedPoint;
 using static Fixed.Physics.Math;
 
 namespace Fixed.Physics.Tests.Base.Math
@@ -14,7 +14,7 @@ namespace Fixed.Physics.Tests.Base.Math
         private struct IndexOfMinComponent2Job : IJob, IDisposable
         {
             [ReadOnly]
-            public NativeArray<float2> In;
+            public NativeArray<fp2> In;
             [WriteOnly]
             public NativeArray<int> Out;
 
@@ -23,14 +23,14 @@ namespace Fixed.Physics.Tests.Base.Math
                 var length = 4;
                 var job = new IndexOfMinComponent2Job
                 {
-                    In = new NativeArray<float2>(length, Allocator.TempJob),
+                    In = new NativeArray<fp2>(length, Allocator.TempJob),
                     Out = new NativeArray<int>(length, Allocator.TempJob)
                 };
 
-                job.In[0] = new float2(-(sfloat)1, (sfloat)1);
-                job.In[1] = new float2((sfloat)1, -(sfloat)1);
-                job.In[2] = new float2(sfloat.NaN, (sfloat)1);
-                job.In[3] = new float2(sfloat.PositiveInfinity, sfloat.NegativeInfinity);
+                job.In[0] = new fp2(-(fp)1, (fp)1);
+                job.In[1] = new fp2((fp)1, -(fp)1);
+                job.In[2] = new fp2(fp.NaN, (fp)1);
+                job.In[3] = new fp2(fp.PositiveInfinity, fp.NegativeInfinity);
 
                 return job;
             }
@@ -59,7 +59,7 @@ namespace Fixed.Physics.Tests.Base.Math
         private struct IndexOfMinComponent3Job : IJob, IDisposable
         {
             [ReadOnly]
-            public NativeArray<float3> In;
+            public NativeArray<fp3> In;
             [WriteOnly]
             public NativeArray<int> Out;
 
@@ -68,14 +68,14 @@ namespace Fixed.Physics.Tests.Base.Math
                 var length = 4;
                 var job = new IndexOfMinComponent3Job
                 {
-                    In = new NativeArray<float3>(length, Allocator.TempJob),
+                    In = new NativeArray<fp3>(length, Allocator.TempJob),
                     Out = new NativeArray<int>(length, Allocator.TempJob)
                 };
 
-                job.In[0] = new float3(-(sfloat)1, (sfloat)1, (sfloat)1);
-                job.In[1] = new float3((sfloat)1, -(sfloat)1, (sfloat)1);
-                job.In[2] = new float3((sfloat)1, (sfloat)1, -(sfloat)1);
-                job.In[3] = new float3(sfloat.NaN, sfloat.PositiveInfinity, sfloat.NegativeInfinity);
+                job.In[0] = new fp3(-(fp)1, (fp)1, (fp)1);
+                job.In[1] = new fp3((fp)1, -(fp)1, (fp)1);
+                job.In[2] = new fp3((fp)1, (fp)1, -(fp)1);
+                job.In[3] = new fp3(fp.NaN, fp.PositiveInfinity, fp.NegativeInfinity);
 
                 return job;
             }
@@ -104,7 +104,7 @@ namespace Fixed.Physics.Tests.Base.Math
         private struct IndexOfMinComponent4Job : IJob, IDisposable
         {
             [ReadOnly]
-            public NativeArray<float4> In;
+            public NativeArray<fp4> In;
             [WriteOnly]
             public NativeArray<int> Out;
 
@@ -113,15 +113,15 @@ namespace Fixed.Physics.Tests.Base.Math
                 var length = 5;
                 var job = new IndexOfMinComponent4Job
                 {
-                    In = new NativeArray<float4>(length, Allocator.TempJob),
+                    In = new NativeArray<fp4>(length, Allocator.TempJob),
                     Out = new NativeArray<int>(length, Allocator.TempJob)
                 };
 
-                job.In[0] = new float4(-(sfloat)1, (sfloat)1, (sfloat)1, (sfloat)1);
-                job.In[1] = new float4((sfloat)1, -(sfloat)1, (sfloat)1, (sfloat)1);
-                job.In[2] = new float4((sfloat)1, (sfloat)1, -(sfloat)1, (sfloat)1);
-                job.In[3] = new float4((sfloat)1, (sfloat)1, (sfloat)1, -(sfloat)1);
-                job.In[4] = new float4(sfloat.NaN, sfloat.PositiveInfinity, sfloat.NegativeInfinity, -sfloat.NaN);
+                job.In[0] = new fp4(-(fp)1, (fp)1, (fp)1, (fp)1);
+                job.In[1] = new fp4((fp)1, -(fp)1, (fp)1, (fp)1);
+                job.In[2] = new fp4((fp)1, (fp)1, -(fp)1, (fp)1);
+                job.In[3] = new fp4((fp)1, (fp)1, (fp)1, -(fp)1);
+                job.In[4] = new fp4(fp.NaN, fp.PositiveInfinity, fp.NegativeInfinity, -fp.NaN);
 
                 return job;
             }
@@ -167,7 +167,7 @@ namespace Fixed.Physics.Tests.Base.Math
         private struct IndexOfMaxComponent2Job : IJob, IDisposable
         {
             [ReadOnly]
-            public NativeArray<float2> In;
+            public NativeArray<fp2> In;
             [WriteOnly]
             public NativeArray<int> Out;
 
@@ -176,14 +176,14 @@ namespace Fixed.Physics.Tests.Base.Math
                 var length = 4;
                 var job = new IndexOfMaxComponent2Job
                 {
-                    In = new NativeArray<float2>(length, Allocator.TempJob),
+                    In = new NativeArray<fp2>(length, Allocator.TempJob),
                     Out = new NativeArray<int>(length, Allocator.TempJob)
                 };
 
-                job.In[0] = new float2(-(sfloat)1, (sfloat)1);
-                job.In[1] = new float2((sfloat)1, -(sfloat)1);
-                job.In[2] = new float2(sfloat.NaN, (sfloat)1);
-                job.In[3] = new float2(sfloat.PositiveInfinity, sfloat.NegativeInfinity);
+                job.In[0] = new fp2(-(fp)1, (fp)1);
+                job.In[1] = new fp2((fp)1, -(fp)1);
+                job.In[2] = new fp2(fp.NaN, (fp)1);
+                job.In[3] = new fp2(fp.PositiveInfinity, fp.NegativeInfinity);
 
                 return job;
             }
@@ -212,7 +212,7 @@ namespace Fixed.Physics.Tests.Base.Math
         private struct IndexOfMaxComponent3Job : IJob, IDisposable
         {
             [ReadOnly]
-            public NativeArray<float3> In;
+            public NativeArray<fp3> In;
             [WriteOnly]
             public NativeArray<int> Out;
 
@@ -221,14 +221,14 @@ namespace Fixed.Physics.Tests.Base.Math
                 var length = 4;
                 var job = new IndexOfMaxComponent3Job
                 {
-                    In = new NativeArray<float3>(length, Allocator.TempJob),
+                    In = new NativeArray<fp3>(length, Allocator.TempJob),
                     Out = new NativeArray<int>(length, Allocator.TempJob)
                 };
 
-                job.In[0] = new float3(-(sfloat)1, -(sfloat)1, (sfloat)1);
-                job.In[1] = new float3((sfloat)1, -(sfloat)1, -(sfloat)1);
-                job.In[2] = new float3(-(sfloat)1, (sfloat)1, -(sfloat)1);
-                job.In[3] = new float3(sfloat.NaN, sfloat.PositiveInfinity, sfloat.NegativeInfinity);
+                job.In[0] = new fp3(-(fp)1, -(fp)1, (fp)1);
+                job.In[1] = new fp3((fp)1, -(fp)1, -(fp)1);
+                job.In[2] = new fp3(-(fp)1, (fp)1, -(fp)1);
+                job.In[3] = new fp3(fp.NaN, fp.PositiveInfinity, fp.NegativeInfinity);
 
                 return job;
             }
@@ -257,7 +257,7 @@ namespace Fixed.Physics.Tests.Base.Math
         private struct IndexOfMaxComponent4Job : IJob, IDisposable
         {
             [ReadOnly]
-            public NativeArray<float4> In;
+            public NativeArray<fp4> In;
             [WriteOnly]
             public NativeArray<int> Out;
 
@@ -266,15 +266,15 @@ namespace Fixed.Physics.Tests.Base.Math
                 var length = 5;
                 var job = new IndexOfMaxComponent4Job
                 {
-                    In = new NativeArray<float4>(length, Allocator.TempJob),
+                    In = new NativeArray<fp4>(length, Allocator.TempJob),
                     Out = new NativeArray<int>(length, Allocator.TempJob)
                 };
 
-                job.In[0] = new float4(-(sfloat)1, -(sfloat)1, -(sfloat)1, (sfloat)1);
-                job.In[1] = new float4((sfloat)1, -(sfloat)1, -(sfloat)1, -(sfloat)1);
-                job.In[2] = new float4(-(sfloat)1, (sfloat)1, -(sfloat)1, -(sfloat)1);
-                job.In[3] = new float4(-(sfloat)1, -(sfloat)1, (sfloat)1, -(sfloat)1);
-                job.In[4] = new float4(sfloat.NaN, sfloat.PositiveInfinity, sfloat.NegativeInfinity, -sfloat.NaN);
+                job.In[0] = new fp4(-(fp)1, -(fp)1, -(fp)1, (fp)1);
+                job.In[1] = new fp4((fp)1, -(fp)1, -(fp)1, -(fp)1);
+                job.In[2] = new fp4(-(fp)1, (fp)1, -(fp)1, -(fp)1);
+                job.In[3] = new fp4(-(fp)1, -(fp)1, (fp)1, -(fp)1);
+                job.In[4] = new fp4(fp.NaN, fp.PositiveInfinity, fp.NegativeInfinity, -fp.NaN);
 
                 return job;
             }
