@@ -2,7 +2,7 @@ using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
-using Fixed.Mathematics;
+using Unity.Mathematics.FixedPoint;
 
 /* **************
    COPY AND PASTE
@@ -96,14 +96,14 @@ namespace Fixed.Transforms
                             {
                                 var parentScaleInverse = chunkParentScaleInverses[i].Value;
                                 var scale = hasNonUniformScale
-                                    ? float4x4.Scale(chunkNonUniformScales[i].Value)
+                                    ? fp4x4.Scale(chunkNonUniformScales[i].Value)
                                     : (hasScale
-                                        ? float4x4.Scale(new float3(chunkScales[i].Value))
+                                        ? fp4x4.Scale(new fp3(chunkScales[i].Value))
                                         : chunkCompositeScales[i].Value);
 
                                 chunkLocalToParent[i] = new LocalToParent
                                 {
-                                    Value = math.mul(parentScaleInverse, scale)
+                                    Value = fpmath.mul(parentScaleInverse, scale)
                                 };
                             }
                         }
@@ -117,7 +117,7 @@ namespace Fixed.Transforms
 
                                 chunkLocalToParent[i] = new LocalToParent
                                 {
-                                    Value = math.mul(float4x4.Translate(translation), parentScaleInverse)
+                                    Value = fpmath.mul(fp4x4.Translate(translation), parentScaleInverse)
                                 };
                             }
                         }
@@ -128,15 +128,15 @@ namespace Fixed.Transforms
                             {
                                 var parentScaleInverse = chunkParentScaleInverses[i].Value;
                                 var scale = hasNonUniformScale
-                                    ? float4x4.Scale(chunkNonUniformScales[i].Value)
+                                    ? fp4x4.Scale(chunkNonUniformScales[i].Value)
                                     : (hasScale
-                                        ? float4x4.Scale(new float3(chunkScales[i].Value))
+                                        ? fp4x4.Scale(new fp3(chunkScales[i].Value))
                                         : chunkCompositeScales[i].Value);
                                 var translation = chunkTranslations[i].Value;
 
                                 chunkLocalToParent[i] = new LocalToParent
                                 {
-                                    Value = math.mul(math.mul(float4x4.Translate(translation), parentScaleInverse),
+                                    Value = fpmath.mul(fpmath.mul(fp4x4.Translate(translation), parentScaleInverse),
                                         scale)
                                 };
                             }
@@ -154,7 +154,7 @@ namespace Fixed.Transforms
 
                                 chunkLocalToParent[i] = new LocalToParent
                                 {
-                                    Value = math.mul(parentScaleInverse, rotation)
+                                    Value = fpmath.mul(parentScaleInverse, rotation)
                                 };
                             }
                         }
@@ -166,14 +166,14 @@ namespace Fixed.Transforms
                                 var parentScaleInverse = chunkParentScaleInverses[i].Value;
                                 var rotation = chunkCompositeRotations[i].Value;
                                 var scale = hasNonUniformScale
-                                    ? float4x4.Scale(chunkNonUniformScales[i].Value)
+                                    ? fp4x4.Scale(chunkNonUniformScales[i].Value)
                                     : (hasScale
-                                        ? float4x4.Scale(new float3(chunkScales[i].Value))
+                                        ? fp4x4.Scale(new fp3(chunkScales[i].Value))
                                         : chunkCompositeScales[i].Value);
 
                                 chunkLocalToParent[i] = new LocalToParent
                                 {
-                                    Value = math.mul(parentScaleInverse, math.mul(rotation, scale))
+                                    Value = fpmath.mul(parentScaleInverse, fpmath.mul(rotation, scale))
                                 };
                             }
                         }
@@ -188,7 +188,7 @@ namespace Fixed.Transforms
 
                                 chunkLocalToParent[i] = new LocalToParent
                                 {
-                                    Value = math.mul(math.mul(float4x4.Translate(translation), parentScaleInverse),
+                                    Value = fpmath.mul(fpmath.mul(fp4x4.Translate(translation), parentScaleInverse),
                                         rotation)
                                 };
                             }
@@ -202,15 +202,15 @@ namespace Fixed.Transforms
                                 var rotation = chunkCompositeRotations[i].Value;
                                 var translation = chunkTranslations[i].Value;
                                 var scale = hasNonUniformScale
-                                    ? float4x4.Scale(chunkNonUniformScales[i].Value)
+                                    ? fp4x4.Scale(chunkNonUniformScales[i].Value)
                                     : (hasScale
-                                        ? float4x4.Scale(new float3(chunkScales[i].Value))
+                                        ? fp4x4.Scale(new fp3(chunkScales[i].Value))
                                         : chunkCompositeScales[i].Value);
 
                                 chunkLocalToParent[i] = new LocalToParent
                                 {
-                                    Value = math.mul(
-                                        math.mul(math.mul(float4x4.Translate(translation), parentScaleInverse),
+                                    Value = fpmath.mul(
+                                        fpmath.mul(fpmath.mul(fp4x4.Translate(translation), parentScaleInverse),
                                             rotation), scale)
                                 };
                             }
@@ -228,7 +228,7 @@ namespace Fixed.Transforms
 
                                 chunkLocalToParent[i] = new LocalToParent
                                 {
-                                    Value = math.mul(parentScaleInverse, new float4x4(rotation, float3.zero))
+                                    Value = fpmath.mul(parentScaleInverse, new fp4x4(rotation, fp3.zero))
                                 };
                             }
                         }
@@ -240,15 +240,15 @@ namespace Fixed.Transforms
                                 var parentScaleInverse = chunkParentScaleInverses[i].Value;
                                 var rotation = chunkRotations[i].Value;
                                 var scale = hasNonUniformScale
-                                    ? float4x4.Scale(chunkNonUniformScales[i].Value)
+                                    ? fp4x4.Scale(chunkNonUniformScales[i].Value)
                                     : (hasScale
-                                        ? float4x4.Scale(new float3(chunkScales[i].Value))
+                                        ? fp4x4.Scale(new fp3(chunkScales[i].Value))
                                         : chunkCompositeScales[i].Value);
 
                                 chunkLocalToParent[i] = new LocalToParent
                                 {
-                                    Value = math.mul(parentScaleInverse,
-                                        math.mul(new float4x4(rotation, float3.zero), scale))
+                                    Value = fpmath.mul(parentScaleInverse,
+                                        fpmath.mul(new fp4x4(rotation, fp3.zero), scale))
                                 };
                             }
                         }
@@ -263,8 +263,8 @@ namespace Fixed.Transforms
 
                                 chunkLocalToParent[i] = new LocalToParent
                                 {
-                                    Value = math.mul(math.mul(float4x4.Translate(translation), parentScaleInverse),
-                                        new float4x4(rotation, new float3(sfloat.Zero)))
+                                    Value = fpmath.mul(fpmath.mul(fp4x4.Translate(translation), parentScaleInverse),
+                                        new fp4x4(rotation, new fp3(fp.zero)))
                                 };
                             }
                         }
@@ -277,16 +277,16 @@ namespace Fixed.Transforms
                                 var rotation = chunkRotations[i].Value;
                                 var translation = chunkTranslations[i].Value;
                                 var scale = hasNonUniformScale
-                                    ? float4x4.Scale(chunkNonUniformScales[i].Value)
+                                    ? fp4x4.Scale(chunkNonUniformScales[i].Value)
                                     : (hasScale
-                                        ? float4x4.Scale(new float3(chunkScales[i].Value))
+                                        ? fp4x4.Scale(new fp3(chunkScales[i].Value))
                                         : chunkCompositeScales[i].Value);
 
                                 chunkLocalToParent[i] = new LocalToParent
                                 {
-                                    Value = math.mul(
-                                        math.mul(math.mul(float4x4.Translate(translation), parentScaleInverse),
-                                            new float4x4(rotation, new float3(sfloat.Zero))), scale)
+                                    Value = fpmath.mul(
+                                        fpmath.mul(fpmath.mul(fp4x4.Translate(translation), parentScaleInverse),
+                                            new fp4x4(rotation, new fp3(fp.zero))), scale)
                                 };
                             }
                         }
@@ -303,9 +303,9 @@ namespace Fixed.Transforms
                             for (int i = 0; i < count; i++)
                             {
                                 var scale = hasNonUniformScale
-                                    ? float4x4.Scale(chunkNonUniformScales[i].Value)
+                                    ? fp4x4.Scale(chunkNonUniformScales[i].Value)
                                     : (hasScale
-                                        ? float4x4.Scale(new float3(chunkScales[i].Value))
+                                        ? fp4x4.Scale(new fp3(chunkScales[i].Value))
                                         : chunkCompositeScales[i].Value);
 
                                 chunkLocalToParent[i] = new LocalToParent
@@ -323,7 +323,7 @@ namespace Fixed.Transforms
 
                                 chunkLocalToParent[i] = new LocalToParent
                                 {
-                                    Value = float4x4.Translate(translation)
+                                    Value = fp4x4.Translate(translation)
                                 };
                             }
                         }
@@ -333,15 +333,15 @@ namespace Fixed.Transforms
                             for (int i = 0; i < count; i++)
                             {
                                 var scale = hasNonUniformScale
-                                    ? float4x4.Scale(chunkNonUniformScales[i].Value)
+                                    ? fp4x4.Scale(chunkNonUniformScales[i].Value)
                                     : (hasScale
-                                        ? float4x4.Scale(new float3(chunkScales[i].Value))
+                                        ? fp4x4.Scale(new fp3(chunkScales[i].Value))
                                         : chunkCompositeScales[i].Value);
                                 var translation = chunkTranslations[i].Value;
 
                                 chunkLocalToParent[i] = new LocalToParent
                                 {
-                                    Value = math.mul(float4x4.Translate(translation), scale)
+                                    Value = fpmath.mul(fp4x4.Translate(translation), scale)
                                 };
                             }
                         }
@@ -368,14 +368,14 @@ namespace Fixed.Transforms
                             {
                                 var rotation = chunkCompositeRotations[i].Value;
                                 var scale = hasNonUniformScale
-                                    ? float4x4.Scale(chunkNonUniformScales[i].Value)
+                                    ? fp4x4.Scale(chunkNonUniformScales[i].Value)
                                     : (hasScale
-                                        ? float4x4.Scale(new float3(chunkScales[i].Value))
+                                        ? fp4x4.Scale(new fp3(chunkScales[i].Value))
                                         : chunkCompositeScales[i].Value);
 
                                 chunkLocalToParent[i] = new LocalToParent
                                 {
-                                    Value = math.mul(rotation, scale)
+                                    Value = fpmath.mul(rotation, scale)
                                 };
                             }
                         }
@@ -389,7 +389,7 @@ namespace Fixed.Transforms
 
                                 chunkLocalToParent[i] = new LocalToParent
                                 {
-                                    Value = math.mul(float4x4.Translate(translation), rotation)
+                                    Value = fpmath.mul(fp4x4.Translate(translation), rotation)
                                 };
                             }
                         }
@@ -401,14 +401,14 @@ namespace Fixed.Transforms
                                 var rotation = chunkCompositeRotations[i].Value;
                                 var translation = chunkTranslations[i].Value;
                                 var scale = hasNonUniformScale
-                                    ? float4x4.Scale(chunkNonUniformScales[i].Value)
+                                    ? fp4x4.Scale(chunkNonUniformScales[i].Value)
                                     : (hasScale
-                                        ? float4x4.Scale(new float3(chunkScales[i].Value))
+                                        ? fp4x4.Scale(new fp3(chunkScales[i].Value))
                                         : chunkCompositeScales[i].Value);
 
                                 chunkLocalToParent[i] = new LocalToParent
                                 {
-                                    Value = math.mul(math.mul(float4x4.Translate(translation), rotation), scale)
+                                    Value = fpmath.mul(fpmath.mul(fp4x4.Translate(translation), rotation), scale)
                                 };
                             }
                         }
@@ -424,7 +424,7 @@ namespace Fixed.Transforms
 
                                 chunkLocalToParent[i] = new LocalToParent
                                 {
-                                    Value = new float4x4(rotation, float3.zero)
+                                    Value = new fp4x4(rotation, fp3.zero)
                                 };
                             }
                         }
@@ -435,14 +435,14 @@ namespace Fixed.Transforms
                             {
                                 var rotation = chunkRotations[i].Value;
                                 var scale = hasNonUniformScale
-                                    ? float4x4.Scale(chunkNonUniformScales[i].Value)
+                                    ? fp4x4.Scale(chunkNonUniformScales[i].Value)
                                     : (hasScale
-                                        ? float4x4.Scale(new float3(chunkScales[i].Value))
+                                        ? fp4x4.Scale(new fp3(chunkScales[i].Value))
                                         : chunkCompositeScales[i].Value);
 
                                 chunkLocalToParent[i] = new LocalToParent
                                 {
-                                    Value = math.mul(new float4x4(rotation, float3.zero), scale)
+                                    Value = fpmath.mul(new fp4x4(rotation, fp3.zero), scale)
                                 };
                             }
                         }
@@ -456,7 +456,7 @@ namespace Fixed.Transforms
 
                                 chunkLocalToParent[i] = new LocalToParent
                                 {
-                                    Value = new float4x4(rotation, translation)
+                                    Value = new fp4x4(rotation, translation)
                                 };
                             }
                         }
@@ -468,14 +468,14 @@ namespace Fixed.Transforms
                                 var rotation = chunkRotations[i].Value;
                                 var translation = chunkTranslations[i].Value;
                                 var scale = hasNonUniformScale
-                                    ? float4x4.Scale(chunkNonUniformScales[i].Value)
+                                    ? fp4x4.Scale(chunkNonUniformScales[i].Value)
                                     : (hasScale
-                                        ? float4x4.Scale(new float3(chunkScales[i].Value))
+                                        ? fp4x4.Scale(new fp3(chunkScales[i].Value))
                                         : chunkCompositeScales[i].Value);
 
                                 chunkLocalToParent[i] = new LocalToParent
                                 {
-                                    Value = math.mul(new float4x4(rotation, translation), scale)
+                                    Value = fpmath.mul(new fp4x4(rotation, translation), scale)
                                 };
                             }
                         }

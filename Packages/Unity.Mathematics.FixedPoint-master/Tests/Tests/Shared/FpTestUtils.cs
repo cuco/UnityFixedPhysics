@@ -41,7 +41,7 @@ namespace Unity.Mathematics.FixedPoint.Tests
                 throw new System.AggregateException($"{a} == {b}", e);
             }
         }
-        
+
         // fp
         public static void AreEqual(fp2 a, fp2 b, fp delta = default)
         {
@@ -212,6 +212,17 @@ namespace Unity.Mathematics.FixedPoint.Tests
             AreEqual(a.c1, b.c1, maxUlp, signedZeroEqual);
             AreEqual(a.c2, b.c2, maxUlp, signedZeroEqual);
             AreEqual(a.c3, b.c3, maxUlp, signedZeroEqual);
+        }
+
+        public static void AreEqual(fpquaternion a, fpquaternion b, fp delta = default)
+        {
+            AreEqual(a.value, b.value, delta);
+        }
+
+        public static void AreEqual(FpRigidTransform a, FpRigidTransform b, fp delta = default)
+        {
+            AreEqual(a.rot, b.rot, delta);
+            AreEqual(a.pos, b.pos, delta);
         }
     }
 }

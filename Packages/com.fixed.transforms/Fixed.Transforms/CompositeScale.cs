@@ -3,7 +3,7 @@ using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
-using Fixed.Mathematics;
+using Unity.Mathematics.FixedPoint;
 
 namespace Fixed.Transforms
 {
@@ -13,7 +13,7 @@ namespace Fixed.Transforms
     [WriteGroup(typeof(ParentScaleInverse))]
     public struct CompositeScale : IComponentData
     {
-        public float4x4 Value;
+        public fp4x4 Value;
     }
 
 
@@ -21,14 +21,14 @@ namespace Fixed.Transforms
     [WriteGroup(typeof(CompositeScale))]
     public struct ScalePivot : IComponentData
     {
-        public float3 Value;
+        public fp3 Value;
     }
 
     [Serializable]
     [WriteGroup(typeof(CompositeScale))]
     public struct ScalePivotTranslation : IComponentData
     {
-        public float3 Value;
+        public fp3 Value;
     }
 
     // CompositeScale = ScalePivotTranslation * ScalePivot * Scale * ScalePivot^-1
@@ -74,7 +74,7 @@ namespace Fixed.Transforms
 
                     // Only pivot? Doesn't do anything.
                     for (int i = 0; i < count; i++)
-                        chunkCompositeScales[i] = new CompositeScale {Value = float4x4.identity};
+                        chunkCompositeScales[i] = new CompositeScale {Value = fp4x4.identity};
                 }
                 // 010
                 else if (!hasAnyScale && hasScalePivotTranslation && !hasScalePivot)
@@ -88,7 +88,7 @@ namespace Fixed.Transforms
                         var translation = chunkScalePivotTranslations[i].Value;
 
                         chunkCompositeScales[i] = new CompositeScale
-                        {Value = float4x4.Translate(translation)};
+                        {Value = fp4x4.Translate(translation)};
                     }
                 }
                 // 011
@@ -104,7 +104,7 @@ namespace Fixed.Transforms
                         var translation = chunkScalePivotTranslations[i].Value;
 
                         chunkCompositeScales[i] = new CompositeScale
-                        {Value = float4x4.Translate(translation)};
+                        {Value = fp4x4.Translate(translation)};
                     }
                 }
                 // 100
@@ -120,7 +120,7 @@ namespace Fixed.Transforms
                         for (int i = 0; i < count; i++)
                         {
                             var scale = chunkScales[i].Value;
-                            chunkCompositeScales[i] = new CompositeScale {Value = float4x4.Scale(scale)};
+                            chunkCompositeScales[i] = new CompositeScale {Value = fp4x4.Scale(scale)};
                         }
                     }
                     else // if (hasNonUniformScale)
@@ -132,7 +132,7 @@ namespace Fixed.Transforms
                         for (int i = 0; i < count; i++)
                         {
                             var scale = chunkNonUniformScale[i].Value;
-                            chunkCompositeScales[i] = new CompositeScale {Value = float4x4.Scale(scale)};
+                            chunkCompositeScales[i] = new CompositeScale {Value = fp4x4.Scale(scale)};
                         }
                     }
                 }
@@ -151,12 +151,12 @@ namespace Fixed.Transforms
                         {
                             var scale = chunkScales[i].Value;
                             var pivot = chunkScalePivots[i].Value;
-                            var inversePivot = -sfloat.One * pivot;
+                            var inversePivot = -fp.one * pivot;
 
                             chunkCompositeScales[i] = new CompositeScale
                             {
-                                Value = math.mul(math.mul(float4x4.Translate(pivot), float4x4.Scale(scale)),
-                                    float4x4.Translate(inversePivot))
+                                Value = fpmath.mul(fpmath.mul(fp4x4.Translate(pivot), fp4x4.Scale(scale)),
+                                    fp4x4.Translate(inversePivot))
                             };
                         }
                     }
@@ -171,12 +171,12 @@ namespace Fixed.Transforms
                         {
                             var scale = chunkNonUniformScale[i].Value;
                             var pivot = chunkScalePivots[i].Value;
-                            var inversePivot = -sfloat.One * pivot;
+                            var inversePivot = -fp.one * pivot;
 
                             chunkCompositeScales[i] = new CompositeScale
                             {
-                                Value = math.mul(math.mul(float4x4.Translate(pivot), float4x4.Scale(scale)),
-                                    float4x4.Translate(inversePivot))
+                                Value = fpmath.mul(fpmath.mul(fp4x4.Translate(pivot), fp4x4.Scale(scale)),
+                                    fp4x4.Translate(inversePivot))
                             };
                         }
                     }
@@ -198,7 +198,7 @@ namespace Fixed.Transforms
                             var scale = chunkScales[i].Value;
 
                             chunkCompositeScales[i] = new CompositeScale
-                            {Value = math.mul(float4x4.Translate(translation), float4x4.Scale(scale))};
+                            {Value = fpmath.mul(fp4x4.Translate(translation), fp4x4.Scale(scale))};
                         }
                     }
                     else // if (hasNonUniformScale)
@@ -214,7 +214,7 @@ namespace Fixed.Transforms
                             var scale = chunkNonUniformScale[i].Value;
 
                             chunkCompositeScales[i] = new CompositeScale
-                            {Value = math.mul(float4x4.Translate(translation), float4x4.Scale(scale))};
+                            {Value = fpmath.mul(fp4x4.Translate(translation), fp4x4.Scale(scale))};
                         }
                     }
                 }
@@ -235,13 +235,13 @@ namespace Fixed.Transforms
                             var translation = chunkScalePivotTranslations[i].Value;
                             var scale = chunkScales[i].Value;
                             var pivot = chunkScalePivots[i].Value;
-                            var inversePivot = -sfloat.One * pivot;
+                            var inversePivot = -fp.one * pivot;
 
                             chunkCompositeScales[i] = new CompositeScale
                             {
-                                Value = math.mul(float4x4.Translate(translation),
-                                    math.mul(math.mul(float4x4.Translate(pivot), float4x4.Scale(scale)),
-                                        float4x4.Translate(inversePivot)))
+                                Value = fpmath.mul(fp4x4.Translate(translation),
+                                    fpmath.mul(fpmath.mul(fp4x4.Translate(pivot), fp4x4.Scale(scale)),
+                                        fp4x4.Translate(inversePivot)))
                             };
                         }
                     }
@@ -258,13 +258,13 @@ namespace Fixed.Transforms
                             var translation = chunkScalePivotTranslations[i].Value;
                             var scale = chunkNonUniformScale[i].Value;
                             var pivot = chunkScalePivots[i].Value;
-                            var inversePivot = -sfloat.One * pivot;
+                            var inversePivot = -fp.one * pivot;
 
                             chunkCompositeScales[i] = new CompositeScale
                             {
-                                Value = math.mul(float4x4.Translate(translation),
-                                    math.mul(math.mul(float4x4.Translate(pivot), float4x4.Scale(scale)),
-                                        float4x4.Translate(inversePivot)))
+                                Value = fpmath.mul(fp4x4.Translate(translation),
+                                    fpmath.mul(fpmath.mul(fp4x4.Translate(pivot), fp4x4.Scale(scale)),
+                                        fp4x4.Translate(inversePivot)))
                             };
                         }
                     }

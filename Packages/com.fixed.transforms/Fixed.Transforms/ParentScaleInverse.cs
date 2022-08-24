@@ -4,7 +4,7 @@ using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
 using Unity.Jobs;
-using Fixed.Mathematics;
+using Unity.Mathematics.FixedPoint;
 
 namespace Fixed.Transforms
 {
@@ -12,12 +12,12 @@ namespace Fixed.Transforms
     [WriteGroup(typeof(LocalToParent))]
     public struct ParentScaleInverse : IComponentData
     {
-        public float4x4 Value;
+        public fp4x4 Value;
 
-        public float3 Right => new float3(Value.c0.x, Value.c0.y, Value.c0.z);
-        public float3 Up => new float3(Value.c1.x, Value.c1.y, Value.c1.z);
-        public float3 Forward => new float3(Value.c2.x, Value.c2.y, Value.c2.z);
-        public float3 Position => new float3(Value.c3.x, Value.c3.y, Value.c3.z);
+        public fp3 Right => new fp3(Value.c0.x, Value.c0.y, Value.c0.z);
+        public fp3 Up => new fp3(Value.c1.x, Value.c1.y, Value.c1.z);
+        public fp3 Forward => new fp3(Value.c2.x, Value.c2.y, Value.c2.z);
+        public fp3 Position => new fp3(Value.c3.x, Value.c3.y, Value.c3.z);
     }
 
     // ParentScaleInverse = Parent.CompositeScale^-1
@@ -55,7 +55,7 @@ namespace Fixed.Transforms
                     var chunkChildren = batchInChunk.GetBufferAccessor(ChildTypeHandle);
                     for (var i = 0; i < batchInChunk.Count; i++)
                     {
-                        var inverseScale = math.inverse(chunkCompositeScales[i].Value);
+                        var inverseScale = fpmath.inverse(chunkCompositeScales[i].Value);
                         var children = chunkChildren[i];
                         for (var j = 0; j < children.Length; j++)
                         {
@@ -78,7 +78,7 @@ namespace Fixed.Transforms
                     var chunkChildren = batchInChunk.GetBufferAccessor(ChildTypeHandle);
                     for (var i = 0; i < batchInChunk.Count; i++)
                     {
-                        var inverseScale = float4x4.Scale(sfloat.One / chunkScales[i].Value);
+                        var inverseScale = fp4x4.Scale(fp.one / chunkScales[i].Value);
                         var children = chunkChildren[i];
                         for (var j = 0; j < children.Length; j++)
                         {
@@ -101,7 +101,7 @@ namespace Fixed.Transforms
                     var chunkChildren = batchInChunk.GetBufferAccessor(ChildTypeHandle);
                     for (var i = 0; i < batchInChunk.Count; i++)
                     {
-                        var inverseScale = float4x4.Scale(sfloat.One / chunkNonUniformScales[i].Value);
+                        var inverseScale = fp4x4.Scale(fp.one / chunkNonUniformScales[i].Value);
                         var children = chunkChildren[i];
                         for (var j = 0; j < children.Length; j++)
                         {

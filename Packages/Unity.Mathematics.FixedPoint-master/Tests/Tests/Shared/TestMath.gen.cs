@@ -16,6 +16,14 @@ namespace Unity.Mathematics.FixedPoint.Tests
     public partial class TestMath
     {
         [Test]
+        public static void equal_fp()
+        {
+            var f = 0.01f;
+            fp ff = new fp(0, 1, 100);
+            TestUtils.AreEqual(f, (float)ff);
+        }
+
+        [Test]
         public static void abs_fp()
         {
             TestUtils.AreEqual(abs(0.0m), 0.0m);

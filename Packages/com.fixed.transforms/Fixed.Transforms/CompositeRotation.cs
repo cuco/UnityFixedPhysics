@@ -3,7 +3,7 @@ using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
-using Fixed.Mathematics;
+using Unity.Mathematics.FixedPoint;
 
 namespace Fixed.Transforms
 {
@@ -12,28 +12,28 @@ namespace Fixed.Transforms
     [WriteGroup(typeof(LocalToParent))]
     public struct CompositeRotation : IComponentData
     {
-        public float4x4 Value;
+        public fp4x4 Value;
     }
 
     [Serializable]
     [WriteGroup(typeof(CompositeRotation))]
     public struct PostRotation : IComponentData
     {
-        public quaternion Value;
+        public fpquaternion Value;
     }
 
     [Serializable]
     [WriteGroup(typeof(CompositeRotation))]
     public struct RotationPivot : IComponentData
     {
-        public float3 Value;
+        public fp3 Value;
     }
 
     [Serializable]
     [WriteGroup(typeof(CompositeRotation))]
     public struct RotationPivotTranslation : IComponentData
     {
-        public float3 Value;
+        public fp3 Value;
     }
 
     // CompositeRotation = RotationPivotTranslation * RotationPivot * Rotation * PostRotation * RotationPivot^-1
@@ -78,7 +78,7 @@ namespace Fixed.Transforms
 
                     // Only pivot? Doesn't do anything.
                     for (int i = 0; i < count; i++)
-                        chunkCompositeRotations[i] = new CompositeRotation {Value = float4x4.identity};
+                        chunkCompositeRotations[i] = new CompositeRotation {Value = fp4x4.identity};
                 }
                 // 010
                 else if (!hasAnyRotation && hasRotationPivotTranslation && !hasRotationPivot)
@@ -92,7 +92,7 @@ namespace Fixed.Transforms
                         var translation = chunkRotationPivotTranslations[i].Value;
 
                         chunkCompositeRotations[i] = new CompositeRotation
-                        {Value = float4x4.Translate(translation)};
+                        {Value = fp4x4.Translate(translation)};
                     }
                 }
                 // 011
@@ -108,7 +108,7 @@ namespace Fixed.Transforms
                         var translation = chunkRotationPivotTranslations[i].Value;
 
                         chunkCompositeRotations[i] = new CompositeRotation
-                        {Value = float4x4.Translate(translation)};
+                        {Value = fp4x4.Translate(translation)};
                     }
                 }
                 // 100
@@ -127,7 +127,7 @@ namespace Fixed.Transforms
                             var rotation = chunkRotations[i].Value;
 
                             chunkCompositeRotations[i] = new CompositeRotation
-                            {Value = new float4x4(rotation, float3.zero)};
+                            {Value = new fp4x4(rotation, fp3.zero)};
                         }
                     }
                     // 10
@@ -142,7 +142,7 @@ namespace Fixed.Transforms
                             var rotation = chunkPostRotation[i].Value;
 
                             chunkCompositeRotations[i] = new CompositeRotation
-                            {Value = new float4x4(rotation, float3.zero)};
+                            {Value = new fp4x4(rotation, fp3.zero)};
                         }
                     }
                     // 11
@@ -155,10 +155,10 @@ namespace Fixed.Transforms
 
                         for (int i = 0; i < count; i++)
                         {
-                            var rotation = math.mul(chunkRotations[i].Value, chunkPostRotation[i].Value);
+                            var rotation = fpmath.mul(chunkRotations[i].Value, chunkPostRotation[i].Value);
 
                             chunkCompositeRotations[i] = new CompositeRotation
-                            {Value = new float4x4(rotation, float3.zero)};
+                            {Value = new fp4x4(rotation, fp3.zero)};
                         }
                     }
                 }
@@ -178,10 +178,10 @@ namespace Fixed.Transforms
                         {
                             var rotation = chunkRotations[i].Value;
                             var pivot = chunkRotationPivots[i].Value;
-                            var inversePivot = -(sfloat)1.0f * pivot;
+                            var inversePivot = -(fp)1.0f * pivot;
 
                             chunkCompositeRotations[i] = new CompositeRotation
-                            {Value = math.mul(new float4x4(rotation, pivot), float4x4.Translate(inversePivot))};
+                            {Value = fpmath.mul(new fp4x4(rotation, pivot), fp4x4.Translate(inversePivot))};
                         }
                     }
                     // 10
@@ -196,10 +196,10 @@ namespace Fixed.Transforms
                         {
                             var rotation = chunkPostRotation[i].Value;
                             var pivot = chunkRotationPivots[i].Value;
-                            var inversePivot = -(sfloat)1.0f * pivot;
+                            var inversePivot = -(fp)1.0f * pivot;
 
                             chunkCompositeRotations[i] = new CompositeRotation
-                            {Value = math.mul(new float4x4(rotation, pivot), float4x4.Translate(inversePivot))};
+                            {Value = fpmath.mul(new fp4x4(rotation, pivot), fp4x4.Translate(inversePivot))};
                         }
                     }
                     // 11
@@ -215,10 +215,10 @@ namespace Fixed.Transforms
                         {
                             var rotation = chunkPostRotation[i].Value;
                             var pivot = chunkRotationPivots[i].Value;
-                            var inversePivot = -(sfloat)1.0f * pivot;
+                            var inversePivot = -(fp)1.0f * pivot;
 
                             chunkCompositeRotations[i] = new CompositeRotation
-                            {Value = math.mul(new float4x4(rotation, pivot), float4x4.Translate(inversePivot))};
+                            {Value = fpmath.mul(new fp4x4(rotation, pivot), fp4x4.Translate(inversePivot))};
                         }
                     }
                 }
@@ -240,7 +240,7 @@ namespace Fixed.Transforms
                             var rotation = chunkRotations[i].Value;
 
                             chunkCompositeRotations[i] = new CompositeRotation
-                            {Value = new float4x4(rotation, translation)};
+                            {Value = new fp4x4(rotation, translation)};
                         }
                     }
                     // 10
@@ -257,7 +257,7 @@ namespace Fixed.Transforms
                             var rotation = chunkRotations[i].Value;
 
                             chunkCompositeRotations[i] = new CompositeRotation
-                            {Value = new float4x4(rotation, translation)};
+                            {Value = new fp4x4(rotation, translation)};
                         }
                     }
                     // 11
@@ -272,10 +272,10 @@ namespace Fixed.Transforms
                         for (int i = 0; i < count; i++)
                         {
                             var translation = chunkRotationPivotTranslations[i].Value;
-                            var rotation = math.mul(chunkRotations[i].Value, chunkPostRotation[i].Value);
+                            var rotation = fpmath.mul(chunkRotations[i].Value, chunkPostRotation[i].Value);
 
                             chunkCompositeRotations[i] = new CompositeRotation
-                            {Value = new float4x4(rotation, translation)};
+                            {Value = new fp4x4(rotation, translation)};
                         }
                     }
                 }
@@ -297,12 +297,12 @@ namespace Fixed.Transforms
                             var translation = chunkRotationPivotTranslations[i].Value;
                             var rotation = chunkRotations[i].Value;
                             var pivot = chunkRotationPivots[i].Value;
-                            var inversePivot = -(sfloat)1.0f * pivot;
+                            var inversePivot = -(fp)1.0f * pivot;
 
                             chunkCompositeRotations[i] = new CompositeRotation
                             {
-                                Value = math.mul(float4x4.Translate(translation),
-                                    math.mul(new float4x4(rotation, pivot), float4x4.Translate(inversePivot)))
+                                Value = fpmath.mul(fp4x4.Translate(translation),
+                                    fpmath.mul(new fp4x4(rotation, pivot), fp4x4.Translate(inversePivot)))
                             };
                         }
                     }
@@ -320,12 +320,12 @@ namespace Fixed.Transforms
                             var translation = chunkRotationPivotTranslations[i].Value;
                             var rotation = chunkPostRotation[i].Value;
                             var pivot = chunkRotationPivots[i].Value;
-                            var inversePivot = -(sfloat)1.0f * pivot;
+                            var inversePivot = -(fp)1.0f * pivot;
 
                             chunkCompositeRotations[i] = new CompositeRotation
                             {
-                                Value = math.mul(float4x4.Translate(translation),
-                                    math.mul(new float4x4(rotation, pivot), float4x4.Translate(inversePivot)))
+                                Value = fpmath.mul(fp4x4.Translate(translation),
+                                    fpmath.mul(new fp4x4(rotation, pivot), fp4x4.Translate(inversePivot)))
                             };
                         }
                     }
@@ -342,14 +342,14 @@ namespace Fixed.Transforms
                         for (int i = 0; i < count; i++)
                         {
                             var translation = chunkRotationPivotTranslations[i].Value;
-                            var rotation = math.mul(chunkRotations[i].Value, chunkPostRotation[i].Value);
+                            var rotation = fpmath.mul(chunkRotations[i].Value, chunkPostRotation[i].Value);
                             var pivot = chunkRotationPivots[i].Value;
-                            var inversePivot = -(sfloat)1.0f * pivot;
+                            var inversePivot = -(fp)1.0f * pivot;
 
                             chunkCompositeRotations[i] = new CompositeRotation
                             {
-                                Value = math.mul(float4x4.Translate(translation),
-                                    math.mul(new float4x4(rotation, pivot), float4x4.Translate(inversePivot)))
+                                Value = fpmath.mul(fp4x4.Translate(translation),
+                                    fpmath.mul(new fp4x4(rotation, pivot), fp4x4.Translate(inversePivot)))
                             };
                         }
                     }

@@ -1,5 +1,6 @@
 using System;
 using Unity.Entities;
+using Unity.Mathematics.FixedPoint;
 
 namespace Fixed.Transforms
 {
@@ -10,6 +11,6 @@ namespace Fixed.Transforms
     [WriteGroup(typeof(ParentScaleInverse))]
     public struct Scale : IComponentData
     {
-        public sfloat Value;
+        public fp Value;
     }
 }

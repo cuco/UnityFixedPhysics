@@ -1,6 +1,6 @@
 using System;
 using Unity.Entities;
-using Fixed.Mathematics;
+using Unity.Mathematics.FixedPoint;
 
 namespace Fixed.Transforms
 {
@@ -10,6 +10,6 @@ namespace Fixed.Transforms
     [WriteGroup(typeof(CompositeRotation))]
     public struct Rotation : IComponentData
     {
-        public quaternion Value;
+        public fpquaternion Value;
     }
 }

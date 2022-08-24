@@ -1,6 +1,6 @@
 using System;
 using Unity.Entities;
-using Fixed.Mathematics;
+using Unity.Mathematics.FixedPoint;
 
 namespace Fixed.Transforms
 {
@@ -9,6 +9,6 @@ namespace Fixed.Transforms
     [WriteGroup(typeof(LocalToParent))]
     public struct Translation : IComponentData
     {
-        public float3 Value;
+        public fp3 Value;
     }
 }

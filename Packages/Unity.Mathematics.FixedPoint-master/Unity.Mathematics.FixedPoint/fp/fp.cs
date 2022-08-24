@@ -1129,5 +1129,30 @@ namespace Unity.Mathematics.FixedPoint
         {
             m_rawValue = value * ONE;
         }
+
+        /// Construct by whole and fraction parts.
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public fp(int whole, uint fraction)
+        {
+            if (whole >= 0)
+                m_rawValue = (long)(((long)whole << FRACTIONAL_PLACES) | fraction);
+            else
+                m_rawValue = -(long)((((long)-whole) << FRACTIONAL_PLACES) | fraction);
+        }
+
+        /// <summary>
+        /// Construct by mixed fraction a + b/c.
+        /// </summary>
+        /// <param name="a">The whole number.</param>
+        /// <param name="b">The numerator.</param>
+        /// <param name="c">The denominator.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public fp(int a, uint b, uint c)
+        {
+            if (a >= 0)
+                m_rawValue = (long)(((long)a << FRACTIONAL_PLACES) | (((long)b << FRACTIONAL_PLACES) / c));
+            else
+                m_rawValue = -(long)(((long)-a << FRACTIONAL_PLACES) | (((long)b << FRACTIONAL_PLACES) / c));
+        }
     }
 }

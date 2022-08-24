@@ -1002,5 +1002,30 @@ namespace Unity.Mathematics.FixedPoint
         /// <summary>Returns the horizontal sum of components of a fp4 vector.</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static fp csum(fp4 x) { return (x.x + x.y) + (x.z + x.w); }
+
+        // SSE shuffles
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static fp4 unpacklo(fp4 a, fp4 b)
+        {
+            return shuffle(a, b, math.ShuffleComponent.LeftX, math.ShuffleComponent.RightX, math.ShuffleComponent.LeftY, math.ShuffleComponent.RightY);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static fp4 unpackhi(fp4 a, fp4 b)
+        {
+            return shuffle(a, b, math.ShuffleComponent.LeftZ, math.ShuffleComponent.RightZ, math.ShuffleComponent.LeftW, math.ShuffleComponent.RightW);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static fp4 movelh(fp4 a, fp4 b)
+        {
+            return shuffle(a, b, math.ShuffleComponent.LeftX, math.ShuffleComponent.LeftY, math.ShuffleComponent.RightX, math.ShuffleComponent.RightY);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static fp4 movehl(fp4 a, fp4 b)
+        {
+            return shuffle(b, a, math.ShuffleComponent.LeftZ, math.ShuffleComponent.LeftW, math.ShuffleComponent.RightZ, math.ShuffleComponent.RightW);
+        }
     }
 }

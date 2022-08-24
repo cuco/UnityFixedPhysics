@@ -3,7 +3,7 @@ using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
-using Fixed.Mathematics;
+using Unity.Mathematics.FixedPoint;
 
 /* **************
    COPY AND PASTE
@@ -20,42 +20,42 @@ namespace Fixed.Transforms
     [WriteGroup(typeof(PostRotation))]
     public struct PostRotationEulerXYZ : IComponentData
     {
-        public float3 Value;
+        public fp3 Value;
     }
 
     [Serializable]
     [WriteGroup(typeof(PostRotation))]
     public struct PostRotationEulerXZY : IComponentData
     {
-        public float3 Value;
+        public fp3 Value;
     }
 
     [Serializable]
     [WriteGroup(typeof(PostRotation))]
     public struct PostRotationEulerYXZ : IComponentData
     {
-        public float3 Value;
+        public fp3 Value;
     }
 
     [Serializable]
     [WriteGroup(typeof(PostRotation))]
     public struct PostRotationEulerYZX : IComponentData
     {
-        public float3 Value;
+        public fp3 Value;
     }
 
     [Serializable]
     [WriteGroup(typeof(PostRotation))]
     public struct PostRotationEulerZXY : IComponentData
     {
-        public float3 Value;
+        public fp3 Value;
     }
 
     [Serializable]
     [WriteGroup(typeof(PostRotation))]
     public struct PostRotationEulerZYX : IComponentData
     {
-        public float3 Value;
+        public fp3 Value;
     }
 
     // PostRotation = PostRotationEulerXYZ
@@ -122,7 +122,7 @@ namespace Fixed.Transforms
                     {
                         chunkRotations[i] = new PostRotation
                         {
-                            Value = quaternion.EulerXYZ(chunkPostRotationEulerXYZs[i].Value)
+                            Value = fpquaternion.EulerXYZ(chunkPostRotationEulerXYZs[i].Value)
                         };
                     }
                 }
@@ -137,7 +137,7 @@ namespace Fixed.Transforms
                     {
                         chunkRotations[i] = new PostRotation
                         {
-                            Value = quaternion.EulerXZY(chunkPostRotationEulerXZYs[i].Value)
+                            Value = fpquaternion.EulerXZY(chunkPostRotationEulerXZYs[i].Value)
                         };
                     }
                 }
@@ -152,7 +152,7 @@ namespace Fixed.Transforms
                     {
                         chunkRotations[i] = new PostRotation
                         {
-                            Value = quaternion.EulerYXZ(chunkPostRotationEulerYXZs[i].Value)
+                            Value = fpquaternion.EulerYXZ(chunkPostRotationEulerYXZs[i].Value)
                         };
                     }
                 }
@@ -167,7 +167,7 @@ namespace Fixed.Transforms
                     {
                         chunkRotations[i] = new PostRotation
                         {
-                            Value = quaternion.EulerYZX(chunkPostRotationEulerYZXs[i].Value)
+                            Value = fpquaternion.EulerYZX(chunkPostRotationEulerYZXs[i].Value)
                         };
                     }
                 }
@@ -182,7 +182,7 @@ namespace Fixed.Transforms
                     {
                         chunkRotations[i] = new PostRotation
                         {
-                            Value = quaternion.EulerZXY(chunkPostRotationEulerZXYs[i].Value)
+                            Value = fpquaternion.EulerZXY(chunkPostRotationEulerZXYs[i].Value)
                         };
                     }
                 }
@@ -197,7 +197,7 @@ namespace Fixed.Transforms
                     {
                         chunkRotations[i] = new PostRotation
                         {
-                            Value = quaternion.EulerZYX(chunkPostRotationEulerZYXs[i].Value)
+                            Value = fpquaternion.EulerZYX(chunkPostRotationEulerZYXs[i].Value)
                         };
                     }
                 }

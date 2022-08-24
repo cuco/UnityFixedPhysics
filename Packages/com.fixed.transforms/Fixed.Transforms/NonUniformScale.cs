@@ -1,6 +1,6 @@
 using System;
 using Unity.Entities;
-using Fixed.Mathematics;
+using Unity.Mathematics.FixedPoint;
 
 namespace Fixed.Transforms
 {
@@ -11,6 +11,6 @@ namespace Fixed.Transforms
     [WriteGroup(typeof(ParentScaleInverse))]
     public struct NonUniformScale : IComponentData
     {
-        public float3 Value;
+        public fp3 Value;
     }
 }

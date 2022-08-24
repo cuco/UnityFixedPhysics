@@ -4,7 +4,7 @@ using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
 using Unity.Jobs;
-using Fixed.Mathematics;
+using Unity.Mathematics.FixedPoint;
 
 namespace Fixed.Transforms
 {
@@ -28,16 +28,16 @@ namespace Fixed.Transforms
             [NativeDisableContainerSafetyRestriction]
             public ComponentDataFromEntity<LocalToWorld> LocalToWorldFromEntity;
 
-            void ChildLocalToWorld(float4x4 parentLocalToWorld, Entity entity, bool updateChildrenTransform)
+            void ChildLocalToWorld(fp4x4 parentLocalToWorld, Entity entity, bool updateChildrenTransform)
             {
                 updateChildrenTransform = updateChildrenTransform || LocalToParentFromEntity.DidChange(entity, LastSystemVersion);
 
-                float4x4 localToWorldMatrix;
+                fp4x4 localToWorldMatrix;
 
                 if (updateChildrenTransform && LocalToWorldWriteGroupMask.Matches(entity))
                 {
                     var localToParent = LocalToParentFromEntity[entity];
-                    localToWorldMatrix = math.mul(parentLocalToWorld, localToParent.Value);
+                    localToWorldMatrix = fpmath.mul(parentLocalToWorld, localToParent.Value);
                     LocalToWorldFromEntity[entity] = new LocalToWorld {Value = localToWorldMatrix};
                 }
                 else //This entity has a component with the WriteGroup(LocalToWorld)

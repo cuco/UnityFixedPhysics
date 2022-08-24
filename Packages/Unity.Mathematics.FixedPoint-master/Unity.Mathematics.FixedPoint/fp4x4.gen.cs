@@ -31,7 +31,7 @@ namespace Unity.Mathematics.FixedPoint
         /// <summary>Constructs a fp4x4 matrix from four fp4 vectors.</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public fp4x4(fp4 c0, fp4 c1, fp4 c2, fp4 c3)
-        { 
+        {
             this.c0 = c0;
             this.c1 = c1;
             this.c2 = c2;
@@ -44,7 +44,7 @@ namespace Unity.Mathematics.FixedPoint
                      fp m10, fp m11, fp m12, fp m13,
                      fp m20, fp m21, fp m22, fp m23,
                      fp m30, fp m31, fp m32, fp m33)
-        { 
+        {
             this.c0 = new fp4(m00, m10, m20, m30);
             this.c1 = new fp4(m01, m11, m21, m31);
             this.c2 = new fp4(m02, m12, m22, m32);
@@ -379,13 +379,143 @@ namespace Unity.Mathematics.FixedPoint
                 v.c3.x, v.c3.y, v.c3.z, v.c3.w);
         }
 
+        /// <summary>Return the result of rotating a fp3 vector by a fp4x4 matrix</summary>
+        /// <param name ="a">Left hand side matrix argument that specifies the rotation.</param>
+        /// <param name ="b">Right hand side vector argument to be rotated.</param>
+        /// <returns>The rotated vector.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static fp3 rotate(fp4x4 a, fp3 b)
+        {
+            return (a.c0 * b.x + a.c1 * b.y + a.c2 * b.z).xyz;
+        }
+
+        /// <summary>Return the result of transforming a fp3 point by a fp4x4 matrix</summary>
+        /// <param name ="a">Left hand side matrix argument that specifies the transformation.</param>
+        /// <param name ="b">Right hand side point argument to be transformed.</param>
+        /// <returns>The transformed point.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static fp3 transform(fp4x4 a, fp3 b)
+        {
+            return (a.c0 * b.x + a.c1 * b.y + a.c2 * b.z + a.c3).xyz;
+        }
+
+        /// <summary>Returns the fp4x4 full inverse of a fp4x4 matrix.</summary>
+        /// <param name="m">Matrix to invert.</param>
+        /// <returns>The inverted matrix.</returns>
+        public static fp4x4 inverse(fp4x4 m)
+        {
+            fp4 c0 = m.c0;
+            fp4 c1 = m.c1;
+            fp4 c2 = m.c2;
+            fp4 c3 = m.c3;
+
+            fp4 r0y_r1y_r0x_r1x = movelh(c1, c0);
+            fp4 r0z_r1z_r0w_r1w = movelh(c2, c3);
+            fp4 r2y_r3y_r2x_r3x = movehl(c0, c1);
+            fp4 r2z_r3z_r2w_r3w = movehl(c3, c2);
+
+            fp4 r1y_r2y_r1x_r2x = shuffle(c1, c0, ShuffleComponent.LeftY, ShuffleComponent.LeftZ, ShuffleComponent.RightY, ShuffleComponent.RightZ);
+            fp4 r1z_r2z_r1w_r2w = shuffle(c2, c3, ShuffleComponent.LeftY, ShuffleComponent.LeftZ, ShuffleComponent.RightY, ShuffleComponent.RightZ);
+            fp4 r3y_r0y_r3x_r0x = shuffle(c1, c0, ShuffleComponent.LeftW, ShuffleComponent.LeftX, ShuffleComponent.RightW, ShuffleComponent.RightX);
+            fp4 r3z_r0z_r3w_r0w = shuffle(c2, c3, ShuffleComponent.LeftW, ShuffleComponent.LeftX, ShuffleComponent.RightW, ShuffleComponent.RightX);
+
+            fp4 r0_wzyx = shuffle(r0z_r1z_r0w_r1w, r0y_r1y_r0x_r1x, ShuffleComponent.LeftZ, ShuffleComponent.LeftX, ShuffleComponent.RightX, ShuffleComponent.RightZ);
+            fp4 r1_wzyx = shuffle(r0z_r1z_r0w_r1w, r0y_r1y_r0x_r1x, ShuffleComponent.LeftW, ShuffleComponent.LeftY, ShuffleComponent.RightY, ShuffleComponent.RightW);
+            fp4 r2_wzyx = shuffle(r2z_r3z_r2w_r3w, r2y_r3y_r2x_r3x, ShuffleComponent.LeftZ, ShuffleComponent.LeftX, ShuffleComponent.RightX, ShuffleComponent.RightZ);
+            fp4 r3_wzyx = shuffle(r2z_r3z_r2w_r3w, r2y_r3y_r2x_r3x, ShuffleComponent.LeftW, ShuffleComponent.LeftY, ShuffleComponent.RightY, ShuffleComponent.RightW);
+            fp4 r0_xyzw = shuffle(r0y_r1y_r0x_r1x, r0z_r1z_r0w_r1w, ShuffleComponent.LeftZ, ShuffleComponent.LeftX, ShuffleComponent.RightX, ShuffleComponent.RightZ);
+
+            // Calculate remaining inner term pairs. inner terms have zw=-xy, so we only have to calculate xy and can pack two pairs per vector.
+            fp4 inner12_23 = r1y_r2y_r1x_r2x * r2z_r3z_r2w_r3w - r1z_r2z_r1w_r2w * r2y_r3y_r2x_r3x;
+            fp4 inner02_13 = r0y_r1y_r0x_r1x * r2z_r3z_r2w_r3w - r0z_r1z_r0w_r1w * r2y_r3y_r2x_r3x;
+            fp4 inner30_01 = r3z_r0z_r3w_r0w * r0y_r1y_r0x_r1x - r3y_r0y_r3x_r0x * r0z_r1z_r0w_r1w;
+
+            // Expand inner terms back to 4 components. zw signs still need to be flipped
+            fp4 inner12 = shuffle(inner12_23, inner12_23, ShuffleComponent.LeftX, ShuffleComponent.LeftZ, ShuffleComponent.RightZ, ShuffleComponent.RightX);
+            fp4 inner23 = shuffle(inner12_23, inner12_23, ShuffleComponent.LeftY, ShuffleComponent.LeftW, ShuffleComponent.RightW, ShuffleComponent.RightY);
+
+            fp4 inner02 = shuffle(inner02_13, inner02_13, ShuffleComponent.LeftX, ShuffleComponent.LeftZ, ShuffleComponent.RightZ, ShuffleComponent.RightX);
+            fp4 inner13 = shuffle(inner02_13, inner02_13, ShuffleComponent.LeftY, ShuffleComponent.LeftW, ShuffleComponent.RightW, ShuffleComponent.RightY);
+
+            // Calculate minors
+            fp4 minors0 = r3_wzyx * inner12 - r2_wzyx * inner13 + r1_wzyx * inner23;
+
+            fp4 denom = r0_xyzw * minors0;
+
+            // Horizontal sum of denominator. Free sign flip of z and w compensates for missing flip in inner terms.
+            denom = denom + shuffle(denom, denom, ShuffleComponent.LeftY, ShuffleComponent.LeftX, ShuffleComponent.RightW, ShuffleComponent.RightZ);   // x+y        x+y            z+w            z+w
+            denom = denom - shuffle(denom, denom, ShuffleComponent.LeftZ, ShuffleComponent.LeftZ, ShuffleComponent.RightX, ShuffleComponent.RightX);   // x+y-z-w  x+y-z-w        z+w-x-y        z+w-x-y
+
+            fp4 rcp_denom_ppnn = fp4(fp.one) / denom;
+            fp4x4 res;
+            res.c0 = minors0 * rcp_denom_ppnn;
+
+            fp4 inner30 = shuffle(inner30_01, inner30_01, ShuffleComponent.LeftX, ShuffleComponent.LeftZ, ShuffleComponent.RightZ, ShuffleComponent.RightX);
+            fp4 inner01 = shuffle(inner30_01, inner30_01, ShuffleComponent.LeftY, ShuffleComponent.LeftW, ShuffleComponent.RightW, ShuffleComponent.RightY);
+
+            fp4 minors1 = r2_wzyx * inner30 - r0_wzyx * inner23 - r3_wzyx * inner02;
+            res.c1 = minors1 * rcp_denom_ppnn;
+
+            fp4 minors2 = r0_wzyx * inner13 - r1_wzyx * inner30 - r3_wzyx * inner01;
+            res.c2 = minors2 * rcp_denom_ppnn;
+
+            fp4 minors3 = r1_wzyx * inner02 - r0_wzyx * inner12 + r2_wzyx * inner01;
+            res.c3 = minors3 * rcp_denom_ppnn;
+            return res;
+        }
+
+        /// <summary>Fast matrix inverse for rigid transforms (orthonormal basis and translation)</summary>
+        /// <param name="m">Matrix to invert.</param>
+        /// <returns>The inverted matrix.</returns>
+        public static fp4x4 fastinverse(fp4x4 m)
+        {
+            fp4 c0 = m.c0;
+            fp4 c1 = m.c1;
+            fp4 c2 = m.c2;
+            fp4 pos = m.c3;
+
+            fp4 zero = fp4(0);
+
+            fp4 t0 = unpacklo(c0, c2);
+            fp4 t1 = unpacklo(c1, zero);
+            fp4 t2 = unpackhi(c0, c2);
+            fp4 t3 = unpackhi(c1, zero);
+
+            fp4 r0 = unpacklo(t0, t1);
+            fp4 r1 = unpackhi(t0, t1);
+            fp4 r2 = unpacklo(t2, t3);
+
+            pos = -(r0 * pos.x + r1 * pos.y + r2 * pos.z);
+            pos.w = fp.one;
+
+            return fp4x4(r0, r1, r2, pos);
+        }
+
+        /// <summary>Returns the determinant of a fp4x4 matrix.</summary>
+        /// <param name="m">Matrix to use when computing determinant.</param>
+        /// <returns>The determinant of the matrix.</returns>
+        public static fp determinant(fp4x4 m)
+        {
+            fp4 c0 = m.c0;
+            fp4 c1 = m.c1;
+            fp4 c2 = m.c2;
+            fp4 c3 = m.c3;
+
+            fp m00 = c1.y * (c2.z * c3.w - c2.w * c3.z) - c2.y * (c1.z * c3.w - c1.w * c3.z) + c3.y * (c1.z * c2.w - c1.w * c2.z);
+            fp m01 = c0.y * (c2.z * c3.w - c2.w * c3.z) - c2.y * (c0.z * c3.w - c0.w * c3.z) + c3.y * (c0.z * c2.w - c0.w * c2.z);
+            fp m02 = c0.y * (c1.z * c3.w - c1.w * c3.z) - c1.y * (c0.z * c3.w - c0.w * c3.z) + c3.y * (c0.z * c1.w - c0.w * c1.z);
+            fp m03 = c0.y * (c1.z * c2.w - c1.w * c2.z) - c1.y * (c0.z * c2.w - c0.w * c2.z) + c2.y * (c0.z * c1.w - c0.w * c1.z);
+
+            return c0.x * m00 - c1.x * m01 + c2.x * m02 - c3.x * m03;
+        }
+
         /// <summary>Returns a uint hash code of a fp4x4 vector.</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static uint hash(fp4x4 v)
         {
-            return math.csum(fpmath.asuint(v.c0) * uint4(0x68EEE0F5u, 0xBC3B0A59u, 0x816EFB5Du, 0xA24E82B7u) + 
-                        fpmath.asuint(v.c1) * uint4(0x45A22087u, 0xFC104C3Bu, 0x5FFF6B19u, 0x5E6CBF3Bu) + 
-                        fpmath.asuint(v.c2) * uint4(0xB546F2A5u, 0xBBCF63E7u, 0xC53F4755u, 0x6985C229u) + 
+            return math.csum(fpmath.asuint(v.c0) * uint4(0x68EEE0F5u, 0xBC3B0A59u, 0x816EFB5Du, 0xA24E82B7u) +
+                        fpmath.asuint(v.c1) * uint4(0x45A22087u, 0xFC104C3Bu, 0x5FFF6B19u, 0x5E6CBF3Bu) +
+                        fpmath.asuint(v.c2) * uint4(0xB546F2A5u, 0xBBCF63E7u, 0xC53F4755u, 0x6985C229u) +
                         fpmath.asuint(v.c3) * uint4(0xE133B0B3u, 0xC3E0A3B9u, 0xFE31134Fu, 0x712A34D7u)) + 0x9D77A59Bu;
         }
 
@@ -397,9 +527,9 @@ namespace Unity.Mathematics.FixedPoint
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static uint4 hashwide(fp4x4 v)
         {
-            return (fpmath.asuint(v.c0) * uint4(0x4942CA39u, 0xB40EC62Du, 0x565ED63Fu, 0x93C30C2Bu) + 
-                    fpmath.asuint(v.c1) * uint4(0xDCAF0351u, 0x6E050B01u, 0x750FDBF5u, 0x7F3DD499u) + 
-                    fpmath.asuint(v.c2) * uint4(0x52EAAEBBu, 0x4599C793u, 0x83B5E729u, 0xC267163Fu) + 
+            return (fpmath.asuint(v.c0) * uint4(0x4942CA39u, 0xB40EC62Du, 0x565ED63Fu, 0x93C30C2Bu) +
+                    fpmath.asuint(v.c1) * uint4(0xDCAF0351u, 0x6E050B01u, 0x750FDBF5u, 0x7F3DD499u) +
+                    fpmath.asuint(v.c2) * uint4(0x52EAAEBBu, 0x4599C793u, 0x83B5E729u, 0xC267163Fu) +
                     fpmath.asuint(v.c3) * uint4(0x67BC9149u, 0xAD7C5EC1u, 0x822A7D6Du, 0xB492BF15u)) + 0xD37220E3u;
         }
 

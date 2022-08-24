@@ -8,6 +8,6 @@
     "fixed"
   ],
   "dependencies": {
-    "com.fixed.sfloat": "0.0.1"
+    "com.danielmansson.mathematics.fixedpoint": "0.1.0"
   }
 }

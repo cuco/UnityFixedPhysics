@@ -1,4 +1,5 @@
 using NUnit.Framework;
+using UnityEngine.Profiling;
 using static Unity.Mathematics.math;
 
 namespace Unity.Mathematics.FixedPoint.Tests

@@ -1,14 +1,21 @@
 {
     "name": "Fixed.Transforms",
+    "rootNamespace": "",
     "references": [
         "Unity.Entities",
         "Unity.Collections",
         "Unity.Burst",
         "Unity.Jobs",
-        "Fixed.Mathematics",
-        "Fixed.Sfloat"
+        "Unity.Mathematics",
+        "Unity.Mathematics.FixedPoint"
     ],
-    "optionalUnityReferences": [],
     "includePlatforms": [],
-    "excludePlatforms": []
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
 }

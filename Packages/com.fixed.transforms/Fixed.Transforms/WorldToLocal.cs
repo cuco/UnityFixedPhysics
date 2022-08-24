@@ -3,19 +3,19 @@ using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
-using Fixed.Mathematics;
+using Unity.Mathematics.FixedPoint;
 
 namespace Fixed.Transforms
 {
     [Serializable]
     public struct WorldToLocal : IComponentData
     {
-        public float4x4 Value;
+        public fp4x4 Value;
 
-        public float3 Right => new float3(Value.c0.x, Value.c0.y, Value.c0.z);
-        public float3 Up => new float3(Value.c1.x, Value.c1.y, Value.c1.z);
-        public float3 Forward => new float3(Value.c2.x, Value.c2.y, Value.c2.z);
-        public float3 Position => new float3(Value.c3.x, Value.c3.y, Value.c3.z);
+        public fp3 Right => new fp3(Value.c0.x, Value.c0.y, Value.c0.z);
+        public fp3 Up => new fp3(Value.c1.x, Value.c1.y, Value.c1.z);
+        public fp3 Forward => new fp3(Value.c2.x, Value.c2.y, Value.c2.z);
+        public fp3 Position => new fp3(Value.c3.x, Value.c3.y, Value.c3.z);
     }
 
     [BurstCompile]
@@ -41,7 +41,7 @@ namespace Fixed.Transforms
                 for (int i = 0; i < batchInChunk.Count; i++)
                 {
                     var localToWorld = chunkLocalToWorld[i].Value;
-                    chunkWorldToLocal[i] = new WorldToLocal {Value = math.inverse(localToWorld)};
+                    chunkWorldToLocal[i] = new WorldToLocal {Value = fpmath.inverse(localToWorld)};
                 }
             }
         }
