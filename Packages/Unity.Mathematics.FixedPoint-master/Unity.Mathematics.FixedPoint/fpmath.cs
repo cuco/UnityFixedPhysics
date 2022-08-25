@@ -1027,5 +1027,13 @@ namespace Unity.Mathematics.FixedPoint
         {
             return shuffle(b, a, math.ShuffleComponent.LeftZ, math.ShuffleComponent.LeftW, math.ShuffleComponent.RightZ, math.ShuffleComponent.RightW);
         }
+
+        /// <summary>
+        /// Unity's up axis (0, 1, 0).
+        /// </summary>
+        /// <remarks>Matches [https://docs.unity3d.com/ScriptReference/Vector3-up.html](https://docs.unity3d.com/ScriptReference/Vector3-up.html)</remarks>
+        /// <returns>The up axis.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static fp3 up() { return new fp3(fp.zero, fp.one, fp.zero); }  // for compatibility
     }
 }

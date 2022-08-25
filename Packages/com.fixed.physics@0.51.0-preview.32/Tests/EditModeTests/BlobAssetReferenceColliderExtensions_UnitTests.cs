@@ -8,6 +8,7 @@ using Unity.Jobs;
 using Unity.Mathematics.FixedPoint;
 using Fixed.Physics.Authoring;
 using Fixed.Physics.Extensions;
+using Unity.Mathematics;
 using UnityEngine;
 
 namespace Fixed.Physics.Tests.Authoring
