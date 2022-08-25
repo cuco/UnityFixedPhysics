@@ -22,6 +22,8 @@ namespace Unity.Mathematics.FixedPoint
         const long RAW_PI_OVER_2 = 0x1921FB544;
 
         const string NOT_SUPPORTED_YET = "Not supported yet.";
+        /// <summary>The smallest positive normal number representable in a float.</summary>
+        public static readonly fp FLT_MIN_NORMAL = 1.175494351e-38M;
 
         /// <summary>Returns the bit pattern of a fp as a uint.</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

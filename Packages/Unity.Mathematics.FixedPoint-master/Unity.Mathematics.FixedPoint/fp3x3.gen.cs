@@ -30,7 +30,7 @@ namespace Unity.Mathematics.FixedPoint
         /// <summary>Constructs a fp3x3 matrix from three fp3 vectors.</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public fp3x3(fp3 c0, fp3 c1, fp3 c2)
-        { 
+        {
             this.c0 = c0;
             this.c1 = c1;
             this.c2 = c2;
@@ -41,7 +41,7 @@ namespace Unity.Mathematics.FixedPoint
         public fp3x3(fp m00, fp m01, fp m02,
                      fp m10, fp m11, fp m12,
                      fp m20, fp m21, fp m22)
-        { 
+        {
             this.c0 = new fp3(m00, m10, m20);
             this.c1 = new fp3(m01, m11, m21);
             this.c2 = new fp3(m02, m12, m22);
@@ -367,12 +367,50 @@ namespace Unity.Mathematics.FixedPoint
                 v.c2.x, v.c2.y, v.c2.z);
         }
 
+        /// <summary>Returns the fp3x3 full inverse of a fp3x3 matrix.</summary>
+        /// <param name="m">Matrix to invert.</param>
+        /// <returns>The inverted matrix.</returns>
+        public static fp3x3 inverse(fp3x3 m)
+        {
+            fp3 c0 = m.c0;
+            fp3 c1 = m.c1;
+            fp3 c2 = m.c2;
+
+            fp3 t0 = fp3(c1.x, c2.x, c0.x);
+            fp3 t1 = fp3(c1.y, c2.y, c0.y);
+            fp3 t2 = fp3(c1.z, c2.z, c0.z);
+
+            fp3 m0 = t1 * t2.yzx - t1.yzx * t2;
+            fp3 m1 = t0.yzx * t2 - t0 * t2.yzx;
+            fp3 m2 = t0 * t1.yzx - t0.yzx * t1;
+
+            fp rcpDet = fp.one / csum(t0.zxy * m0);
+            return fp3x3(m0, m1, m2) * rcpDet;
+        }
+
+        /// <summary>Returns the determinant of a float3x3 matrix.</summary>
+        /// <param name="m">Matrix to use when computing determinant.</param>
+        /// <returns>The determinant of the matrix.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static fp determinant(fp3x3 m)
+        {
+            fp3 c0 = m.c0;
+            fp3 c1 = m.c1;
+            fp3 c2 = m.c2;
+
+            fp m00 = c1.y * c2.z - c1.z * c2.y;
+            fp m01 = c0.y * c2.z - c0.z * c2.y;
+            fp m02 = c0.y * c1.z - c0.z * c1.y;
+
+            return c0.x * m00 - c1.x * m01 + c2.x * m02;
+        }
+
         /// <summary>Returns a uint hash code of a fp3x3 vector.</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static uint hash(fp3x3 v)
         {
-            return math.csum(fpmath.asuint(v.c0) * uint3(0xD42EAFA3u, 0xD9AFD06Du, 0x97A65421u) + 
-                        fpmath.asuint(v.c1) * uint3(0x7809205Fu, 0x9C9F0823u, 0x5A9CA13Bu) + 
+            return math.csum(fpmath.asuint(v.c0) * uint3(0xD42EAFA3u, 0xD9AFD06Du, 0x97A65421u) +
+                        fpmath.asuint(v.c1) * uint3(0x7809205Fu, 0x9C9F0823u, 0x5A9CA13Bu) +
                         fpmath.asuint(v.c2) * uint3(0xAFCDD5EFu, 0xA88D187Du, 0xCF6EBA1Du)) + 0x9D88E5A1u;
         }
 
@@ -384,8 +422,8 @@ namespace Unity.Mathematics.FixedPoint
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static uint3 hashwide(fp3x3 v)
         {
-            return (fpmath.asuint(v.c0) * uint3(0xEADF0775u, 0x747A9D7Bu, 0x4111F799u) + 
-                    fpmath.asuint(v.c1) * uint3(0xB5F05AF1u, 0xFD80290Bu, 0x8B65ADB7u) + 
+            return (fpmath.asuint(v.c0) * uint3(0xEADF0775u, 0x747A9D7Bu, 0x4111F799u) +
+                    fpmath.asuint(v.c1) * uint3(0xB5F05AF1u, 0xFD80290Bu, 0x8B65ADB7u) +
                     fpmath.asuint(v.c2) * uint3(0xDFF4F563u, 0x7069770Du, 0xD1224537u)) + 0xE99ED6F3u;
         }
 

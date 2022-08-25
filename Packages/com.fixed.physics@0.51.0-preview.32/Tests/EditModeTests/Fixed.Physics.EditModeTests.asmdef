@@ -1,5 +1,6 @@
 {
     "name": "Fixed.Physics.EditModeTests",
+    "rootNamespace": "",
     "references": [
         "Unity.Burst",
         "Unity.Collections",
@@ -10,11 +11,11 @@
         "Fixed.Physics.Editor",
         "Fixed.Physics.Hybrid",
         "Fixed.Physics.PlayModeTests",
-        "Fixed.fp",
         "Unity.Scenes",
         "Unity.Scenes.Hybrid",
         "UnityEngine.TestRunner",
-        "UnityEditor.TestRunner"
+        "UnityEditor.TestRunner",
+        "Unity.Mathematics"
     ],
     "includePlatforms": [
         "Editor"

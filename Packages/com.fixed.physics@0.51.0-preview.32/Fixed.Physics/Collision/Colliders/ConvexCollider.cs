@@ -13,9 +13,9 @@ namespace Fixed.Physics
         internal const string k_BevelRadiusTooltip =
             "Determines how rounded the edges of the convex shape will be. A value greater than 0 results in more optimized collision, at the expense of some shape detail.";
 
-        private static readonly fp k_DefaultSimplificationTolerance = new fp(0, 15, 1000);// (fp)0.015f;  //fp.FromRaw(0x3c75c28f);
-        private static readonly fp k_DefaultBevelRadius = new fp(0, 5, 100); //fp)0.05f;  //fp.FromRaw(0x3d4ccccd);
-        private static readonly fp k_DefaultMinAngle = new fp(2, 5, 10) * fpmath.PI / (fp)180;  //fp.FromRaw(0x3d32b8c2); // 2.5 degrees
+        private static readonly fp k_DefaultSimplificationTolerance = new fp(0, 15, 1000);// (fp)0.015f;
+        private static readonly fp k_DefaultBevelRadius = new fp(0, 5, 100); //fp)0.05f;
+        private static readonly fp k_DefaultMinAngle = new fp(2, 5, 10) * fpmath.PI / (fp)180;// 2.5 degrees
 
         public static readonly ConvexHullGenerationParameters Default = new ConvexHullGenerationParameters
         {
@@ -347,7 +347,7 @@ namespace Fixed.Physics
                             for (int i = 2; i < Vertices.Length; i++)
                             {
                                 cross = fpmath.cross(edge0, Vertices[i] - Vertices[0]);
-                                if (fpmath.lengthsq(cross) > (fp)1e-8f) //fp.FromRaw(0x322bcc77)) // take the first cross product good enough to calculate a normal
+                                if (fpmath.lengthsq(cross) > (fp)1e-8f) // take the first cross product good enough to calculate a normal
                                 {
                                     break;
                                 }

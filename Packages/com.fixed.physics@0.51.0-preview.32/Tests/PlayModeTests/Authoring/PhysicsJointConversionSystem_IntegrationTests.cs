@@ -1,6 +1,7 @@
 #if LEGACY_PHYSICS
 using System;
 using NUnit.Framework;
+using Unity.Mathematics;
 using Unity.Mathematics.FixedPoint;
 using UnityEngine;
 using LegacyCharacter = UnityEngine.CharacterJoint;

@@ -237,9 +237,9 @@ namespace Fixed.Physics
             {
                 Transform = new FpRigidTransform(m_Orientation, m_Center),
                 InertiaTensor = new fp3(
-                    (m_Size.y * m_Size.y + m_Size.z * m_Size.z) * fp.FromRaw(0x3daaaaab),
-                    (m_Size.x * m_Size.x + m_Size.z * m_Size.z) * fp.FromRaw(0x3daaaaab),
-                    (m_Size.x * m_Size.x + m_Size.y * m_Size.y) * fp.FromRaw(0x3daaaaab))
+                    (m_Size.y * m_Size.y + m_Size.z * m_Size.z) / 12,
+                    (m_Size.x * m_Size.x + m_Size.z * m_Size.z) / 12,
+                    (m_Size.x * m_Size.x + m_Size.y * m_Size.y) / 12)
             },
             Volume = m_Size.x * m_Size.y * m_Size.z,
             AngularExpansionFactor = fpmath.length(m_Size * fp.half - ConvexHull.ConvexRadius)

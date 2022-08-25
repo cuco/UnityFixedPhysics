@@ -5,7 +5,7 @@ using Unity.Collections;
 using Unity.Jobs;
 using Unity.Mathematics.FixedPoint;
 using Fixed.Physics.Tests.Utils;
-using Random = Unity.Mathematics.FixedPoint.Random;
+using Random = Unity.Mathematics.Random;
 
 namespace Fixed.Physics.Tests.Collision.Colliders
 {
@@ -24,7 +24,7 @@ namespace Fixed.Physics.Tests.Collision.Colliders
                 var points = new NativeArray<fp3>(1024, Allocator.Temp);
                 var random = new Random(1234);
                 for (var i = 0; i < points.Length; ++i)
-                    points[i] = random.Nextfp3(new fp3(-(fp)1f), new fp3((fp)1f));
+                    points[i] = random.NextFloat3(new fp3(-(fp)1f), new fp3((fp)1f));
                 ConvexCollider.Create(points, ConvexHullGenerationParameters.Default).Dispose();
             }
         }

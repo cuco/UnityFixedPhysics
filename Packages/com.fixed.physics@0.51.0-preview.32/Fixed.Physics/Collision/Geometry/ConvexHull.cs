@@ -17,8 +17,8 @@ namespace Fixed.Physics
             public byte NumVertices;             // number of vertex indices in the FaceVertexIndices array
             public byte MinHalfAngleCompressed;  // 0-255 = 0-90 degrees
 
-            static readonly fp k_CompressionFactor = fp.FromRaw(0x4322568a);//255.0f / (fpmath.PI * 0.5f);
-            public fp MinHalfAngle { set => MinHalfAngleCompressed = (byte)fpmath.min(value * k_CompressionFactor, (fp)255.0f); }
+            static readonly fp k_CompressionFactor = 255 / (fp.Pi * fp.half);
+            public fp MinHalfAngle { set => MinHalfAngleCompressed = (byte)fpmath.min(value * k_CompressionFactor, (fp)255); }
             public bool Equals(Face other) => FirstIndex.Equals(other.FirstIndex) && NumVertices.Equals(other.NumVertices) && MinHalfAngleCompressed.Equals(other.MinHalfAngleCompressed);
         }
 

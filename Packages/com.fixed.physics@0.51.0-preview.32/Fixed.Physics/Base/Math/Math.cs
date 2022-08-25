@@ -23,11 +23,11 @@ namespace Fixed.Physics
 
             // Smallest fp such that 1.0 + eps != 1.0
             // Different from fp.Epsilon which is the smallest value greater than zero.
-            public static fp Eps => fp.FromRaw(0x34000000);//1.192092896e-07F;
+            public static fp Eps => 1.192092896e-07M;
 
             // These constants are identical to the ones in the Unity Mathf library, to ensure identical behaviour
-            internal static fp UnityEpsilonNormalSqrt => fp.FromRaw(0x26901d7d);//1e-15F;
-            internal static fp UnityEpsilon => fp.FromRaw(0x3727c5ac);//0.00001F;
+            internal static fp UnityEpsilonNormalSqrt => 1e-15M;
+            internal static fp UnityEpsilon => fp.fp_1e_5f;//0.00001F;
 
             public static readonly fp Tau = fp.two * fpmath.PI;
             public static readonly fp OneOverTau = fp.one / Tau;
@@ -80,7 +80,7 @@ namespace Fixed.Physics
         public static fp Det(fp3 a, fp3 b, fp3 c) => fpmath.dot(fpmath.cross(a, b), c); // TODO: use fpmath.determinant()?
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static fp RSqrtSafe(fp v) => fpmath.select(fpmath.rsqrt(v), fp.zero, fpmath.abs(v) < fp.FromRaw(0x2edbe6ff));
+        public static fp RSqrtSafe(fp v) => fpmath.select(fpmath.rsqrt(v), fp.zero, fpmath.abs(v) < fp.fp_1e_10f);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void ClampToMaxLength(fp maxLength, ref fp3 vector)
@@ -158,7 +158,7 @@ namespace Fixed.Physics
             }
 
             eigenVectors = fp3x3.identity;
-            fp epsSq = fp.FromRaw(0x283424dc) * (fpmath.lengthsq(a.c0) + fpmath.lengthsq(a.c1) + fpmath.lengthsq(a.c2));
+            fp epsSq = (fp)1e-14M * (fpmath.lengthsq(a.c0) + fpmath.lengthsq(a.c1) + fpmath.lengthsq(a.c2));
             const int maxIterations = 10;
             for (int iteration = 0; iteration < maxIterations; iteration++)
             {
@@ -235,15 +235,15 @@ namespace Fixed.Physics
         // Returns a fpquaternion q with q * from = to
         public static fpquaternion FromToRotation(fp3 from, fp3 to)
         {
-            Assert.IsTrue(fpmath.abs(fpmath.lengthsq(from) - fp.one) < fp.FromRaw(0x38d1b717));
-            Assert.IsTrue(fpmath.abs(fpmath.lengthsq(to) - fp.one) < fp.FromRaw(0x38d1b717));
+            Assert.IsTrue(fpmath.abs(fpmath.lengthsq(from) - fp.one) < fp.fp_1e_4f);
+            Assert.IsTrue(fpmath.abs(fpmath.lengthsq(to) - fp.one) < fp.fp_1e_4f);
             fp3 cross = fpmath.cross(from, to);
             CalculatePerpendicularNormalized(from, out fp3 safeAxis, out fp3 unused); // for when angle ~= 180
             fp dot = fpmath.dot(from, to);
             fp3 squares = new fp3(fp.half - new fp2(dot, -dot) * fp.half, fpmath.lengthsq(cross));
-            fp3 inverses = fpmath.select(fpmath.rsqrt(squares), fp.zero, squares < fp.FromRaw(0x2edbe6ff));
+            fp3 inverses = fpmath.select(fpmath.rsqrt(squares), fp.zero, squares < fp.fp_1e_10f);
             fp2 sinCosHalfAngle = squares.xy * inverses.xy;
-            fp3 axis = fpmath.select(cross * inverses.z, safeAxis, squares.z < fp.FromRaw(0x2edbe6ff));
+            fp3 axis = fpmath.select(cross * inverses.z, safeAxis, squares.z < fp.fp_1e_10f);
             return new fpquaternion(new fp4(axis * sinCosHalfAngle.x, sinCosHalfAngle.y));
         }
 
@@ -252,19 +252,16 @@ namespace Fixed.Physics
         #region toEuler
         static fp3 toEuler(fpquaternion q, math.RotationOrder order = math.RotationOrder.Default)
         {
-            //const fp epsilon = 1e-6f;
+            fp epsilon = 1e-6M;
 
             //prepare the data
             var qv = q.value;
-            var d1 = qv * qv.wwww * new fp4((fp)2.0f); //xw, yw, zw, ww
-            var d2 = qv * qv.yzxw * new fp4((fp)2.0f); //xy, yz, zx, ww
+            var d1 = qv * qv.wwww * new fp4(fp.two); //xw, yw, zw, ww
+            var d2 = qv * qv.yzxw * new fp4(fp.two); //xy, yz, zx, ww
             var d3 = qv * qv;
             var euler = new fp3(fp.zero);
 
-            //const fp epsilon = 1e-6f;
-            //const fp CUTOFF = (1.0f - 2.0f * epsilon) * (1.0f - 2.0f * epsilon);
-            const uint CUTOFF_U32 = 0x3f7fffbd;
-            fp CUTOFF = fp.FromRaw(CUTOFF_U32);
+            fp CUTOFF = (fp.one - fp.two * epsilon) * (fp.one - fp.two * epsilon);
 
             switch (order)
             {

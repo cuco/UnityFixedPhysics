@@ -1,4 +1,3 @@
-using System;
 using Unity.Mathematics;
 using Unity.Mathematics.FixedPoint;
 using UnityEditor;
@@ -42,12 +41,12 @@ namespace Fixed.Physics.Editor
                 return;
             }
 
-            var cameraPosition = float3.zero;
-            var cameraForward = new float3 { z = 1 };
+            var cameraPosition = fp3.zero;
+            var cameraForward = new fp3 { z = 1 };
             if (Camera.current != null)
             {
-                cameraPosition = Camera.current.transform.position;
-                cameraForward = Camera.current.transform.forward;
+                cameraPosition = (fp3)Camera.current.transform.position;
+                cameraForward = (fp3)Camera.current.transform.forward;
             }
 
             var bounds = new Bounds(this.center, this.size);
@@ -71,8 +70,8 @@ namespace Fixed.Physics.Editor
             // Since the geometry is transformed by Handles.matrix during rendering, we transform the camera position
             // by the inverse matrix so that the two-shaded wireframe will have the proper orientation.
             var invMatrix   = Handles.inverseMatrix;
-            cameraPosition  = invMatrix.MultiplyPoint(cameraPosition);
-            cameraForward   = invMatrix.MultiplyVector(cameraForward);
+            cameraPosition  = (fp3)invMatrix.MultiplyPoint((Vector3)cameraPosition);
+            cameraForward   = (fp3)invMatrix.MultiplyVector((Vector3)cameraForward);
             var cameraOrtho = Camera.current == null || Camera.current.orthographic;
 
             PhysicsBoundsHandleUtility.CalculateCornerHorizon(origin + corner * new fp3(fp.minusOne,  fp.one, fp.minusOne), fpquaternion.LookRotation(-axisz,  axisy), cameraPosition, cameraForward, cameraOrtho, bevelRadius, out s_Corners[0]);

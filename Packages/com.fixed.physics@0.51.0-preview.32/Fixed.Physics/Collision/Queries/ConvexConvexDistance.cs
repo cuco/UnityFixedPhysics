@@ -250,8 +250,8 @@ namespace Fixed.Physics
             fp3* verticesA, int numVerticesA, fp3* verticesB, int numVerticesB,
             [NoAlias] in MTransform aFromB, PenetrationHandling penetrationHandling)
         {
-            fp epsTerminationSq = fp.FromRaw(0x322bcc77); // Main loop quits when it cannot find a point that improves the simplex by at least this much
-            fp epsPenetrationSq = fp.FromRaw(0x3089705f); // Epsilon used to check for penetration.  Should be smaller than shape cast ConvexConvex keepDistance^2.
+            fp epsTerminationSq = 1e-8M; // Main loop quits when it cannot find a point that improves the simplex by at least this much
+            fp epsPenetrationSq = 1e-9M; // Epsilon used to check for penetration.  Should be smaller than shape cast ConvexConvex keepDistance^2.
 
             // Initialize simplex.
             Simplex simplex = new Simplex();
@@ -432,7 +432,7 @@ namespace Fixed.Physics
                             UnityEngine.Assertions.Assert.IsTrue(simplex.NumVertices == 3);
                             fp3 cross = fpmath.cross(simplex.B.Xyz - simplex.A.Xyz, simplex.C.Xyz - simplex.A.Xyz);
                             fp crossLengthSq = fpmath.lengthsq(cross);
-                            if (crossLengthSq < fp.FromRaw(0x322bcc77)) // hull builder can accept extremely thin triangles for which we cannot compute an accurate normal
+                            if (crossLengthSq < 1e-8M) // hull builder can accept extremely thin triangles for which we cannot compute an accurate normal
                             {
                                 simplex.NumVertices = 2;
                                 goto case 2;
@@ -449,7 +449,7 @@ namespace Fixed.Physics
                 {
                     int closestTriangleIndex;
                     Plane closestPlane = new Plane();
-                    fp stopThreshold = fp.FromRaw(0x38d1b717);
+                    fp stopThreshold = fp.fp_1e_4f;
                     uint* uidsCache = stackalloc uint[triangleCapacity];
                     for (int i = 0; i < triangleCapacity; i++)
                     {
@@ -478,7 +478,7 @@ namespace Fixed.Physics
                         SupportVertex sv = GetSupportingVertex(closestPlane.Normal, verticesA, numVerticesA, verticesB, numVerticesB, aFromB);
                         fp d2P = fpmath.dot(closestPlane.Normal, sv.Xyz) + closestPlane.Distance;
                         if (fpmath.abs(d2P) > stopThreshold && hull.AddPoint(sv.Xyz, sv.Id))
-                            stopThreshold *= fp.FromRaw(0x3fa66666);
+                            stopThreshold *= new fp(1, 3, 10);
                         else
                             break;
                     }
@@ -487,7 +487,7 @@ namespace Fixed.Physics
                     // There could be multiple triangles in the closest plane, pick the one that has the closest point to the origin on its face
                     foreach (int triangleIndex in hull.Triangles.Indices)
                     {
-                        if (distancesCache[triangleIndex] >= closestPlane.Distance - fp.FromRaw(0x38d1b717))
+                        if (distancesCache[triangleIndex] >= closestPlane.Distance - fp.fp_1e_4f)
                         {
                             ConvexHullBuilder.Triangle triangle = hull.Triangles[triangleIndex];
                             fp3 a = hull.Vertices[triangle.Vertex0].Position;
@@ -501,7 +501,7 @@ namespace Fixed.Physics
                             if (math.all(dets >= 0))
                             {
                                 Plane plane = hull.ComputePlane(triangleIndex);
-                                if (fpmath.dot(plane.Normal, closestPlane.Normal) > fp.FromRaw(0x3f7ff972))
+                                if (fpmath.dot(plane.Normal, closestPlane.Normal) > (1 - fp.fp_1e_4f))
                                 {
                                     closestTriangleIndex = triangleIndex;
                                     closestPlane = hull.ComputePlane(triangleIndex);
@@ -559,7 +559,7 @@ namespace Fixed.Physics
 
             // Done.
             UnityEngine.Assertions.Assert.IsTrue(fpmath.isfinite(ret.ClosestPoints.Distance));
-            UnityEngine.Assertions.Assert.IsTrue(fpmath.abs(fpmath.lengthsq(ret.ClosestPoints.NormalInA) - fp.one) < fp.FromRaw(0x3727c5ac));
+            UnityEngine.Assertions.Assert.IsTrue(fpmath.abs(fpmath.lengthsq(ret.ClosestPoints.NormalInA) - fp.one) < fp.fp_1e_5f);
             return ret;
         }
 

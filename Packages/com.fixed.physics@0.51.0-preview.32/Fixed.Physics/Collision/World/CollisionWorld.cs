@@ -29,7 +29,7 @@ namespace Fixed.Physics
         public NativeArray<RigidBody> DynamicBodies => m_Bodies.GetSubArray(0, NumDynamicBodies);
 
         // Contacts are always created between rigid bodies if they are closer than this distance threshold.
-        public fp CollisionTolerance => fp.FromRaw(0x3a83126f); // todo - make this configurable?
+        public fp CollisionTolerance => fp.fp_1e_3f; // todo - make this configurable?
 
         // Construct a collision world with the given number of uninitialized rigid bodies
         public CollisionWorld(int numStaticBodies, int numDynamicBodies)

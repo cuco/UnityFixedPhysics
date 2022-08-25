@@ -25,8 +25,8 @@ namespace Fixed.Physics
         //public const fp DefaultSpringFrequency = 74341.31f;
         //public const fp DefaultSpringDamping = 2530.126f;
 
-        public static readonly fp DefaultSpringFrequency = new fp(74341, 31, 100);//fp.FromRaw(0x4771fefa); // 61950.977267809007887192914302327f
-        public static readonly fp DefaultSpringDamping = new fp(2530, 126, 1000);//fp.FromRaw(0x451e21f2); // 2530.12155587434178122630287018f
+        public static readonly fp DefaultSpringFrequency = new fp(74341, 31, 100);
+        public static readonly fp DefaultSpringDamping = new fp(2530, 126, 1000);
 
         public bool3 ConstrainedAxes;
         public ConstraintType Type;

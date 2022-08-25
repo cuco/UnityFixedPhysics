@@ -658,7 +658,7 @@ namespace Fixed.Physics
 
         // If the rejections of the faces from the contact normal are just barely touching, then FaceFace() might miss the closest points because of numerical error.
         // FaceFace() and FaceEdge() check if they found a point as close as the closest, and if not they return false so that the caller can add it.
-        private static fp closestDistanceTolerance => fp.FromRaw(0x38d1b717);
+        private static fp closestDistanceTolerance => fp.fp_1e_4f;
 
         // Tries to generate a manifold between a pair of faces.  It can fail in some cases due to numerical accuracy:
         // 1) both faces are nearly perpendicular to the normal

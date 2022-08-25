@@ -2,6 +2,7 @@ using System;
 using NUnit.Framework;
 using Unity.Mathematics.FixedPoint;
 using Unity.Collections;
+using Unity.Mathematics;
 using UnityEngine;
 
 namespace Fixed.Physics.Tests.Collision.Geometry
@@ -22,7 +23,7 @@ namespace Fixed.Physics.Tests.Collision.Geometry
                 points[i] = expectedCom + new fp3(fpmath.cos(angle), fpmath.sin(angle), (fp)0);
                 domain.Include(points[i]);
             }
-            ConvexHullBuilderStorage builder = new ConvexHullBuilderStorage(8192, Allocator.Temp, domain, 0.0f, ConvexHullBuilder.IntResolution.High);
+            ConvexHullBuilderStorage builder = new ConvexHullBuilderStorage(8192, Allocator.Temp, domain, fp.zero, ConvexHullBuilder.IntResolution.High);
             for (int i = 0; i < n; ++i)
             {
                 builder.Builder.AddPoint(points[i]);

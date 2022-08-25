@@ -2,7 +2,7 @@ using System;
 using NUnit.Framework;
 using Unity.Mathematics.FixedPoint;
 using Unity.Collections;
-using Random = Unity.Mathematics.FixedPoint.Random;
+using Random = Unity.Mathematics.Random;
 using static Fixed.Physics.Math;
 using Fixed.Physics.Tests.Utils;
 
@@ -83,7 +83,7 @@ namespace Fixed.Physics.Tests.Collision.Queries
                         aabb.Include(vertexA - vertexB);
                     }
                 }
-                ConvexHullBuilderStorage diffStorage = new ConvexHullBuilderStorage(maxNumVertices, Allocator.Temp, aabb, 0.0f, ConvexHullBuilder.IntResolution.Low);
+                ConvexHullBuilderStorage diffStorage = new ConvexHullBuilderStorage(maxNumVertices, Allocator.Temp, aabb, fp.zero, ConvexHullBuilder.IntResolution.Low);
                 ref ConvexHullBuilder diff = ref diffStorage.Builder;
                 success = true;
                 for (int iB = 0; iB < b.NumVertices; iB++)
@@ -181,7 +181,7 @@ namespace Fixed.Physics.Tests.Collision.Queries
                 var query = TestUtils.GenerateRandomConvex(ref rnd);
                 MTransform queryFromTarget = new MTransform(
                     (rnd.NextInt(10) > 0) ? rnd.NextQuaternionRotation() : fpquaternion.identity,
-                    rnd.Nextfp3(-(fp)3.0f, (fp)3.0f));
+                    (fp3)rnd.NextFloat3(-3.0f, 3.0f));
                 TestConvexConvexDistance((ConvexCollider*)target.GetUnsafePtr(), (ConvexCollider*)query.GetUnsafePtr(), queryFromTarget, "ConvexConvexDistanceTest failed " + i + " (" + state.ToString() + ")");
             }
         }
@@ -225,11 +225,11 @@ namespace Fixed.Physics.Tests.Collision.Queries
                     uint testState = rnd.state;
 
                     // Generate random transform
-                    fp distance = fpmath.pow((fp)10.0f, rnd.NextFloat(-(fp)15.0f, -(fp)1.0f));
-                    fp angle = fpmath.pow((fp)10.0f, rnd.NextFloat(-(fp)15.0f, (fp)0.0f));
+                    fp distance = fpmath.pow((fp)10.0f, (fp)rnd.NextFloat(-15.0f, -1.0f));
+                    fp angle = fpmath.pow((fp)10.0f, (fp)rnd.NextFloat(-15.0f, 0.0f));
                     MTransform queryFromTarget = new MTransform(
-                        (rnd.NextInt(10) > 0) ? fpquaternion.AxisAngle(rnd.Nextfp3Direction(), angle) : fpquaternion.identity,
-                        (rnd.NextInt(10) > 0) ? rnd.Nextfp3Direction() * distance : fp3.zero);
+                        (rnd.NextInt(10) > 0) ? fpquaternion.AxisAngle((fp3)rnd.NextFloat3Direction(), angle) : fpquaternion.identity,
+                        (rnd.NextInt(10) > 0) ? (fp3)rnd.NextFloat3Direction() * distance : fp3.zero);
                     TestConvexConvexDistance((ConvexCollider*)collider.GetUnsafePtr(), (ConvexCollider*)collider.GetUnsafePtr(), queryFromTarget, "ConvexConvexDistanceEdgeCaseTest failed " + iShape + ", " + iTest + " (" + shapeState + ", " + testState + ")");
                 }
             }
@@ -539,11 +539,11 @@ namespace Fixed.Physics.Tests.Collision.Queries
                         var collider = TestUtils.GenerateRandomCollider(ref rnd);
                         FpRigidTransform transform = new FpRigidTransform
                         {
-                            pos = rnd.Nextfp3(-(fp)10.0f, (fp)10.0f),
-                            rot = (rnd.NextInt(10) > 0) ? rnd.NextQuaternionRotation() : fpquaternion.identity,
+                            pos = (fp3)rnd.NextFloat3(-10.0f, 10.0f),
+                            rot = (rnd.NextInt(10) > 0) ? (fpquaternion)rnd.NextQuaternionRotation() : fpquaternion.identity,
                         };
                         var startPos = transform.pos;
-                        var endPos = startPos + rnd.Nextfp3(-(fp)5.0f, (fp)5.0f);
+                        var endPos = startPos + (fp3)rnd.NextFloat3(-5.0f, 5.0f);
 
                         // Distance test
                         {
@@ -551,7 +551,7 @@ namespace Fixed.Physics.Tests.Collision.Queries
                             {
                                 Collider = (Collider*)collider.GetUnsafePtr(),
                                 Transform = transform,
-                                MaxDistance = (rnd.NextInt(4) > 0) ? rnd.NextFloat((fp)5.0f) : (fp)0.0f
+                                MaxDistance = (rnd.NextInt(4) > 0) ? (fp)rnd.NextFloat(5.0f) : fp.zero
                             };
                             WorldCalculateDistanceTest(ref world, input, ref distanceHits, "WorldQueryTest failed CalculateDistance " + failureMessage);
                         }

@@ -1,4 +1,4 @@
-#if !UNITY_DOTSPLAYER
+//#if !UNITY_DOTSPLAYER
 using UnityEngine;
 
 #pragma warning disable 0660, 0661
@@ -37,6 +37,12 @@ namespace Unity.Mathematics.FixedPoint
         /// <param name="v">Vector3 to convert.</param>
         /// <returns>The converted float3.</returns>
         public static implicit operator fp3(Vector3 v)     { return new fp3((fp)v.x, (fp)v.y, (fp)v.z); }
+
+        //TODO for test
+        public static implicit operator fp3(float3 v)     { return new fp3((fp)v.x, (fp)v.y, (fp)v.z); }
+
+        //TODO for test
+        public static implicit operator float3(fp3 v)     { return new float3((float)v.x, (float)v.y, (float)v.z); }
     }
 
     public partial struct fp4
@@ -71,6 +77,9 @@ namespace Unity.Mathematics.FixedPoint
         /// <param name="q">Quaternion to convert.</param>
         /// <returns>The converted quaternion.</returns>
         public static implicit operator fpquaternion(Quaternion q)  { return new fpquaternion((fp)q.x, (fp)q.y, (fp)q.z, (fp)q.w); }
+
+        //TODO for test
+        public static implicit operator fpquaternion(quaternion q)  { return new fpquaternion((fp)q.value.x, (fp)q.value.y, (fp)q.value.z, (fp)q.value.w); }
     }
 
     public partial struct fp4x4
@@ -90,4 +99,4 @@ namespace Unity.Mathematics.FixedPoint
         public static implicit operator Matrix4x4(fp4x4 m) { return new Matrix4x4(m.c0, m.c1, m.c2, m.c3); }
     }
 }
-#endif
+//#endif

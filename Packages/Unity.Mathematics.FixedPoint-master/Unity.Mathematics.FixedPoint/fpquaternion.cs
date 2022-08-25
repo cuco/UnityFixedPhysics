@@ -555,7 +555,7 @@ namespace Unity.Mathematics.FixedPoint
         {
             fp4 x = q.value;
             fp len = fpmath.dot(x, x);
-            return fpQuaternion(fpmath.select(FixedPoint.fpquaternion.identity.value, x * fpmath.rsqrt(len), (float)len > FLT_MIN_NORMAL));
+            return fpQuaternion(fpmath.select(FixedPoint.fpquaternion.identity.value, x * fpmath.rsqrt(len), len > FLT_MIN_NORMAL));
         }
 
         /// <summary>
@@ -570,7 +570,7 @@ namespace Unity.Mathematics.FixedPoint
         {
             fp4 x = q.value;
             fp len = fpmath.dot(x, x);
-            return fpQuaternion(fpmath.select(defaultvalue.value, x * fpmath.rsqrt(len), (float)len > FLT_MIN_NORMAL));
+            return fpQuaternion(fpmath.select(defaultvalue.value, x * fpmath.rsqrt(len), len > FLT_MIN_NORMAL));
         }
 
         /// <summary>Returns the natural exponent of a fpQuaternion. Assumes w is zero.</summary>

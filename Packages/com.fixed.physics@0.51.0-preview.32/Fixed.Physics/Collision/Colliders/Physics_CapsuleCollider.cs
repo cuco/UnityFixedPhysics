@@ -131,14 +131,14 @@ namespace Fixed.Physics
                 fp lengthSq = length * length;
                 fp radiusSq = Radius * Radius;
                 fp cylinderMass = (fp)fpmath.PI * length * radiusSq;
-                fp sphereMass = fp.FromRaw(0x40860a92) * Radius * radiusSq; //(fp)fpmath.PI * (4.0f / 3.0f)
+                fp sphereMass = fp.Pi * 4 / 3 * Radius * radiusSq; //(fp)fpmath.PI * (4.0f / 3.0f)
                 fp totalMass = cylinderMass + sphereMass;
                 cylinderMass /= totalMass;
                 sphereMass /= totalMass;
-                fp onAxisInertia = (cylinderMass * fp.half + sphereMass * fp.FromRaw(0x3ecccccd)) * radiusSq;
+                fp onAxisInertia = (cylinderMass * fp.half + sphereMass * new fp(0,4,10)) * radiusSq;
                 fp offAxisInertia =
-                    cylinderMass * ((fp)0.25f * radiusSq + fp.FromRaw(0x3daaaaab) * lengthSq) +
-                    sphereMass * (fp.FromRaw(0x3ecccccd) * radiusSq + (fp)0.375f * Radius * length + (fp)0.25f * lengthSq);
+                    cylinderMass * (fp.quarter * radiusSq + new fp(0,1,12) * lengthSq) +
+                    sphereMass * (new fp(0,2,5) * radiusSq + new fp(0,3,8) * Radius * length + fp.quarter * lengthSq);
 
                 fp3 axisInMotion = new fp3(fp.zero, fp.one, fp.zero);
                 fpquaternion orientation = length == fp.zero ? fpquaternion.identity :
@@ -151,7 +151,7 @@ namespace Fixed.Physics
                         Transform = new FpRigidTransform(orientation, (Vertex0 + Vertex1) * fp.half),
                         InertiaTensor = new fp3(offAxisInertia, onAxisInertia, offAxisInertia)
                     },
-                    Volume = (fp)fpmath.PI * radiusSq * (fp.FromRaw(0x3faaaaab) * Radius + fpmath.length(Vertex1 - Vertex0)),
+                    Volume = (fp)fpmath.PI * radiusSq * (new fp(1,1,3) * Radius + fpmath.length(Vertex1 - Vertex0)),
                     AngularExpansionFactor = fpmath.length(m_Vertex1 - m_Vertex0) * fp.half
                 };
             }

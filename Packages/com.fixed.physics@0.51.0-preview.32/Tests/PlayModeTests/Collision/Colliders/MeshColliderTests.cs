@@ -1,8 +1,9 @@
 using System;
 using NUnit.Framework;
 using Unity.Collections;
+using Unity.Mathematics;
 using Unity.Mathematics.FixedPoint;
-using Random = Unity.Mathematics.FixedPoint.Random;
+using Random = Unity.Mathematics.Random;
 
 namespace Fixed.Physics.Tests.Collision.Colliders
 {

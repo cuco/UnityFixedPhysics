@@ -129,7 +129,7 @@ namespace Fixed.Physics
         // Additionally, with floating point numbers there are often numerical accuracy problems near distance = 0.  Some routines handle this with special
         // cases where distance^2 < distanceEpsSq, which is expected to be rare in normal usage.  distanceEpsSq is not an exact value, but chosen to be small
         // enough that at typical simulation scale the difference between distance = distanceEps and distance = 0 is negligible.
-        private static fp distanceEpsSq => fp.FromRaw(0x322bcc77);
+        private static fp distanceEpsSq => 1e-8M;
 
         public struct Result
         {
@@ -205,7 +205,7 @@ namespace Fixed.Physics
                 fp distanceSquared = fpmath.lengthsq(difference);
 
                 // Check if the sphere center is inside the box
-                if (distanceSquared < fp.FromRaw(0x358637bd))
+                if (distanceSquared < 1e-6M)
                 {
                     fp3 projectionLocal = projection;
                     fp3 absProjectionLocal = fpmath.abs(projectionLocal);
@@ -314,7 +314,7 @@ namespace Fixed.Physics
             {
                 // Special case for extremely small distances, should be rare
                 fp3 normal = fpmath.cross(edgeA, edgeB);
-                if (fpmath.lengthsq(normal) < fp.FromRaw(0x3727c5ac))
+                if (fpmath.lengthsq(normal) < fp.fp_1e_5f)
                 {
                     fp3 edge = fpmath.normalizesafe(edgeA, fpmath.normalizesafe(edgeB, new fp3(fp.one, fp.zero, fp.zero))); // edges are parallel or one of the capsules is a sphere
                     Math.CalculatePerpendicularNormalized(edge, out normal, out fp3 unused); // normal is anything perpendicular to edge

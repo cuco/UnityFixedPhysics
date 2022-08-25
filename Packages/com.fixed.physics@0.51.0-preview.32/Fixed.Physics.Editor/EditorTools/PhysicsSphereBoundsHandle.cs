@@ -1,4 +1,5 @@
 using System;
+using Unity.Mathematics;
 using Unity.Mathematics.FixedPoint;
 using UnityEditor;
 using UnityEditor.IMGUI.Controls;
@@ -33,7 +34,7 @@ namespace Fixed.Physics.Editor
                     x && z,
                     x && y
                 };
-                var discOrientations = new fp3[]
+                var discOrientations = new float3[]
                 {
                     Vector3.right,
                     Vector3.up,
@@ -53,7 +54,7 @@ namespace Fixed.Physics.Editor
                 var insideAmount            = sqrOffset / sqrRadius;
                 if (insideAmount < 1)
                 {
-                    if (fpmath.abs(sqrDistCameraToCenter) >= kEpsilon)
+                    if (math.abs(sqrDistCameraToCenter) >= kEpsilon)
                     {
                         using (new Handles.DrawingScope(frontfacedColor))
                         {
@@ -79,15 +80,15 @@ namespace Fixed.Physics.Editor
 
                             var discOrientation = discOrientations[i];
 
-                            var angleBetweenDiscAndNormal = fpmath.acos(fpmath.dot(discOrientation, planeNormal));
-                            angleBetweenDiscAndNormal = (fpmath.PI * fp.half) - fpmath.min(angleBetweenDiscAndNormal, fpmath.PI - angleBetweenDiscAndNormal);
+                            var angleBetweenDiscAndNormal = math.acos(math.dot(discOrientation, planeNormal));
+                            angleBetweenDiscAndNormal = (math.PI * 0.5f) - math.min(angleBetweenDiscAndNormal, math.PI - angleBetweenDiscAndNormal);
 
-                            float f = (float)fpmath.tan(angleBetweenDiscAndNormal);
-                            float g = (float)fpmath.sqrt(sqrOffset + f * f * sqrOffset) / radius;
+                            float f = (float)math.tan(angleBetweenDiscAndNormal);
+                            float g = (float)math.sqrt(sqrOffset + f * f * sqrOffset) / radius;
                             if (g < 1)
                             {
-                                var angleToHorizon          = (float)fpmath.degrees(fp.Asin((fp)g));
-                                var discTangent             = fpmath.cross(discOrientation, planeNormal);
+                                var angleToHorizon          = (float)math.degrees(math.asin(g));
+                                var discTangent             = math.cross(discOrientation, planeNormal);
                                 var vectorToPointOnHorizon  = Quaternion.AngleAxis(angleToHorizon, discOrientation) * discTangent;
                                 var horizonArcLength        = (90 - angleToHorizon) * 2.0f;
 

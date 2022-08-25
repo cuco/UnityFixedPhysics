@@ -399,7 +399,7 @@ namespace Fixed.Physics.Authoring
                     var weights = mesh.GetAllBoneWeights(); // Allocator.None
                     var vertexIndex = 0;
                     var weightsOffset = 0;
-                    var shapeFromSkin = math.mul(shape.transform.worldToLocalMatrix, skin.transform.localToWorldMatrix);
+                    var shapeFromSkin = fpmath.mul((fp4x4)shape.transform.worldToLocalMatrix, (fp4x4)skin.transform.localToWorldMatrix);
                     var includedIndices = new NativeList<int>(mesh.vertexCount, Allocator.Temp);
                     foreach (var weightCount in bonesPerVertex)
                     {
@@ -794,7 +794,7 @@ namespace Fixed.Physics.Authoring
             SyncCylinderProperties();
             SyncSphereProperties();
             m_CylinderSideCount =
-                fpmath.clamp(m_CylinderSideCount, CylinderGeometry.MinSideCount, CylinderGeometry.MaxSideCount);
+                math.clamp(m_CylinderSideCount, CylinderGeometry.MinSideCount, CylinderGeometry.MaxSideCount);
             m_ConvexHullGenerationParameters.OnValidate((fp)(180));
 
             PhysicsMaterialProperties.OnValidate(ref m_Material, true);
@@ -802,7 +802,7 @@ namespace Fixed.Physics.Authoring
 
         // matrix to transform point from shape space into world space
         internal fp4x4 GetShapeToWorldMatrix() =>
-            new fp4x4(Math.DecomposeRigidBodyTransform(transform.localToWorldMatrix));
+            new fp4x4(Math.DecomposeRigidBodyTransform((fp4x4)transform.localToWorldMatrix));
 
         // matrix to transform point from object's local transform matrix into shape space
         internal fp4x4 GetLocalToShapeMatrix() =>

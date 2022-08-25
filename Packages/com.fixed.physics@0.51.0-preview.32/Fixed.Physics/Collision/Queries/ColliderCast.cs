@@ -320,8 +320,8 @@ namespace Fixed.Physics
             MTransform targetFromQuery = new MTransform(input.Orientation, input.Start);
 
             // Conservative advancement
-            fp tolerance = fp.FromRaw(0x3a83126f);      // return if this close to a hit
-            fp keepDistance = fp.FromRaw(0x38d1b717);   // avoid bad cases for GJK (penetration / exact hit)
+            fp tolerance = fp.fp_1e_3f;      // return if this close to a hit
+            fp keepDistance = fp.fp_1e_4f;   // avoid bad cases for GJK (penetration / exact hit)
             int iterations = 10;                // return after this many advances, regardless of accuracy
             fp fraction = fp.zero;
 

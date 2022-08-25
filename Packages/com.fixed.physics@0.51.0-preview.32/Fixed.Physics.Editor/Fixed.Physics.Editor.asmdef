@@ -7,6 +7,7 @@
         "Unity.Entities",
         "Unity.Entities.Hybrid",
         "Unity.Mathematics.FixedPoint",
+        "Unity.Mathematics",
         "Fixed.Physics",
         "Fixed.Physics.Hybrid",
         "Unity.Rendering.Hybrid",

@@ -24,7 +24,7 @@ namespace Fixed.Physics
 
     public static class SimplexSolver
     {
-        static readonly fp k_Epsilon = fp.FromRaw(0x38d1b717);
+        static readonly fp k_Epsilon = fp.fp_1e_4f;
 
         public static unsafe void Solve(
             fp deltaTime, fp minDeltaTime, fp3 up, fp maxVelocity,

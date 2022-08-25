@@ -188,9 +188,9 @@ namespace Fixed.Physics
                     {
                         Transform = new FpRigidTransform(fpquaternion.identity, m_Aabb.Center),
                         InertiaTensor = new fp3(
-                            (size.y * size.y + size.z * size.z) * fp.FromRaw(0x3daaaaab),
-                            (size.x * size.x + size.z * size.z) * fp.FromRaw(0x3daaaaab),
-                            (size.x * size.x + size.y * size.y) * fp.FromRaw(0x3daaaaab))
+                            (size.y * size.y + size.z * size.z) * fp.fp1over12,
+                            (size.x * size.x + size.z * size.z) * fp.fp1over12,
+                            (size.x * size.x + size.y * size.y) * fp.fp1over12)
                     },
                     Volume = size.x * size.y * size.z,
                     AngularExpansionFactor = fpmath.length(m_Aabb.Extents) * fp.half

@@ -250,8 +250,8 @@ namespace Fixed.Physics
                 {
                     Transform = transform,
                     InertiaTensor = new fp3(
-                        (radiusSq + m_Height * m_Height) * fp.FromRaw(0x3daaaaab),
-                        (radiusSq + m_Height * m_Height) * fp.FromRaw(0x3daaaaab),
+                        (radiusSq + m_Height * m_Height) / 12,
+                        (radiusSq + m_Height * m_Height) / 12,
                         (radiusSq) * fp.half)
                 },
                 Volume = (fp)fpmath.PI * radiusSq * m_Height,

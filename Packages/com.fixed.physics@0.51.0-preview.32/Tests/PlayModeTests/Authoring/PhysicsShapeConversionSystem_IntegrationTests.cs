@@ -5,6 +5,7 @@ using System.Text.RegularExpressions;
 using NUnit.Framework;
 using Unity.Mathematics.FixedPoint;
 using Fixed.Physics.Authoring;
+using Unity.Mathematics;
 using UnityEditor;
 using UnityEngine;
 #if !UNITY_EDITOR

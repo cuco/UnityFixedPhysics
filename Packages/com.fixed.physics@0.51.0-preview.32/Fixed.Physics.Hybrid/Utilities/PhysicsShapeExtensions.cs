@@ -69,14 +69,14 @@ namespace Fixed.Physics.Authoring
         )
         {
             if (points.Length != hashedPoints.Length)
-                return fpmath.hash(points.GetUnsafePtr(), UnsafeUtility.SizeOf<fp3>() * points.Length);
+                return math.hash(points.GetUnsafePtr(), UnsafeUtility.SizeOf<fp3>() * points.Length);
 
             for (int i = 0, count = points.Length; i < count; ++i)
             {
                 if (fpmath.cmax(fpmath.abs(points[i] - hashedPoints[i])) > tolerance)
-                    return fpmath.hash(points.GetUnsafePtr(), UnsafeUtility.SizeOf<fp3>() * points.Length);
+                    return math.hash(points.GetUnsafePtr(), UnsafeUtility.SizeOf<fp3>() * points.Length);
             }
-            return fpmath.hash(hashedPoints.GetUnsafePtr(), UnsafeUtility.SizeOf<fp3>() * hashedPoints.Length);
+            return math.hash(hashedPoints.GetUnsafePtr(), UnsafeUtility.SizeOf<fp3>() * hashedPoints.Length);
         }
 
         internal static CollisionFilter GetFilter(this PhysicsShapeAuthoring shape)
@@ -112,9 +112,9 @@ namespace Fixed.Physics.Authoring
         internal static bool HasShear(this fp4x4 m)
         {
             // scale each axis by abs of its max component in order to work with very large/small scales
-            var rs0 = m.c0.xyz / fpmath.max(fpmath.cmax(fpmath.abs(m.c0.xyz)), fp.Epsilon);
-            var rs1 = m.c1.xyz / fpmath.max(fpmath.cmax(fpmath.abs(m.c1.xyz)), fp.Epsilon);
-            var rs2 = m.c2.xyz / fpmath.max(fpmath.cmax(fpmath.abs(m.c2.xyz)), fp.Epsilon);
+            var rs0 = m.c0.xyz / fpmath.max(fpmath.cmax(fpmath.abs(m.c0.xyz)), fp.epsilon);
+            var rs1 = m.c1.xyz / fpmath.max(fpmath.cmax(fpmath.abs(m.c1.xyz)), fp.epsilon);
+            var rs2 = m.c2.xyz / fpmath.max(fpmath.cmax(fpmath.abs(m.c2.xyz)), fp.epsilon);
             // verify all axes are orthogonal
             //TODO
             fp k_Zero = (fp)1e-6f;

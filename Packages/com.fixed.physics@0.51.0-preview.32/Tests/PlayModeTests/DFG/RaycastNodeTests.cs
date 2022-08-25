@@ -7,7 +7,7 @@ using Unity.DataFlowGraph;
 using NUnit.Framework;
 using Unity.Mathematics.FixedPoint;
 using Fixed.Physics.Tests.Utils;
-using Random = Unity.Mathematics.FixedPoint.Random;
+using Random = Unity.Mathematics.Random;
 
 namespace Fixed.Physics.Tests.DFG
 {
@@ -81,11 +81,11 @@ namespace Fixed.Physics.Tests.DFG
                 // Generate common random query inputs
                 FpRigidTransform transform = new FpRigidTransform
                 {
-                    pos = m_Rnd.Nextfp3(-10.0f, 10.0f),
+                    pos = m_Rnd.NextFloat3(-10.0f, 10.0f),
                     rot = (m_Rnd.NextInt(10) > 0) ? m_Rnd.NextQuaternionRotation() : fpquaternion.identity,
                 };
                 var startPos = transform.pos;
-                var endPos = startPos + m_Rnd.Nextfp3(-5.0f, 5.0f);
+                var endPos = startPos + m_Rnd.NextFloat3(-5.0f, 5.0f);
 
                 RaycastInput input = new RaycastInput
                 {

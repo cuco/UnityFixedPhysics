@@ -351,176 +351,176 @@ namespace Unity.Mathematics.FixedPoint.Tests
         }
 
         // float
-        public static void AreEqual(float2 a, float2 b, float delta = 0.0f)
-        {
-            AreEqual(a.x, b.x, delta);
-            AreEqual(a.y, b.y, delta);
-        }
-
-        public static void AreEqual(float2 a, float2 b, int maxUlp, bool signedZeroEqual)
-        {
-            AreEqual(a.x, b.x, maxUlp, signedZeroEqual);
-            AreEqual(a.y, b.y, maxUlp, signedZeroEqual);
-        }
-
-        public static void AreEqual(float3 a, float3 b, float delta = 0.0f)
-        {
-            AreEqual(a.x, b.x, delta);
-            AreEqual(a.y, b.y, delta);
-            AreEqual(a.z, b.z, delta);
-        }
-
-        public static void AreEqual(float3 a, float3 b, int maxUlp, bool signedZeroEqual)
-        {
-            AreEqual(a.x, b.x, maxUlp, signedZeroEqual);
-            AreEqual(a.y, b.y, maxUlp, signedZeroEqual);
-            AreEqual(a.z, b.z, maxUlp, signedZeroEqual);
-        }
-
-        public static void AreEqual(float4 a, float4 b, float delta = 0.0f)
-        {
-            AreEqual(a.x, b.x, delta);
-            AreEqual(a.y, b.y, delta);
-            AreEqual(a.z, b.z, delta);
-            AreEqual(a.w, b.w, delta);
-        }
-
-        public static void AreEqual(float4 a, float4 b, int maxUlp, bool signedZeroEqual)
-        {
-            AreEqual(a.x, b.x, maxUlp, signedZeroEqual);
-            AreEqual(a.y, b.y, maxUlp, signedZeroEqual);
-            AreEqual(a.z, b.z, maxUlp, signedZeroEqual);
-            AreEqual(a.w, b.w, maxUlp, signedZeroEqual);
-        }
-
-
-        public static void AreEqual(float2x2 a, float2x2 b, float delta = 0.0f)
-        {
-            AreEqual(a.c0, b.c0, delta);
-            AreEqual(a.c1, b.c1, delta);
-        }
-
-        public static void AreEqual(float2x2 a, float2x2 b, int maxUlp, bool signedZeroEqual)
-        {
-            AreEqual(a.c0, b.c0, maxUlp, signedZeroEqual);
-            AreEqual(a.c1, b.c1, maxUlp, signedZeroEqual);
-        }
-
-        public static void AreEqual(float3x2 a, float3x2 b, float delta = 0.0f)
-        {
-            AreEqual(a.c0, b.c0, delta);
-            AreEqual(a.c1, b.c1, delta);
-        }
-
-        public static void AreEqual(float3x2 a, float3x2 b, int maxUlp, bool signedZeroEqual)
-        {
-            AreEqual(a.c0, b.c0, maxUlp, signedZeroEqual);
-            AreEqual(a.c1, b.c1, maxUlp, signedZeroEqual);
-        }
-
-        public static void AreEqual(float4x2 a, float4x2 b, float delta = 0.0f)
-        {
-            AreEqual(a.c0, b.c0, delta);
-            AreEqual(a.c1, b.c1, delta);
-        }
-
-        public static void AreEqual(float4x2 a, float4x2 b, int maxUlp, bool signedZeroEqual)
-        {
-            AreEqual(a.c0, b.c0, maxUlp, signedZeroEqual);
-            AreEqual(a.c1, b.c1, maxUlp, signedZeroEqual);
-        }
-
-
-        public static void AreEqual(float2x3 a, float2x3 b, float delta = 0.0f)
-        {
-            AreEqual(a.c0, b.c0, delta);
-            AreEqual(a.c1, b.c1, delta);
-            AreEqual(a.c2, b.c2, delta);
-        }
-
-        public static void AreEqual(float2x3 a, float2x3 b, int maxUlp, bool signedZeroEqual)
-        {
-            AreEqual(a.c0, b.c0, maxUlp, signedZeroEqual);
-            AreEqual(a.c1, b.c1, maxUlp, signedZeroEqual);
-            AreEqual(a.c2, b.c2, maxUlp, signedZeroEqual);
-        }
-
-        public static void AreEqual(float3x3 a, float3x3 b, float delta = 0.0f)
-        {
-            AreEqual(a.c0, b.c0, delta);
-            AreEqual(a.c1, b.c1, delta);
-            AreEqual(a.c2, b.c2, delta);
-        }
-
-        public static void AreEqual(float3x3 a, float3x3 b, int maxUlp, bool signedZeroEqual)
-        {
-            AreEqual(a.c0, b.c0, maxUlp, signedZeroEqual);
-            AreEqual(a.c1, b.c1, maxUlp, signedZeroEqual);
-            AreEqual(a.c2, b.c2, maxUlp, signedZeroEqual);
-        }
-
-        public static void AreEqual(float4x3 a, float4x3 b, float delta = 0.0f)
-        {
-            AreEqual(a.c0, b.c0, delta);
-            AreEqual(a.c1, b.c1, delta);
-            AreEqual(a.c2, b.c2, delta);
-        }
-
-        public static void AreEqual(float4x3 a, float4x3 b, int maxUlp, bool signedZeroEqual)
-        {
-            AreEqual(a.c0, b.c0, maxUlp, signedZeroEqual);
-            AreEqual(a.c1, b.c1, maxUlp, signedZeroEqual);
-            AreEqual(a.c2, b.c2, maxUlp, signedZeroEqual);
-        }
-
-
-        public static void AreEqual(float2x4 a, float2x4 b, float delta = 0.0f)
-        {
-            AreEqual(a.c0, b.c0, delta);
-            AreEqual(a.c1, b.c1, delta);
-            AreEqual(a.c2, b.c2, delta);
-            AreEqual(a.c3, b.c3, delta);
-        }
-
-        public static void AreEqual(float2x4 a, float2x4 b, int maxUlp, bool signedZeroEqual)
-        {
-            AreEqual(a.c0, b.c0, maxUlp, signedZeroEqual);
-            AreEqual(a.c1, b.c1, maxUlp, signedZeroEqual);
-            AreEqual(a.c2, b.c2, maxUlp, signedZeroEqual);
-            AreEqual(a.c3, b.c3, maxUlp, signedZeroEqual);
-        }
-
-        public static void AreEqual(float3x4 a, float3x4 b, float delta = 0.0f)
-        {
-            AreEqual(a.c0, b.c0, delta);
-            AreEqual(a.c1, b.c1, delta);
-            AreEqual(a.c2, b.c2, delta);
-            AreEqual(a.c3, b.c3, delta);
-        }
-
-        public static void AreEqual(float3x4 a, float3x4 b, int maxUlp, bool signedZeroEqual)
-        {
-            AreEqual(a.c0, b.c0, maxUlp, signedZeroEqual);
-            AreEqual(a.c1, b.c1, maxUlp, signedZeroEqual);
-            AreEqual(a.c2, b.c2, maxUlp, signedZeroEqual);
-            AreEqual(a.c3, b.c3, maxUlp, signedZeroEqual);
-        }
-
-        public static void AreEqual(float4x4 a, float4x4 b, float delta = 0.0f)
-        {
-            AreEqual(a.c0, b.c0, delta);
-            AreEqual(a.c1, b.c1, delta);
-            AreEqual(a.c2, b.c2, delta);
-            AreEqual(a.c3, b.c3, delta);
-        }
-
-        public static void AreEqual(float4x4 a, float4x4 b, int maxUlp, bool signedZeroEqual)
-        {
-            AreEqual(a.c0, b.c0, maxUlp, signedZeroEqual);
-            AreEqual(a.c1, b.c1, maxUlp, signedZeroEqual);
-            AreEqual(a.c2, b.c2, maxUlp, signedZeroEqual);
-            AreEqual(a.c3, b.c3, maxUlp, signedZeroEqual);
-        }
+        // public static void AreEqual(float2 a, float2 b, float delta = 0.0f)
+        // {
+        //     AreEqual(a.x, b.x, delta);
+        //     AreEqual(a.y, b.y, delta);
+        // }
+        //
+        // public static void AreEqual(float2 a, float2 b, int maxUlp, bool signedZeroEqual)
+        // {
+        //     AreEqual(a.x, b.x, maxUlp, signedZeroEqual);
+        //     AreEqual(a.y, b.y, maxUlp, signedZeroEqual);
+        // }
+        //
+        // public static void AreEqual(float3 a, float3 b, float delta = 0.0f)
+        // {
+        //     AreEqual(a.x, b.x, delta);
+        //     AreEqual(a.y, b.y, delta);
+        //     AreEqual(a.z, b.z, delta);
+        // }
+        //
+        // public static void AreEqual(float3 a, float3 b, int maxUlp, bool signedZeroEqual)
+        // {
+        //     AreEqual(a.x, b.x, maxUlp, signedZeroEqual);
+        //     AreEqual(a.y, b.y, maxUlp, signedZeroEqual);
+        //     AreEqual(a.z, b.z, maxUlp, signedZeroEqual);
+        // }
+        //
+        // public static void AreEqual(float4 a, float4 b, float delta = 0.0f)
+        // {
+        //     AreEqual(a.x, b.x, delta);
+        //     AreEqual(a.y, b.y, delta);
+        //     AreEqual(a.z, b.z, delta);
+        //     AreEqual(a.w, b.w, delta);
+        // }
+        //
+        // public static void AreEqual(float4 a, float4 b, int maxUlp, bool signedZeroEqual)
+        // {
+        //     AreEqual(a.x, b.x, maxUlp, signedZeroEqual);
+        //     AreEqual(a.y, b.y, maxUlp, signedZeroEqual);
+        //     AreEqual(a.z, b.z, maxUlp, signedZeroEqual);
+        //     AreEqual(a.w, b.w, maxUlp, signedZeroEqual);
+        // }
+        //
+        //
+        // public static void AreEqual(float2x2 a, float2x2 b, float delta = 0.0f)
+        // {
+        //     AreEqual(a.c0, b.c0, delta);
+        //     AreEqual(a.c1, b.c1, delta);
+        // }
+        //
+        // public static void AreEqual(float2x2 a, float2x2 b, int maxUlp, bool signedZeroEqual)
+        // {
+        //     AreEqual(a.c0, b.c0, maxUlp, signedZeroEqual);
+        //     AreEqual(a.c1, b.c1, maxUlp, signedZeroEqual);
+        // }
+        //
+        // public static void AreEqual(float3x2 a, float3x2 b, float delta = 0.0f)
+        // {
+        //     AreEqual(a.c0, b.c0, delta);
+        //     AreEqual(a.c1, b.c1, delta);
+        // }
+        //
+        // public static void AreEqual(float3x2 a, float3x2 b, int maxUlp, bool signedZeroEqual)
+        // {
+        //     AreEqual(a.c0, b.c0, maxUlp, signedZeroEqual);
+        //     AreEqual(a.c1, b.c1, maxUlp, signedZeroEqual);
+        // }
+        //
+        // public static void AreEqual(float4x2 a, float4x2 b, float delta = 0.0f)
+        // {
+        //     AreEqual(a.c0, b.c0, delta);
+        //     AreEqual(a.c1, b.c1, delta);
+        // }
+        //
+        // public static void AreEqual(float4x2 a, float4x2 b, int maxUlp, bool signedZeroEqual)
+        // {
+        //     AreEqual(a.c0, b.c0, maxUlp, signedZeroEqual);
+        //     AreEqual(a.c1, b.c1, maxUlp, signedZeroEqual);
+        // }
+        //
+        //
+        // public static void AreEqual(float2x3 a, float2x3 b, float delta = 0.0f)
+        // {
+        //     AreEqual(a.c0, b.c0, delta);
+        //     AreEqual(a.c1, b.c1, delta);
+        //     AreEqual(a.c2, b.c2, delta);
+        // }
+        //
+        // public static void AreEqual(float2x3 a, float2x3 b, int maxUlp, bool signedZeroEqual)
+        // {
+        //     AreEqual(a.c0, b.c0, maxUlp, signedZeroEqual);
+        //     AreEqual(a.c1, b.c1, maxUlp, signedZeroEqual);
+        //     AreEqual(a.c2, b.c2, maxUlp, signedZeroEqual);
+        // }
+        //
+        // public static void AreEqual(float3x3 a, float3x3 b, float delta = 0.0f)
+        // {
+        //     AreEqual(a.c0, b.c0, delta);
+        //     AreEqual(a.c1, b.c1, delta);
+        //     AreEqual(a.c2, b.c2, delta);
+        // }
+        //
+        // public static void AreEqual(float3x3 a, float3x3 b, int maxUlp, bool signedZeroEqual)
+        // {
+        //     AreEqual(a.c0, b.c0, maxUlp, signedZeroEqual);
+        //     AreEqual(a.c1, b.c1, maxUlp, signedZeroEqual);
+        //     AreEqual(a.c2, b.c2, maxUlp, signedZeroEqual);
+        // }
+        //
+        // public static void AreEqual(float4x3 a, float4x3 b, float delta = 0.0f)
+        // {
+        //     AreEqual(a.c0, b.c0, delta);
+        //     AreEqual(a.c1, b.c1, delta);
+        //     AreEqual(a.c2, b.c2, delta);
+        // }
+        //
+        // public static void AreEqual(float4x3 a, float4x3 b, int maxUlp, bool signedZeroEqual)
+        // {
+        //     AreEqual(a.c0, b.c0, maxUlp, signedZeroEqual);
+        //     AreEqual(a.c1, b.c1, maxUlp, signedZeroEqual);
+        //     AreEqual(a.c2, b.c2, maxUlp, signedZeroEqual);
+        // }
+        //
+        //
+        // public static void AreEqual(float2x4 a, float2x4 b, float delta = 0.0f)
+        // {
+        //     AreEqual(a.c0, b.c0, delta);
+        //     AreEqual(a.c1, b.c1, delta);
+        //     AreEqual(a.c2, b.c2, delta);
+        //     AreEqual(a.c3, b.c3, delta);
+        // }
+        //
+        // public static void AreEqual(float2x4 a, float2x4 b, int maxUlp, bool signedZeroEqual)
+        // {
+        //     AreEqual(a.c0, b.c0, maxUlp, signedZeroEqual);
+        //     AreEqual(a.c1, b.c1, maxUlp, signedZeroEqual);
+        //     AreEqual(a.c2, b.c2, maxUlp, signedZeroEqual);
+        //     AreEqual(a.c3, b.c3, maxUlp, signedZeroEqual);
+        // }
+        //
+        // public static void AreEqual(float3x4 a, float3x4 b, float delta = 0.0f)
+        // {
+        //     AreEqual(a.c0, b.c0, delta);
+        //     AreEqual(a.c1, b.c1, delta);
+        //     AreEqual(a.c2, b.c2, delta);
+        //     AreEqual(a.c3, b.c3, delta);
+        // }
+        //
+        // public static void AreEqual(float3x4 a, float3x4 b, int maxUlp, bool signedZeroEqual)
+        // {
+        //     AreEqual(a.c0, b.c0, maxUlp, signedZeroEqual);
+        //     AreEqual(a.c1, b.c1, maxUlp, signedZeroEqual);
+        //     AreEqual(a.c2, b.c2, maxUlp, signedZeroEqual);
+        //     AreEqual(a.c3, b.c3, maxUlp, signedZeroEqual);
+        // }
+        //
+        // public static void AreEqual(float4x4 a, float4x4 b, float delta = 0.0f)
+        // {
+        //     AreEqual(a.c0, b.c0, delta);
+        //     AreEqual(a.c1, b.c1, delta);
+        //     AreEqual(a.c2, b.c2, delta);
+        //     AreEqual(a.c3, b.c3, delta);
+        // }
+        //
+        // public static void AreEqual(float4x4 a, float4x4 b, int maxUlp, bool signedZeroEqual)
+        // {
+        //     AreEqual(a.c0, b.c0, maxUlp, signedZeroEqual);
+        //     AreEqual(a.c1, b.c1, maxUlp, signedZeroEqual);
+        //     AreEqual(a.c2, b.c2, maxUlp, signedZeroEqual);
+        //     AreEqual(a.c3, b.c3, maxUlp, signedZeroEqual);
+        // }
 
         // double
         public static void AreEqual(double2 a, double2 b, double delta = 0.0)

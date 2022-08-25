@@ -320,9 +320,9 @@ namespace Fixed.DebugDisplay
             m_LineVertexBuffer.SetData(Unmanaged.Instance.Data.m_LineBuffer.m_Instance.ToNativeArray(), 0, 0, m_NumLinesToDraw);
 
             var scales = new fp4(fp.one / FractionalCellsWide, fp.one / FractionalCellsTall, fp.one / (fp)PixelsWide, fp.one / (fp)PixelsTall);
-            resources.textMaterial.SetVector("scales", scales);
-            resources.graphMaterial.SetVector("scales", scales);
-            resources.lineMaterial.SetVector("scales", scales);
+            resources.textMaterial.SetVector("scales", (Vector4)scales);
+            resources.graphMaterial.SetVector("scales", (Vector4)scales);
+            resources.lineMaterial.SetVector("scales", (Vector4)scales);
         }
 
         internal void Clear()

@@ -99,9 +99,9 @@ namespace Fixed.Physics
                     {
                         Transform = new FpRigidTransform(fpquaternion.identity, Terrain.Aabb.Center),
                         InertiaTensor = new fp3(
-                            (size.y * size.y + size.z * size.z) * fp.FromRaw(0x3daaaaab),
-                            (size.x * size.x + size.z * size.z) * fp.FromRaw(0x3daaaaab),
-                            (size.x * size.x + size.y * size.y) * fp.FromRaw(0x3daaaaab))
+                            (size.y * size.y + size.z * size.z) * fp.fp1over12,
+                            (size.x * size.x + size.z * size.z) * fp.fp1over12,
+                            (size.x * size.x + size.y * size.y) * fp.fp1over12)
                     },
                     Volume = fp.zero,
                     AngularExpansionFactor = fpmath.length(Terrain.Aabb.Extents) * fp.half
@@ -412,7 +412,7 @@ namespace Fixed.Physics
                     maxHeight = fpmath.max(maxHeight, heights[iHeight]);
                 }
 
-                quantizationFactor = fp.FromRaw(0x46fffc00) / maxHeight;//(short.MaxValue - 1)
+                quantizationFactor = (short.MaxValue - 1) / maxHeight;//(short.MaxValue - 1)
             }
 
             Size = size;

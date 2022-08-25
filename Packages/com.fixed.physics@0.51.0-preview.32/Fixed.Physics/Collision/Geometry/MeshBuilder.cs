@@ -335,7 +335,7 @@ namespace Fixed.Physics
 
     internal struct MeshConnectivityBuilder
     {
-        static fp k_MergeCoplanarTrianglesTolerance => fp.FromRaw(0x38d1b717);
+        static fp k_MergeCoplanarTrianglesTolerance => fp.fp_1e_4f;
 
         internal NativeArray<Vertex> Vertices;
         internal NativeArray<Triangle> Triangles;
@@ -671,7 +671,7 @@ namespace Fixed.Physics
 
         public static bool IsTriangleDegenerate(fp3 a, fp3 b, fp3 c)
         {
-            fp defaultTriangleDegeneracyTolerance = fp.FromRaw(0x33d6bf95);
+            fp defaultTriangleDegeneracyTolerance = 1e-7M;
 
             // Small area check
             {

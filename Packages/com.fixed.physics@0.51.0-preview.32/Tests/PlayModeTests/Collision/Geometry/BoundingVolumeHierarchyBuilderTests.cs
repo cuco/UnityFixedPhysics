@@ -4,6 +4,7 @@ using Unity.Burst;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Jobs;
+using Unity.Mathematics;
 using Unity.Mathematics.FixedPoint;
 using Unity.PerformanceTesting;
 using static Fixed.Physics.BoundingVolumeHierarchy;
@@ -129,7 +130,7 @@ namespace Fixed.Physics.Tests.Collision.Geometry
             for (int i = 0; i < branchCount; i++)
             {
                 bvh.BuildBranch(points, aabbs, ranges[i], branchNodeOffsets[i]);
-                minBranchNodeIndex = fpmath.min(branchNodeOffsets[i], minBranchNodeIndex);
+                minBranchNodeIndex = math.min(branchNodeOffsets[i], minBranchNodeIndex);
             }
 
             bvh.Refit(aabbs, 1, minBranchNodeIndex);

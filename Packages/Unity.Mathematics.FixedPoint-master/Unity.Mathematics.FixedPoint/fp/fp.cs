@@ -32,7 +32,9 @@ namespace Unity.Mathematics.FixedPoint
         public static fp fp_1e_4f => new fp(0, 1, 10000);
         public static fp fp_1e_5f => new fp(0, 1, 100000);
         public static fp fp_1e_6f => new fp(0, 1, 1000000);
-        public static fp fp_1e_10f => (fp)1e-10f; //TODO
+        public static fp fp_1e_10f => (fp)1e-10M; //TODO
+
+        public static fp fp1over12 => new fp(0, 1, 12);
 
         public static fp Pi => new fp(PI);
         public static fp TwoPi => new fp(PI_TIMES_2);
@@ -40,6 +42,13 @@ namespace Unity.Mathematics.FixedPoint
         public static fp Log2Max => new fp(LOG2MAX);
         public static fp Log2Min => new fp(LOG2MIN);
         public static fp Ln2 => new fp(LN2);
+
+        //TODO
+        public static fp PositiveInfinity => (fp) float.PositiveInfinity;
+        //TODO
+        public static fp NegativeInfinity => (fp) float.NegativeInfinity;
+        //TODO
+        public static fp NaN => (fp) float.NaN;
 
         static  fp LutInterval => (fp)(LUT_SIZE - 1) / PiOver2;
         const long MAX_VALUE = long.MaxValue;
@@ -856,6 +865,23 @@ namespace Unity.Mathematics.FixedPoint
 
             var result = Atan(Sqrt(one - x * x) / x);
             return x.m_rawValue < 0 ? result + Pi : result;
+        }
+
+        //TODO 计算准确性
+        public static fp Asin(fp x)
+        {
+            if (x < -one || x > one)
+            {
+                throw new ArgumentOutOfRangeException(nameof(x));
+            }
+
+            if (x == fp.one)
+            {
+                return PiOver2;
+            }
+
+            var result = Atan(Sqrt(one - x * x) * x);
+            return result;
         }
 
         /// <summary>

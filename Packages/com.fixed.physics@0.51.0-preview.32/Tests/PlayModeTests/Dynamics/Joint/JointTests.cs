@@ -1,7 +1,8 @@
 using Unity.Collections;
 using NUnit.Framework;
+using Unity.Mathematics;
 using Unity.Mathematics.FixedPoint;
-using Random = Unity.Mathematics.FixedPoint.Random;
+using Random = Unity.Mathematics.Random;
 using static Fixed.Physics.Math;
 
 namespace Fixed.Physics.Tests.Joints
@@ -49,7 +50,7 @@ namespace Fixed.Physics.Tests.Joints
             {
                 if (rnd.NextInt(4) > 0)
                 {
-                    rot = rnd.NextQuaternionRotation();
+                    rot = (fpquaternion)rnd.NextQuaternionRotation();
                 }
                 else
                 {
@@ -60,7 +61,7 @@ namespace Fixed.Physics.Tests.Joints
 
             return new FpRigidTransform()
             {
-                pos = rnd.NextInt(4) == 0 ? fp3.zero : rnd.Nextfp3(-(fp)1.0f, (fp)1.0f),
+                pos = rnd.NextInt(4) == 0 ? fp3.zero : (fp3)rnd.NextFloat3(-1.0f, 1.0f),
                 rot = rot
             };
         }
@@ -73,7 +74,7 @@ namespace Fixed.Physics.Tests.Joints
                 BodyFromMotion = generateRandomTransform(ref rnd)
             };
 
-            fp3 inertia = rnd.Nextfp3((fp)1e-3f, (fp)100.0f);
+            fp3 inertia = (fp3)rnd.NextFloat3(1e-3f, 100.0f);
             switch (rnd.NextInt(3))
             {
                 case 0: // all values random
@@ -94,7 +95,7 @@ namespace Fixed.Physics.Tests.Joints
             }
             else
             {
-                nextLinVel = rnd.Nextfp3(-(fp)50.0f, (fp)50.0f);
+                nextLinVel = (fp3)rnd.NextFloat3(-50.0f, 50.0f);
             }
             fp3 nextAngVel;
             if (rnd.NextBool())
@@ -103,7 +104,7 @@ namespace Fixed.Physics.Tests.Joints
             }
             else
             {
-                nextAngVel = rnd.Nextfp3(-(fp)50.0f, (fp)50.0f);
+                nextAngVel = (fp3)rnd.NextFloat3(-50.0f, 50.0f);
             }
             fp3 nextInertia;
             fp nextMass;
@@ -114,7 +115,7 @@ namespace Fixed.Physics.Tests.Joints
             }
             else
             {
-                nextMass = rnd.NextFloat((fp)1e-3f, (fp)100.0f);
+                nextMass = (fp)rnd.NextFloat(1e-3f, 100.0f);
                 nextInertia = (fp)1.0f / inertia;
             }
             velocity = new MotionVelocity
@@ -248,16 +249,16 @@ namespace Fixed.Physics.Tests.Joints
                                 switch (header.Type)
                                 {
                                     case JacobianType.LinearLimit:
-                                        Assert.Less(header.AccessBaseJacobian<LinearLimitJacobian>().InitialError, 1e-3f, failureMessage + ": LinearLimitJacobian");
+                                        Assert.Less((float)header.AccessBaseJacobian<LinearLimitJacobian>().InitialError, 1e-3f, failureMessage + ": LinearLimitJacobian");
                                         break;
                                     case JacobianType.AngularLimit1D:
-                                        Assert.Less(header.AccessBaseJacobian<AngularLimit1DJacobian>().InitialError, 1e-2f, failureMessage + ": AngularLimit1DJacobian");
+                                        Assert.Less((float)header.AccessBaseJacobian<AngularLimit1DJacobian>().InitialError, 1e-2f, failureMessage + ": AngularLimit1DJacobian");
                                         break;
                                     case JacobianType.AngularLimit2D:
-                                        Assert.Less(header.AccessBaseJacobian<AngularLimit2DJacobian>().InitialError, 1e-2f, failureMessage + ": AngularLimit2DJacobian");
+                                        Assert.Less((float)header.AccessBaseJacobian<AngularLimit2DJacobian>().InitialError, 1e-2f, failureMessage + ": AngularLimit2DJacobian");
                                         break;
                                     case JacobianType.AngularLimit3D:
-                                        Assert.Less(header.AccessBaseJacobian<AngularLimit3DJacobian>().InitialError, 1e-2f, failureMessage + ": AngularLimit3DJacobian");
+                                        Assert.Less((float)header.AccessBaseJacobian<AngularLimit3DJacobian>().InitialError, 1e-2f, failureMessage + ": AngularLimit3DJacobian");
                                         break;
                                     default:
                                         Assert.Fail(failureMessage + ": unexpected jacobian type");
@@ -279,20 +280,20 @@ namespace Fixed.Physics.Tests.Joints
 
         static void generateRandomPivots(ref Random rnd, out fp3 pivotA, out fp3 pivotB)
         {
-            pivotA = rnd.NextBool() ? fp3.zero : rnd.Nextfp3(-(fp)1.0f, (fp)1.0f);
-            pivotB = rnd.NextBool() ? fp3.zero : rnd.Nextfp3(-(fp)1.0f, (fp)1.0f);
+            pivotA = rnd.NextBool() ? fp3.zero : (fp3)rnd.NextFloat3(-1.0f, 1.0f);
+            pivotB = rnd.NextBool() ? fp3.zero : (fp3)rnd.NextFloat3(-1.0f, 1.0f);
         }
 
         static void generateRandomAxes(ref Random rnd, out fp3 axisA, out fp3 axisB)
         {
-            axisA = rnd.NextInt(4) == 0 ? generateRandomCardinalAxis(ref rnd) : rnd.Nextfp3Direction();
-            axisB = rnd.NextInt(4) == 0 ? generateRandomCardinalAxis(ref rnd) : rnd.Nextfp3Direction();
+            axisA = rnd.NextInt(4) == 0 ? generateRandomCardinalAxis(ref rnd) : rnd.NextFloat3Direction();
+            axisB = rnd.NextInt(4) == 0 ? generateRandomCardinalAxis(ref rnd) : rnd.NextFloat3Direction();
         }
 
         static void generateRandomLimits(ref Random rnd, fp minClosed, fp maxClosed, out fp min, out fp max)
         {
-            min = rnd.NextBool() ? fp.min_value : rnd.NextFloat(minClosed, maxClosed);
-            max = rnd.NextBool() ? rnd.NextBool() ? fp.max_value : min : rnd.NextFloat(min, maxClosed);
+            min = rnd.NextBool() ? fp.min_value : (fp)rnd.NextFloat((float)minClosed, (float)maxClosed);
+            max = rnd.NextBool() ? rnd.NextBool() ? fp.max_value : min : (fp)rnd.NextFloat((float)min, (float)maxClosed);
         }
 
         Joint CreateTestJoint(PhysicsJoint joint) => new Joint
@@ -334,8 +335,8 @@ namespace Fixed.Physics.Tests.Joints
                 generateRandomAxes(ref rnd, out jointFrameA.Axis, out jointFrameB.Axis);
                 Math.CalculatePerpendicularNormalized(jointFrameA.Axis, out jointFrameA.PerpendicularAxis, out _);
                 Math.CalculatePerpendicularNormalized(jointFrameB.Axis, out jointFrameB.PerpendicularAxis, out _);
-                var distance = new FloatRange { Min = rnd.NextFloat(-fp.half, fp.half) };
-                distance.Max = rnd.NextBool() ? distance.Min : rnd.NextFloat(distance.Min, fp.half); // note, can't use open limits because the accuracy can get too low as the pivots separate
+                var distance = new FloatRange { Min = (fp)rnd.NextFloat(-0.5f, 0.5f) };
+                distance.Max = rnd.NextBool() ? distance.Min : (fp)rnd.NextFloat((float)distance.Min, 0.5f); // note, can't use open limits because the accuracy can get too low as the pivots separate
                 return CreateTestJoint(PhysicsJoint.CreatePrismatic(jointFrameA, jointFrameB, distance));
             });
         }

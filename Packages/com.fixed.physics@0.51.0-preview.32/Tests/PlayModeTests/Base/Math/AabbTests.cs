@@ -5,7 +5,7 @@ using static Unity.Mathematics.FixedPoint.fpmath;
 using Assert = UnityEngine.Assertions.Assert;
 using fp3 = Unity.Mathematics.FixedPoint.fp3;
 using fpquaternion = Unity.Mathematics.FixedPoint.fpquaternion;
-using Random = Unity.Mathematics.FixedPoint.Random;
+using Random = Unity.Mathematics.Random;
 using FpRigidTransform = Unity.Mathematics.FixedPoint.FpRigidTransform;
 using TestUtils = Fixed.Physics.Tests.Utils.TestUtils;
 
@@ -104,11 +104,11 @@ namespace Fixed.Physics.Tests.Base.Math
             for (int i = 0; i < 100; i++)
             {
                 fpquaternion r = rnd.NextQuaternionRotation();
-                fp3 t = rnd.Nextfp3();
+                fp3 t = rnd.NextFloat3();
 
                 Aabb orig = new Aabb();
-                orig.Include(rnd.Nextfp3());
-                orig.Include(rnd.Nextfp3());
+                orig.Include(rnd.NextFloat3());
+                orig.Include(rnd.NextFloat3());
 
                 Aabb outAabb1 = Fixed.Physics.Math.TransformAabb(new FpRigidTransform(r, t), orig);
 

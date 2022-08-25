@@ -8,6 +8,7 @@
         "Unity.Entities.Hybrid",
         "Unity.Entities.Tests",
         "Unity.Mathematics.FixedPoint",
+        "Unity.Mathematics",
         "Unity.PerformanceTesting",
         "Fixed.Physics",
         "Fixed.Physics.Hybrid",

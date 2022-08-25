@@ -111,9 +111,9 @@ namespace Fixed.Physics
             MassDistribution = new MassDistribution
             {
                 Transform = new FpRigidTransform(fpquaternion.identity, Center),
-                InertiaTensor = new fp3(fp.FromRaw(0x3ecccccd) * Radius * Radius)
+                InertiaTensor = new fp3(new fp(0,2,5) * Radius * Radius)
             },
-            Volume = fp.FromRaw(0x40860a92) * (fp)fpmath.PI * Radius * Radius * Radius,
+            Volume = new fp(1,1,3) * (fp)fpmath.PI * Radius * Radius * Radius,
             AngularExpansionFactor = fp.zero
         };
 

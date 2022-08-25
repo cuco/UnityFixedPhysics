@@ -46,9 +46,9 @@ namespace Fixed.Physics
             MassDistribution = new MassDistribution
             {
                 Transform = FpRigidTransform.identity,
-                InertiaTensor = new fp3(fp.FromRaw(0x3ecccccd))
+                InertiaTensor = new fp3(new fp(0, 2, 5))
             },
-            Volume = fp.FromRaw(0x40860a92),//(4.0f / 3.0f) * (fp)fpmath.PI,
+            Volume = new fp(1, 1, 3) * fp.Pi, //(4.0f / 3.0f) * (fp)fpmath.PI,
             AngularExpansionFactor = fp.zero
         };
     }
@@ -88,7 +88,7 @@ namespace Fixed.Physics
         public fp GravityFactor;
 
         public bool HasInfiniteMass => InverseMass == fp.zero;
-        public bool HasInfiniteInertia => !math.any(InverseInertia);
+        public bool HasInfiniteInertia => !fpmath.any(InverseInertia);
         public bool IsKinematic => HasInfiniteMass && HasInfiniteInertia;
 
         public static readonly MotionVelocity Zero = new MotionVelocity

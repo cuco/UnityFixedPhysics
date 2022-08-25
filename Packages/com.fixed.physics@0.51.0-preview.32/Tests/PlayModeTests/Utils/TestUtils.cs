@@ -8,7 +8,7 @@ using Assert = UnityEngine.Assertions.Assert;
 using Unity.Entities;
 using Unity.Collections;
 using Unity.Jobs;
-using Random = Unity.Mathematics.FixedPoint.Random;
+using Random = Unity.Mathematics.Random;
 
 namespace Fixed.Physics.Tests
 {
@@ -177,10 +177,10 @@ namespace Fixed.Physics.Tests.Utils
             Assert.AreEqual(a, b);
         }
 
-        public static void AreEqual(float a, float b, float delta = 0.0f)
-        {
-            Assert.AreApproximatelyEqual(a, b, delta);
-        }
+        // public static void AreEqual(float a, float b, float delta = 0.0f)
+        // {
+        //     Assert.AreApproximatelyEqual(a, b, delta);
+        // }
 
         public static void AreEqual(fp a, fp b, fp delta)
         {
@@ -194,11 +194,11 @@ namespace Fixed.Physics.Tests.Utils
 
             if (fpmath.isfinite(a) && fpmath.isfinite(b))
             {
-                int ia = fpmath.asint(a);
-                int ib = fpmath.asint(b);
+                int ia = (int)(a);
+                int ib = (int)(b);
                 if ((ia ^ ib) < 0)
                     Assert.AreEqual(true, false);
-                int ulps = fpmath.abs(ia - ib);
+                int ulps = math.abs(ia - ib);
                 Assert.AreEqual(true, ulps <= maxUlp);
             }
             else
@@ -210,7 +210,7 @@ namespace Fixed.Physics.Tests.Utils
 
         public static void AreEqual(double a, double b, double delta = 0.0)
         {
-            Assert.IsTrue(fpmath.abs(a - b) < delta);
+            Assert.IsTrue(math.abs(a - b) < delta);
         }
 
         public static void AreEqual(double a, double b, int maxUlp, bool signedZeroEqual)
@@ -218,10 +218,10 @@ namespace Fixed.Physics.Tests.Utils
             if (signedZeroEqual && a == b)
                 return;
 
-            if (fpmath.isfinite(a) && fpmath.isfinite(b))
+            if (math.isfinite(a) && math.isfinite(b))
             {
-                long la = fpmath.aslong(a);
-                long lb = fpmath.aslong(b);
+                long la = math.aslong(a);
+                long lb = math.aslong(b);
                 if ((la ^ lb) < 0)
                     Assert.AreEqual(true, false);
                 long ulps = la > lb ? la - lb : lb - la;
@@ -229,7 +229,7 @@ namespace Fixed.Physics.Tests.Utils
             }
             else
             {
-                if (a != b && (!fpmath.isnan(a) || !fpmath.isnan(b)))
+                if (a != b && (!math.isnan(a) || !math.isnan(b)))
                     Assert.AreEqual(true, false);
             }
         }
@@ -852,7 +852,7 @@ namespace Fixed.Physics.Tests.Utils
 
             while (numTriangles > 0)
             {
-                var featureTriangles = fpmath.min(rnd.NextInt(1, 100), numTriangles);
+                var featureTriangles = math.min(rnd.NextInt(1, 100), numTriangles);
 
                 int featureType = rnd.NextInt(0, 3);
                 switch (featureType)
@@ -862,13 +862,13 @@ namespace Fixed.Physics.Tests.Utils
                         // Soup
                         for (int i = 0; i < featureTriangles; i++)
                         {
-                            fp size = rnd.NextFloat((fp)0.1f, (fp)2.5f);
+                            float size = rnd.NextFloat(0.1f, 2.5f);
                             size *= size;
 
-                            fp3 center = rnd.Nextfp3(-(fp)10.0f, (fp)10.0f);
+                            float3 center = rnd.NextFloat3(-10.0f, 10.0f);
                             for (int j = 0; j < 3; j++)
                             {
-                                vertices[nextIndex++] = center + rnd.Nextfp3(-size, size);
+                                vertices[nextIndex++] = (fp3)(center + rnd.NextFloat3(-size, size));
                             }
                         }
                         break;
@@ -877,14 +877,14 @@ namespace Fixed.Physics.Tests.Utils
                     case 1:
                     {
                         // Fan
-                        fp3 center = rnd.Nextfp3(-(fp)10.0f, (fp)10.0f);
-                        fp3 arm = rnd.Nextfp3Direction() * rnd.NextFloat((fp)0.1f, (fp)1.0f);
+                        fp3 center = (fp3)rnd.NextFloat3(-10.0f, 10.0f);
+                        fp3 arm = (fp3)(rnd.NextFloat3Direction() * rnd.NextFloat(0.1f, 1.0f));
                         fp3 axis;
                         {
                             fp3 unused;
                             Math.CalculatePerpendicularNormalized(fpmath.normalize(arm), out axis, out unused);
                         }
-                        fp arc = rnd.NextFloat((fp)0.1f, fp.two * (fp)fpmath.PI);
+                        fp arc = (fp)rnd.NextFloat(0.1f, 2 * math.PI);
                         arc = fpmath.min(arc, (fp)featureTriangles * (fp)fpmath.PI / fp.two); // avoid degenerate triangles
                         featureTriangles = (int)fpmath.min((fp)featureTriangles, (arc / (fp)0.025f)); // avoid degenerate triangles
                         fpquaternion q = Unity.Mathematics.FixedPoint.fpquaternion.AxisAngle(axis, arc / (fp)numTriangles);
@@ -901,8 +901,8 @@ namespace Fixed.Physics.Tests.Utils
                     case 2:
                     {
                         // Strip
-                        fp3 v0 = rnd.Nextfp3(-(fp)10.0f, (fp)10.0f);
-                        fp3 v1 = v0 + rnd.Nextfp3(-fp.half, fp.half);
+                        fp3 v0 = (fp3)rnd.NextFloat3(-10.0f, 10.0f);
+                        fp3 v1 = v0 + (fp3)rnd.NextFloat3(-0.5f, 0.5f);
                         fp3 dir;
                         {
                             fp3 unused;
@@ -910,8 +910,8 @@ namespace Fixed.Physics.Tests.Utils
                         }
                         for (int i = 0; i < featureTriangles; i++)
                         {
-                            fp3 v2 = v0 + rnd.NextFloat((fp)0.25f, fp.half) * dir;
-                            dir = fpmath.mul(Unity.Mathematics.FixedPoint.fpquaternion.AxisAngle(rnd.Nextfp3Direction(), rnd.NextFloat((fp)0.0f, (fp)0.3f)), dir);
+                            fp3 v2 = v0 + (fp)rnd.NextFloat(0.25f, 0.5f) * dir;
+                            dir = fpmath.mul(Unity.Mathematics.FixedPoint.fpquaternion.AxisAngle((fp3)rnd.NextFloat3Direction(), (fp)rnd.NextFloat(0.0f, 0.3f)), dir);
 
                             vertices[nextIndex++] = v0;
                             vertices[nextIndex++] = v1;
@@ -926,7 +926,7 @@ namespace Fixed.Physics.Tests.Utils
                     case 3:
                     {
                         // Grid
-                        int quads = featureTriangles / 2;
+                        int quads = (int)featureTriangles / 2;
                         if (quads == 0)
                         {
                             featureTriangles = 0; // Too small, try again for a different feature
@@ -938,9 +938,9 @@ namespace Fixed.Physics.Tests.Utils
                         quads = rows * cols;
                         featureTriangles = quads * 2;
 
-                        fp3 origin = rnd.Nextfp3(-(fp)10.0f, (fp)10.0f);
-                        fp3 x = rnd.Nextfp3(-fp.half, fp.half);
-                        fp3 y = rnd.Nextfp3(-fp.half, fp.half);
+                        fp3 origin = (fp3)rnd.NextFloat3(-10.0f, 10.0f);
+                        fp3 x = (fp3)rnd.NextFloat3(-0.5f, 0.5f);
+                        fp3 y = (fp3)rnd.NextFloat3(-0.5f, 0.5f);
                         for (int i = 0; i < rows; i++)
                         {
                             for (int j = 0; j < cols; j++)
@@ -977,13 +977,13 @@ namespace Fixed.Physics.Tests.Utils
         public static BlobAssetReference<Collider> GenerateRandomTerrain(ref Random rnd)
         {
             int2 size = rnd.NextInt2(2, 50);
-            fp3 scale = rnd.Nextfp3((fp)0.1f, new fp3((fp)1, (fp)10, (fp)1));
+            fp3 scale = (fp3)rnd.NextFloat3(0.1f, new float3(1f, 10f, 1f));
 
             int numSamples = size.x * size.y;
             var heights = new NativeArray<fp>(numSamples, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
             for (int i = 0; i < numSamples; i++)
             {
-                heights[i] = rnd.NextFloat((fp)0, (fp)1);
+                heights[i] = (fp)rnd.NextFloat(0, 1);
             }
 
             // CollisionMethod.Vertices will fail the unit tests, because it is a low-quality mode
@@ -1001,8 +1001,8 @@ namespace Fixed.Physics.Tests.Utils
                 {
                     CompoundFromChild = new FpRigidTransform
                     {
-                        pos = (rnd.NextInt(10) > 0) ? rnd.Nextfp3(-(fp)5.0f, (fp)5.0f) : fp3.zero,
-                        rot = (rnd.NextInt(10) > 0) ? rnd.NextQuaternionRotation() : fpquaternion.identity
+                        pos = (rnd.NextInt(10) > 0) ? (fp3)rnd.NextFloat3(-5.0f, 5.0f) : fp3.zero,
+                        rot = (rnd.NextInt(10) > 0) ? (fpquaternion)rnd.NextQuaternionRotation() : fpquaternion.identity
                     },
                     Collider = GenerateRandomCollider(ref rnd)
                 };
@@ -1014,7 +1014,7 @@ namespace Fixed.Physics.Tests.Utils
         public static BlobAssetReference<Collider> GenerateRandomConvex(ref Random rnd)
         {
             ColliderType colliderType = (ColliderType)rnd.NextInt((int)ColliderType.Cylinder + 1);
-            fp convexRadius = (rnd.NextInt(4) > 0) ? rnd.NextFloat(fp.half) : (fp)0.0f;
+            fp convexRadius = (rnd.NextInt(4) > 0) ? (fp)rnd.NextFloat(0.5f) : fp.zero;
             switch (colliderType)
             {
                 case ColliderType.Convex:
@@ -1027,7 +1027,7 @@ namespace Fixed.Physics.Tests.Utils
                     var points = new NativeArray<fp3>(numPoints, Allocator.TempJob);
                     for (int i = 0; i < numPoints; i++)
                     {
-                        points[i] = rnd.Nextfp3(-(fp)1.0f, (fp)1.0f);
+                        points[i] = (fp3)rnd.NextFloat3(-1.0f, 1.0f);
                     }
                     var generationParameters = ConvexHullGenerationParameters.Default;
                     generationParameters.BevelRadius = convexRadius;
@@ -1040,36 +1040,36 @@ namespace Fixed.Physics.Tests.Utils
                 {
                     return SphereCollider.Create(new SphereGeometry
                     {
-                        Center = (rnd.NextInt(4) > 0) ? fp3.zero : rnd.Nextfp3(-fp.half, fp.half),
-                        Radius = rnd.NextFloat((fp)0.01f, fp.half)
+                        Center = (rnd.NextInt(4) > 0) ? fp3.zero : (fp3)rnd.NextFloat3(-0.5f, 0.5f),
+                        Radius = (fp)rnd.NextFloat(0.01f, 0.5f)
                     });
                 }
 
                 case ColliderType.Capsule:
                 {
-                    fp3 point0 = rnd.Nextfp3((fp)0.0f, (fp)1.0f);
-                    fp3 point1 = (rnd.NextInt(4) > 0) ? -point0 : rnd.Nextfp3(-(fp)1.0f, (fp)1.0f);
+                    fp3 point0 = (fp3)rnd.NextFloat3(0.0f, 1.0f);
+                    fp3 point1 = (rnd.NextInt(4) > 0) ? -point0 : (fp3)rnd.NextFloat3(-1.0f, 1.0f);
                     return CapsuleCollider.Create(new CapsuleGeometry
                     {
                         Vertex0 = point0,
                         Vertex1 = point1,
-                        Radius = rnd.NextFloat((fp)0.01f, fp.half)
+                        Radius = (fp)rnd.NextFloat(0.01f, 0.5f)
                     });
                 }
 
                 case ColliderType.Triangle:
                 {
-                    return PolygonCollider.CreateTriangle(rnd.Nextfp3(-(fp)1.0f, (fp)1.0f), rnd.Nextfp3(-(fp)1.0f, (fp)1.0f), rnd.Nextfp3(-(fp)1.0f, (fp)1.0f));
+                    return PolygonCollider.CreateTriangle((fp3)rnd.NextFloat3(-1.0f, 1.0f), (fp3)rnd.NextFloat3(-1.0f, 1.0f), (fp3)rnd.NextFloat3(-1.0f, 1.0f));
                 }
 
                 case ColliderType.Quad:
                 {
                     // Pick 3 totally random points, then choose a fourth that makes a flat and convex quad
-                    fp3 point0 = rnd.Nextfp3(-(fp)1.0f, (fp)1.0f);
-                    fp3 point1 = rnd.Nextfp3(-(fp)1.0f, (fp)1.0f);
-                    fp3 point3 = rnd.Nextfp3(-(fp)1.0f, (fp)1.0f);
-                    fp t0 = rnd.NextFloat((fp)0.0f, (fp)1.0f);
-                    fp t1 = rnd.NextFloat((fp)0.0f, (fp)1.0f);
+                    fp3 point0 = (fp3)rnd.NextFloat3(-1.0f, 1.0f);
+                    fp3 point1 = (fp3)rnd.NextFloat3(-1.0f, 1.0f);
+                    fp3 point3 = (fp3)rnd.NextFloat3(-1.0f, 1.0f);
+                    fp t0 = (fp)rnd.NextFloat(0.0f, 1.0f);
+                    fp t1 = (fp)rnd.NextFloat(0.0f, 1.0f);
                     fp3 e = point1 + point1 - point0;
                     fp3 a = fpmath.lerp(point1, e, t0);
                     fp3 b = fpmath.lerp(point3, point3 + point3 - point0, t0);
@@ -1080,15 +1080,15 @@ namespace Fixed.Physics.Tests.Utils
 
                 case ColliderType.Box:
                 {
-                    fp minSize = (fp)0.05f; // TODO - work around hull builder problems with small faces, sometimes doesn't extend 1D->2D based on face area
+                    float minSize = 0.05f; // TODO - work around hull builder problems with small faces, sometimes doesn't extend 1D->2D based on face area
                     var boxGeometry = new BoxGeometry
                     {
-                        Center = (rnd.NextInt(4) > 0) ? fp3.zero : rnd.Nextfp3(-fp.half, fp.half),
-                        Orientation = (rnd.NextInt(4) > 0) ? fpquaternion.identity : rnd.NextQuaternionRotation(),
-                        Size = rnd.Nextfp3(minSize, (fp)1.0f)
+                        Center = (rnd.NextInt(4) > 0) ? fp3.zero : (fp3)rnd.NextFloat3(-0.5f, 0.5f),
+                        Orientation = (rnd.NextInt(4) > 0) ? fpquaternion.identity : (fpquaternion)rnd.NextQuaternionRotation(),
+                        Size = (fp3)rnd.NextFloat3(minSize, 1.0f)
                     };
 
-                    fp maxBevelRadius = fpmath.max(fpmath.cmin((boxGeometry.Size - minSize) / ((fp)2.0f * ((fp)1.0f + fp.Epsilon))), (fp)0.0f);
+                    fp maxBevelRadius = fpmath.max(fpmath.cmin((boxGeometry.Size - (fp)minSize) / ((fp)2.0f * ((fp)1.0f + fp.epsilon))), (fp)0.0f);
                     boxGeometry.BevelRadius = fpmath.min(maxBevelRadius, convexRadius);
 
                     return BoxCollider.Create(boxGeometry);
@@ -1096,17 +1096,17 @@ namespace Fixed.Physics.Tests.Utils
 
                 case ColliderType.Cylinder:
                 {
-                    fp minSize = (fp)0.01f; // TODO - cylinder gets degenerate faces if radius-convexRadius=0 or height/2-convexRadius=0, decide how to handle this in CylinderCollider
+                    var minSize = 0.01f; // TODO - cylinder gets degenerate faces if radius-convexRadius=0 or height/2-convexRadius=0, decide how to handle this in CylinderCollider
                     var cylinderGeometry = new CylinderGeometry
                     {
-                        Center = (rnd.NextInt(4) > 0) ? fp3.zero : rnd.Nextfp3(-fp.half, fp.half),
-                        Orientation = (rnd.NextInt(4) > 0) ? fpquaternion.identity : rnd.NextQuaternionRotation(),
-                        Height = rnd.NextFloat((fp)2.0f * minSize, (fp)1f),
-                        Radius = rnd.NextFloat(minSize, (fp)1.0f),
+                        Center = (rnd.NextInt(4) > 0) ? fp3.zero : (fp3)rnd.NextFloat3(-0.5f, 0.5f),
+                        Orientation = (rnd.NextInt(4) > 0) ? fpquaternion.identity : (fpquaternion)rnd.NextQuaternionRotation(),
+                        Height = (fp)rnd.NextFloat(2.0f * minSize, 1f),
+                        Radius = (fp)rnd.NextFloat(minSize, 1.0f),
                         SideCount = 20
                     };
 
-                    var maxBevelRadius = fpmath.max(fpmath.min(cylinderGeometry.Height / (fp)2, cylinderGeometry.Radius) - minSize, (fp)0.0f);
+                    var maxBevelRadius = fpmath.max(fpmath.min(cylinderGeometry.Height / (fp)2, cylinderGeometry.Radius) - (fp)minSize, (fp)0.0f);
                     cylinderGeometry.BevelRadius = fpmath.min(maxBevelRadius, convexRadius);
 
                     return CylinderCollider.Create(cylinderGeometry);
@@ -1150,8 +1150,8 @@ namespace Fixed.Physics.Tests.Utils
                 {
                     WorldFromBody = new FpRigidTransform
                     {
-                        pos = rnd.Nextfp3(-size, size),
-                        rot = (rnd.NextInt(10) > 0) ? rnd.NextQuaternionRotation() : fpquaternion.identity
+                        pos = rnd.NextFloat3(-(float)size, (float)size),
+                        rot = (rnd.NextInt(10) > 0) ? (fpquaternion)rnd.NextQuaternionRotation() : fpquaternion.identity
                     },
                     Collider = GenerateRandomCollider(ref rnd),   // Not safe, could be garbage collected
                     Entity = Entity.Null,
